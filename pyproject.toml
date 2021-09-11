@@ -10,18 +10,14 @@ license = { file = "LICENSE" }
 readme = "README.md"
 dynamic = ['version', 'description']
 requires-python = ">=3.9"
-dependencies = [
-
-]
+dependencies = ["psutil", "urlextract", "yarl", "tzlocal", "pytz"]
 
 [project.urls]
 Source = "https://github.com/Giddius/GidAppTools"
 
 [project.scripts]
 
-
 [project.optional-dependencies]
-
 
 [tool.flit.sdist]
 exclude = [
