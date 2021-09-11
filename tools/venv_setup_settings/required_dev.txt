@@ -1,0 +1,9 @@
+https://github.com/pyinstaller/pyinstaller/tarball/develop
+line_profiler
+memory-profiler
+numpy
+tomlkit
+invoke
+icecream
+dateparser
+rich
