@@ -83,9 +83,9 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 class ConfigKwargs(KwargDict):
 
     def __init__(self, base_configuration: dict = None, **kwargs) -> None:
-        super().__init__(base_defaults=base_configuration, **kwargs)
         self._path_overwrites: dict[NamedMetaPath, Path] = {}
         self.created_meta_items: dict[str, "meta_items_type"] = {}
+        super().__init__(base_defaults=base_configuration, **kwargs)
 
     def _post_init(self):
         for key, value in self.data.items():
@@ -99,6 +99,9 @@ class ConfigKwargs(KwargDict):
     def __setitem__(self, key, item) -> None:
         if key == 'path_overwrites':
             raise KeyError('Not allowed to set path_overwrites this way, use "add_path_overwrite".')
+        for meta_item in self.created_meta_items.values():
+            if hasattr(meta_item, key):
+                raise KeyError('Not allowed to set Meta_item attributes this way, use the meta_item directly.')
         return super().__setitem__(key, item)
 
     def __getitem__(self, key):

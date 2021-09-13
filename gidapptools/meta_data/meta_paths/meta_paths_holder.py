@@ -93,7 +93,8 @@ class MetaPaths:
     def __init__(self, code_base_dir: Path, paths: dict[NamedMetaPath, Path]) -> None:
         self.code_base_dir = Path(code_base_dir).resolve()
         self._paths: dict[Union[NamedMetaPath, str], Optional[Path]] = paths
-        self.created_temp_dirs: set[Path] = set()
+        self._created_normal_paths: set[Path] = set()
+        self._created_temp_dirs: set[Path] = set()
 
     def get_path(self, identifier: Union[NamedMetaPath, str], default: Any = NotImplemented) -> Path:
         if isinstance(identifier, str):
@@ -107,6 +108,7 @@ class MetaPaths:
 
         if path.exists() is False:
             path.mkdir(parents=True, exist_ok=True)
+            self._created_normal_paths.add(path)
         return path
 
     @property
@@ -133,7 +135,7 @@ class MetaPaths:
         temp_dir = Path(mkdtemp(dir=self.temp_dir, suffix=suffix))
         if temp_dir.exists() is False:
             temp_dir.mkdir(parents=True, exist_ok=True)
-        self.created_temp_dirs.add(temp_dir)
+        self._created_temp_dirs.add(temp_dir)
         return temp_dir
 
     @contextmanager
@@ -143,7 +145,7 @@ class MetaPaths:
         shutil.rmtree(temp_dir)
 
     def clean_all_temp(self) -> None:
-        while len(self.created_temp_dirs) != 0:
+        while len(self._created_temp_dirs) != 0:
             temp_dir = self.created_temp_dirs.pop()
             shutil.rmtree(temp_dir)
 
@@ -151,6 +153,17 @@ class MetaPaths:
         if storager is None:
             return
         storager(self)
+
+    def clean_up(self, remove_all_paths: bool = False, **kwargs) -> None:
+        self.clean_all_temp()
+        if remove_all_paths is True:
+            for path in self._created_normal_paths:
+                if path.exists():
+                    if kwargs.get('dry_run', False) is True:
+                        print(f"Simulating deleting of path {path.as_posix()!r}, with 'shutil.rmtree'.")
+                    else:
+                        shutil.rmtree(path)
+        # TODO: find a way to clean shit up, but completely, also add optional kwarg that also removes the author folder
 
 
 # region[Main_Exec]

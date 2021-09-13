@@ -85,6 +85,21 @@ class BaseMetaDataError(GidAppToolsBaseError):
     """
 
 
+class MetaItemNotFoundError(BaseMetaDataError):
+    def __init__(self, requested_name: str, existing_item_names: list[str]) -> None:
+        self.requested_name = requested_name
+        self.existing_item_names = existing_item_names
+        self.message = f"Item {self.requested_name!r} was not found in existing meta_items, existing_meta_item names: {self.existing_item_names!r}"
+        super().__init__(self.message)
+
+
+class NoFactoryFoundError(BaseMetaDataError):
+    def __init__(self, app_meta_item_name) -> None:
+        self.app_meta_item_name = app_meta_item_name
+        self.message = f"Unable to find a factory for {self.app_meta_item_name!r}."
+        super().__init__(self.message)
+
+
 class NotSetupError(BaseMetaDataError):
     def __init__(self, app_meta_data) -> None:
         self.app_meta_data = app_meta_data

@@ -3,4 +3,5 @@
 set OLDHOME_FOLDER=%~dp0
 pushd %OLDHOME_FOLDER%
 call ..\.venv\Scripts\activate
-call profiling_to_graph.cmd ..\src\__main__.py
+rem call profiling_to_graph.cmd ..\src\__main__.py
+call profiling_to_graph.cmd D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\gidapptools\meta_data\interface.py

@@ -2,6 +2,7 @@ import pytest
 from gidapptools.meta_data.config_kwargs import ConfigKwargs, NamedMetaPath
 from pathlib import Path
 from pprint import pprint
+from typing import Any
 
 
 def fake_kwargs_function(first, second, bool_kwarg=False):
@@ -86,3 +87,10 @@ def test_get_path_overwrites(config_kwargs_item: ConfigKwargs):
     assert config_kwargs_item.get('path_overwrites') == {NamedMetaPath.DATA: Path(r"C:\Windows")}
     with pytest.raises(KeyError, match='Not allowed to set path_overwrites this way, use "add_path_overwrite"'):
         config_kwargs_item['path_overwrites'] = 'this'
+    config_kwargs_item.add_path_overwrite(NamedMetaPath.CONFIG, Path(r"C:\Users\Giddi\AppData\Roaming"))
+    assert config_kwargs_item.get('path_overwrites') == {NamedMetaPath.DATA: Path(r"C:\Windows"), NamedMetaPath.CONFIG: Path(r"C:\Users\Giddi\AppData\Roaming")}
+
+
+def test_get(config_kwargs_item: ConfigKwargs, fake_kwargs: dict[str, Any]):
+    for key, value in fake_kwargs.items():
+        assert config_kwargs_item.get(key) == value

@@ -33,7 +33,7 @@ echo %INFILEBASE%
 pushd %INPATH%
 python -m cProfile -o %INFILEBASE%_graph.pstats %INFILE%
 
-timeout /t 2
+
 MKDIR %INPATH%reports\graph_profiling
 call gprof2dot.exe -f pstats %INFILEBASE%_graph.pstats | %PATH_GRAPHVIZ% -Tsvg -o %INPATH%reports\graph_profiling\[%_years%-%_months%-%_days%_%_hours%-%_minutes%-%_seconds%]_%INFILEBASE%.svg
 DEL %INFILEBASE%_graph.pstats

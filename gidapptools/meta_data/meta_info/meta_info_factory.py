@@ -131,6 +131,8 @@ class MetaInfoFactory(AbstractMetaFactory):
 
     def _arg_get_url(self):
         url_text = self.package_metadata.get('project-url')
+        if url_text is None:
+            return url_text
         parts = map(lambda x: x.strip(), url_text.split(','))
         for part in parts:
             if part.startswith('http'):

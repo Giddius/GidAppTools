@@ -7,3 +7,4 @@ invoke
 icecream
 dateparser
 rich
+matplotlib

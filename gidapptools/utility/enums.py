@@ -142,6 +142,7 @@ class NamedMetaPath(_BaseGidEnum):
 
 class MiscEnum(Enum):
     NOTHING = auto()
+    ALL = auto()
 
 
 class EnvName(str, Enum):

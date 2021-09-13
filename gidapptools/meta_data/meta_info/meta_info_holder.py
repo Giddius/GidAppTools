@@ -121,6 +121,9 @@ class MetaInfo:
             return
         storager(self)
 
+    def clean_up(self, **kwargs) -> None:
+        pass
+
     # region[Main_Exec]
 if __name__ == '__main__':
     pass
