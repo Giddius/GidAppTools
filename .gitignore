@@ -136,3 +136,4 @@ dmypy.json
 /tools/create_venv_logs
 /logs
 /temp/archive
+/tools/reports
