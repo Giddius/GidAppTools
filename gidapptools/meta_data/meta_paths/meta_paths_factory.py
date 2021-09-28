@@ -14,9 +14,9 @@ import json
 import queue
 import math
 import base64
-import pickle
+
 import random
-import shelve
+
 import dataclasses
 import shutil
 import asyncio
@@ -53,9 +53,9 @@ from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 
-from gidapptools.utility import NamedMetaPath, EnvName
+from gidapptools.utility.enums import NamedMetaPath, EnvName
 from gidapptools.errors import AppNameMissingError
-from gidapptools.meta_data.meta_paths.meta_paths_holder import MetaPaths
+from gidapptools.meta_data.meta_paths.meta_paths_item import MetaPaths
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
 from gidapptools.meta_data.meta_paths.appdirs_implementations import GidAppDirs
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
@@ -81,17 +81,17 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 class MetaPathsFactory(AbstractMetaFactory):
     appdirs_class = GidAppDirs
     product_class = MetaPaths
-    product_name = 'meta_paths'
+    default_configuration = {}
 
     def __init__(self, config_kwargs: ConfigKwargs) -> None:
         super().__init__(config_kwargs=config_kwargs)
         self.code_base_dir = Path(self.config_kwargs.get('init_path')).parent
 
     def get_path_dict(self) -> dict[NamedMetaPath, Optional[Path]]:
-        defaults = {'name': os.getenv(EnvName.APP_NAME),
-                    'author': os.getenv(EnvName.APP_AUTHOR)}
+        defaults = {'app_name': os.getenv(EnvName.APP_NAME),
+                    'app_author': os.getenv(EnvName.APP_AUTHOR)}
         _kwargs = self.config_kwargs.get_kwargs_for(self.appdirs_class.get_path_dict_direct, defaults)
-        if _kwargs.get('name') is None:
+        if _kwargs.get('app_name') is None:
             raise AppNameMissingError()
 
         path_overwrites = self.config_kwargs.get('path_overwrites', {})

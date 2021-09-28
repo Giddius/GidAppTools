@@ -71,9 +71,10 @@ ECHO.
 ECHO ################# Removing old venv folder
 rem Icacls %WORKSPACE_FOLDER%\.venv /T /Q
 
-DEL %WORKSPACE_FOLDER%\.venv\Scripts\python.exe /F /Q
-RD /S /Q  %WORKSPACE_FOLDER%\.venv
+%TOOLS_FOLDER%\delete_venv.py
 ECHO.
+ECHO %ERRORLEVEL%
+if %ERRORLEVEL% neq 0 exit /b %ERRORLEVEL%
 
 
 ECHO ################# pycleaning workspace
@@ -135,6 +136,7 @@ ECHO.
 ECHO ################# Installing flit
 CALL pip install --no-cache-dir --upgrade flit
 ECHO.
+
 
 
 

@@ -14,9 +14,9 @@ import json
 import queue
 import math
 import base64
-import pickle
+
 import random
-import shelve
+
 import dataclasses
 import shutil
 import asyncio
@@ -38,7 +38,7 @@ from pprint import pprint, pformat
 from pathlib import Path
 from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
 from timeit import Timer
-from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO
+from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, NoReturn
 from zipfile import ZipFile, ZIP_LZMA
 from datetime import datetime, timezone, timedelta
 from tempfile import TemporaryDirectory
@@ -53,8 +53,9 @@ from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 
-from gidapptools.utility import abstract_class_property
+from gidapptools.utility.helper import abstract_class_property
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
+from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 # endregion[Imports]
 
 # region [TODO]
@@ -75,28 +76,31 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
 class AbstractMetaFactory(ABC):
-
-    product_class = None
-    product_name = None
+    default_configuration = {}
+    product_class: AbstractMetaItem = None
 
     def __init__(self, config_kwargs: ConfigKwargs) -> None:
         if self.product_class is None:
             raise TypeError("Can't instantiate abstract class MetaInfoFactory with abstract class attribute 'product_class'")
-        if self.product_name is None:
-            raise TypeError("Can't instantiate abstract class MetaInfoFactory with abstract class attribute 'product_name'")
+
         self.is_setup = False
         self.config_kwargs = config_kwargs
+
+    @classmethod
+    @property
+    def product_name(cls) -> str:
+        return cls.product_class.name
 
     @abstractmethod
     def setup(self) -> None:
         self.is_setup = True
 
     @abstractmethod
-    def _build(self) -> None:
+    def _build(self) -> AbstractMetaItem:
         ...
 
     @classmethod
-    def build(cls, config_kwargs: ConfigKwargs):
+    def build(cls, config_kwargs: ConfigKwargs) -> AbstractMetaItem:
         factory_instance = cls(config_kwargs=config_kwargs)
         instance = factory_instance._build()
         instance.to_storager(factory_instance.config_kwargs.get('storager'))

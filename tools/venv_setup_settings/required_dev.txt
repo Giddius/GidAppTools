@@ -8,3 +8,6 @@ icecream
 dateparser
 rich
 matplotlib
+pylint
+pyenchant
+cairosvg

@@ -14,9 +14,9 @@ import json
 import queue
 import math
 import base64
-import pickle
+
 import random
-import shelve
+
 import dataclasses
 import shutil
 import asyncio
@@ -73,7 +73,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-class _BaseGidEnum(Enum):
+class BaseGidEnum(Enum):
     @classmethod
     def _missing_(cls, value: object) -> Any:
         if isinstance(value, str):
@@ -89,8 +89,11 @@ class _BaseGidEnum(Enum):
     def is_in_value(cls, other: Any) -> bool:
         return other in {member.value for name, member in cls.__members__.items()}
 
+    def __str__(self) -> str:
+        return self.name
 
-class OperatingSystem(_BaseGidEnum):
+
+class OperatingSystem(BaseGidEnum):
     WINDOWS = auto()
     LINUX = auto()
     MAC_OS = auto()
@@ -126,23 +129,23 @@ class OperatingSystem(_BaseGidEnum):
         return cls.str_to_member(os_string)
 
     def __str__(self) -> str:
-        return self.name.title()
+        return self.name
 
 
-class NamedMetaPath(_BaseGidEnum):
+class NamedMetaPath(BaseGidEnum):
     DATA = 'user_data_dir'
     LOG = 'user_log_dir'
     CACHE = 'user_cache_dir'
     CONFIG = 'user_config_dir'
+    CONFIG_SPEC = 'user_config_spec_dir'
     STATE = 'user_state_dir'
     SITE_DATA = 'site_data_dir'
     SITE_CONFIG = 'site_config_dir'
     TEMP = 'user_temp_dir'
+    DB = 'database_dir'
 
-
-class MiscEnum(Enum):
-    NOTHING = auto()
-    ALL = auto()
+    def __str__(self) -> str:
+        return self.name
 
 
 class EnvName(str, Enum):
@@ -156,6 +159,6 @@ class EnvName(str, Enum):
 
 if __name__ == '__main__':
     x = 'something'
-    print(NamedMetaPath.is_in_value(x))
+    print(str(NamedMetaPath.DATA))
 
 # endregion[Main_Exec]

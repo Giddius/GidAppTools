@@ -14,9 +14,9 @@ import json
 import queue
 import math
 import base64
-import pickle
+
 import random
-import shelve
+
 import dataclasses
 import shutil
 import asyncio
@@ -53,7 +53,7 @@ from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 
-from gidapptools.utility import MiscEnum
+from gidapptools.general_helper.enums import MiscEnum
 # endregion[Imports]
 
 # region [TODO]

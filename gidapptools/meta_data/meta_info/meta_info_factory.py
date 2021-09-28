@@ -14,9 +14,9 @@ import json
 import queue
 import math
 import base64
-import pickle
+
 import random
-import shelve
+
 import dataclasses
 import shutil
 import asyncio
@@ -38,7 +38,7 @@ from pprint import pprint, pformat
 from pathlib import Path
 from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
 from timeit import Timer
-from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO
+from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, NoReturn
 from zipfile import ZipFile, ZIP_LZMA
 from datetime import datetime, timezone, timedelta
 from tempfile import TemporaryDirectory
@@ -53,11 +53,13 @@ from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 
-from gidapptools.meta_data.meta_info.meta_info_holder import MetaInfo
-from gidapptools.utility import general_path_type, meta_data_from_path
+from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
+from gidapptools.utility.helper import PATH_TYPE, meta_data_from_path
 
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
+from gidapptools.general_helper.conversion import str_to_bool
+
 # REMOVE_BEFORE_BUILDING_DIST
 from gidapptools.utility._debug_tools import dprint
 
@@ -86,14 +88,18 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 class MetaInfoFactory(AbstractMetaFactory):
     product_class = MetaInfo
-    product_name = 'meta_info'
     prefix_arg_getters = '_arg_get_'
+    is_dev_env_name = 'IS_DEV'
+    is_code_runner_env_name = 'IS_CODE_RUNNER'
+    default_configuration = {}
 
     def __init__(self, config_kwargs: ConfigKwargs) -> None:
         super().__init__(config_kwargs=config_kwargs)
 
         self.init_path = Path(config_kwargs.get('init_path'))
         self.package_metadata = meta_data_from_path(self.init_path)
+        self.package_metadata['app_name'] = self.package_metadata.pop('name')
+        self.package_metadata['app_author'] = self.package_metadata.pop('author')
         self.arg_getters_map: dict[str, Callable] = None
         self.needed_arg_names: list[str] = None
 
@@ -129,7 +135,7 @@ class MetaInfoFactory(AbstractMetaFactory):
     def _default_arg_getter(self, arg_name: str) -> Any:
         return self.package_metadata.get(arg_name.casefold())
 
-    def _arg_get_url(self):
+    def _arg_get_url(self) -> str:
         url_text = self.package_metadata.get('project-url')
         if url_text is None:
             return url_text
@@ -137,6 +143,18 @@ class MetaInfoFactory(AbstractMetaFactory):
         for part in parts:
             if part.startswith('http'):
                 return part
+
+    def _arg_get_is_dev(self) -> bool:
+        is_dev_string = os.getenv(self.is_dev_env_name, '0').casefold()
+        return str_to_bool(is_dev_string, strict=True)
+
+    def _arg_get_is_gui(self) -> bool:
+        if str_to_bool(os.getenv(self.is_code_runner_env_name, '0'), strict=True) is True:
+            return False
+        stdout_is_gui = sys.stdout is None or sys.stdout.isatty() is False
+        stderr_is_gui = sys.stderr is None or sys.stderr.isatty() is False
+        stdin_is_gui = sys.stdin is None or sys.stdin.isatty() is False
+        return all([stdout_is_gui, stderr_is_gui, stdin_is_gui])
 
     def _build(self) -> MetaInfo:
         if self.is_setup is False:

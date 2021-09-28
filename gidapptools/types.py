@@ -14,9 +14,9 @@ import json
 import queue
 import math
 import base64
-import pickle
+
 import random
-import shelve
+
 import dataclasses
 import shutil
 import asyncio
@@ -73,7 +73,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-general_path_type = Union[str, os.PathLike, Path]
+PATH_TYPE = Union[str, os.PathLike, Path]
 
 
 # region[Main_Exec]

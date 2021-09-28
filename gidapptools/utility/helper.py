@@ -14,9 +14,9 @@ import json
 import queue
 import math
 import base64
-import pickle
+
 import random
-import shelve
+
 import dataclasses
 import shutil
 import asyncio
@@ -38,7 +38,7 @@ from pprint import pprint, pformat
 from pathlib import Path
 from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
 from timeit import Timer
-from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO
+from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, TypeVar, cast
 from zipfile import ZipFile, ZIP_LZMA
 from datetime import datetime, timezone, timedelta
 from tempfile import TemporaryDirectory, gettempdir, gettempprefix
@@ -57,10 +57,11 @@ from importlib.machinery import SourceFileLoader
 from urlextract import URLExtract
 from yarl import URL
 import psutil
-from gidapptools.types import general_path_type
+from gidapptools.types import PATH_TYPE
 from appdirs import AppDirs
 from uuid import uuid4
 from gidapptools.utility.enums import NamedMetaPath
+from gidapptools.general_helper.date_time import DatetimeFmt
 # endregion[Imports]
 
 # region [TODO]
@@ -88,7 +89,7 @@ def utc_now():
     return datetime.now(tz=timezone.utc)
 
 
-def handle_path(path: Optional[general_path_type]):
+def handle_path(path: Optional[PATH_TYPE]):
     if path is None:
         return path
     return Path(path).resolve()
@@ -105,7 +106,10 @@ def meta_data_from_path(in_path: Path) -> dict[str, Any]:
     return {k.casefold(): v for k, v in _metadata.items()}
 
 
-def mark_appdir_path(func):
+TCallable = TypeVar("TCallable", bound=Callable)
+
+
+def mark_appdir_path(func: TCallable) -> TCallable:
     func._appdir_path_type = NamedMetaPath(func.__name__)
     return func
 
@@ -155,6 +159,43 @@ class PathLibAppDirs(AppDirs):
             if hasattr(meth_object, '_appdir_path_type'):
                 path_dict[meth_object._appdir_path_type] = meth_object()
         return path_dict
+
+
+def make_pretty(inst) -> dict:
+
+    # pylint: disable=too-many-return-statements
+    def _make_pretty(obj):
+
+        def _handle_iterable(in_obj):
+            return [_make_pretty(item) for item in in_obj]
+
+        if isinstance(obj, Enum):
+            return str(obj)
+
+        if isinstance(obj, Path):
+            return obj.as_posix()
+        if isinstance(obj, URL):
+            return str(obj)
+        if isinstance(obj, datetime):
+            return DatetimeFmt.STANDARD.strf(obj)
+
+        if isinstance(obj, Mapping):
+            pretty_dict = {}
+            for key, value in obj.items():
+                pretty_dict[_make_pretty(key)] = getattr(inst, f"pretty_{key}", _make_pretty(value))
+            return pretty_dict
+
+        if isinstance(obj, list):
+            return _handle_iterable(obj)
+
+        if isinstance(obj, tuple):
+            return tuple(_handle_iterable(obj))
+        if isinstance(obj, set):
+            return set(_handle_iterable(obj))
+        if isinstance(obj, frozenset):
+            return frozenset(_handle_iterable(obj))
+        return obj
+    return _make_pretty(vars(inst))
 
 
 # region[Main_Exec]

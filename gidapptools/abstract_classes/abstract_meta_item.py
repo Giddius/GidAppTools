@@ -14,9 +14,9 @@ import json
 import queue
 import math
 import base64
-import pickle
+
 import random
-import shelve
+
 import dataclasses
 import shutil
 import asyncio
@@ -38,7 +38,7 @@ from pprint import pprint, pformat
 from pathlib import Path
 from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
 from timeit import Timer
-from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, ClassVar
+from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, TypedDict, NoReturn
 from zipfile import ZipFile, ZIP_LZMA
 from datetime import datetime, timezone, timedelta
 from tempfile import TemporaryDirectory
@@ -52,31 +52,14 @@ from urllib.parse import urlparse
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
-import importlib.metadata
-from psutil import virtual_memory
-from itertools import cycle
-from gidapptools.errors import NotBaseInitFileError
-from urlextract import URLExtract
-import attr
-import requests
-from yarl import URL
-from tzlocal import get_localzone
-from gidapptools.utility import OperatingSystem, memory_in_use, handle_path, utc_now
 
-from gidapptools.types import general_path_type
-
-# REMOVE_BEFORE_BUILDING_DIST
-from gidapptools.utility._debug_tools import dprint
-
-print = dprint
-
-# end REMOVE_BEFORE_BUILDING_DIST
-
+from gidapptools.utility.helper import abstract_class_property
+from gidapptools.meta_data.config_kwargs import ConfigKwargs
+from gidapptools.general_helper.string_helper import StringCaseConverter
 # endregion[Imports]
 
 # region [TODO]
 
-# - Make into a class
 
 # endregion [TODO]
 
@@ -89,42 +72,30 @@ print = dprint
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-
 # endregion[Constants]
 
-def url_converter(in_url: str) -> Optional[URL]:
-    if in_url is None:
-        return in_url
-    return URL(in_url)
 
+class AbstractMetaItem(ABC):
 
-@attr.s(auto_attribs=True, auto_detect=True, kw_only=True, frozen=True)
-class MetaInfo:
-    name: str = attr.ib(default=None)
-    author: str = attr.ib(default=None)
-    version: str = attr.ib(default=None)
-    url: URL = attr.ib(converter=url_converter, default=None)
-    pid: int = attr.ib(factory=os.getpid)
-    os: OperatingSystem = attr.ib(factory=OperatingSystem.determine_operating_system)
-    os_release: str = attr.ib(factory=platform.release)
-    python_version: str = attr.ib(factory=platform.python_version)
-    started_at: datetime = attr.ib(factory=utc_now)
-    base_mem_use: int = attr.ib(default=memory_in_use())
+    @classmethod
+    @property
+    def name(cls) -> str:
+        return StringCaseConverter.convert_to(cls.__name__, StringCaseConverter.SNAKE)
 
-    def as_dict(self, encoder=None) -> dict[str, Any]:
-        if encoder is None:
-            encoder = None
-        return attr.asdict(self, recurse=False, value_serializer=encoder)
+    @abstractmethod
+    def as_dict(self, pretty: bool = False) -> dict[str, Any]:
+        ...
 
+    @abstractmethod
     def to_storager(self, storager: Callable = None) -> None:
-        if storager is None:
-            return
-        storager(self)
+        ...
 
+    @abstractmethod
     def clean_up(self, **kwargs) -> None:
-        pass
+        ...
 
-    # region[Main_Exec]
+
+# region[Main_Exec]
 if __name__ == '__main__':
     pass
 

@@ -19,6 +19,9 @@ Source = "https://github.com/Giddius/FAKE_URL_DOES_NOT_EXIST"
 
 [project.optional-dependencies]
 
+[project.entry-points."gidapptools.meta_item_plugins"]
+fake_plugin = "faked_pack_src.plugin:register"
+
 [tool.flit.sdist]
 exclude = [
     "misc",

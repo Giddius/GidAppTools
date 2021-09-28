@@ -22,12 +22,19 @@ set _seconds=%_time:~4,2%
 rem ---------------------------------------------------
 
 
+
+SET FULLINPATH=%~1
 set INPATH=%~dp1
 set INFILE=%~nx1
 set INFILEBASE=%~n1
-pushd %INPATH%
-mkdir %INPATH%reports\text_profiling
-python -m cProfile -s cumtime %INFILE% > %INPATH%reports\text_profiling\[%_years%-%_months%-%_days%_%_hours%-%_minutes%-%_seconds%]_%INFILEBASE%.txt
+set _INEXTENSION=%~x1
+SET INEXTENSION=%_INEXTENSION:~1%
+SET CLEANED_FILE_NAME=%INFILEBASE%_%INEXTENSION%
+
+set BASE_OUTPUT_FOLDER=%OLDHOME_FOLDER%reports
+set SUB_OUTPUT_FOLDER=%BASE_OUTPUT_FOLDER%\%CLEANED_FILE_NAME%\text_profiling
+mkdir %SUB_OUTPUT_FOLDER%
+python -m cProfile -s cumtime %FULLINPATH% > %SUB_OUTPUT_FOLDER%\[%_years%-%_months%-%_days%_%_hours%-%_minutes%-%_seconds%]_%CLEANED_FILE_NAME%.txt
 
 
 

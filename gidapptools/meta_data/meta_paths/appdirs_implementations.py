@@ -14,9 +14,9 @@ import json
 import queue
 import math
 import base64
-import pickle
+
 import random
-import shelve
+
 import dataclasses
 import shutil
 import asyncio
@@ -53,7 +53,8 @@ from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 
-from gidapptools.utility import PathLibAppDirs, NamedMetaPath
+from gidapptools.utility.helper import PathLibAppDirs
+from gidapptools.utility.enums import NamedMetaPath
 from tempfile import gettempdir
 # endregion[Imports]
 
@@ -82,6 +83,11 @@ class GidAppDirs(PathLibAppDirs):
         return config_dir
 
     @PathLibAppDirs.mark_path
+    def user_config_spec_dir(self) -> Path:
+        config_spec_dir = self.user_config_dir().joinpath('_spec')
+        return config_spec_dir
+
+    @PathLibAppDirs.mark_path
     def user_cache_dir(self) -> Path:
         cache_dir = super().user_cache_dir()
         return cache_dir.with_name(cache_dir.name.lower())
@@ -97,13 +103,17 @@ class GidAppDirs(PathLibAppDirs):
         app_temp_dir = default_temp_dir.joinpath(self.appname)
         return Path(str(app_temp_dir))
 
+    @PathLibAppDirs.mark_path
+    def database_dir(self) -> Path:
+        return self.user_data_dir().joinpath('database')
+
     @classmethod
     def get_path_dict_direct(cls,
-                             name: str,
-                             author: str = None,
+                             app_name: str,
+                             app_author: str = None,
                              roaming: bool = True,
                              **kwargs) -> dict[NamedMetaPath, Optional[Path]]:
-        inst = cls(appname=name, appauthor=author, roaming=roaming, **kwargs)
+        inst = cls(appname=app_name, appauthor=app_author, roaming=roaming, **kwargs)
         return inst.as_path_dict()
 
 

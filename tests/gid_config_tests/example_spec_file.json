@@ -1,0 +1,16 @@
+{
+    "first_section": {
+        "first_key": "string",
+        "second_key": "integer",
+        "third_key": "list"
+    },
+    "second_section": {
+        "alpha_key": "list(integer)",
+        "beta_key": "datetime",
+        "gamma_key": "datetime(timestamp, utc)"
+    },
+    "third_section": {
+        "missing_key": "nice_object",
+        "missing_with_args": "nice_object(something)"
+    }
+}

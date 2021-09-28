@@ -3,3 +3,6 @@ urlextract
 yarl
 tzlocal
 pytz
+inflect
+orjson
+pyparsing==3.0.0rc1

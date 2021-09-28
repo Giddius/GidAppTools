@@ -14,9 +14,9 @@ import json
 import queue
 import math
 import base64
-import pickle
+
 import random
-import shelve
+
 import dataclasses
 import shutil
 import asyncio
@@ -24,16 +24,17 @@ import logging
 import sqlite3
 import platform
 import importlib
-import subprocess
+
 import unicodedata
 import inspect
 
+from warnings import warn
 from time import sleep, process_time, process_time_ns, perf_counter, perf_counter_ns
 from io import BytesIO, StringIO
 from abc import ABC, ABCMeta, abstractmethod
 from copy import copy, deepcopy
 from enum import Enum, Flag, auto
-from time import time, sleep
+
 from pprint import pprint, pformat
 from pathlib import Path
 from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
@@ -43,24 +44,30 @@ from zipfile import ZipFile, ZIP_LZMA
 from datetime import datetime, timezone, timedelta
 from tempfile import TemporaryDirectory
 from textwrap import TextWrapper, fill, wrap, dedent, indent, shorten
-from functools import wraps, partial, lru_cache, singledispatch, total_ordering, cached_property
+from functools import wraps, partial, lru_cache, singledispatch, total_ordering, cached_property, reduce
 from importlib import import_module, invalidate_caches
 from contextlib import contextmanager, asynccontextmanager
 from statistics import mean, mode, stdev, median, variance, pvariance, harmonic_mean, median_grouped
 from collections import Counter, ChainMap, deque, namedtuple, defaultdict
 from urllib.parse import urlparse
+from operator import or_
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
-
-from gidapptools.utility import NamedMetaPath, MiscEnum
-from gidapptools.errors import NotSetupError, NoFactoryFoundError, MetaItemNotFoundError
+from importlib.metadata import entry_points
+from gidapptools.utility.enums import NamedMetaPath
+from gidapptools.general_helper.enums import MiscEnum
+from gidapptools.errors import NotSetupError, NoFactoryFoundError, MetaItemNotFoundError, RegisterAfterSetupError
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
-from gidapptools.types import general_path_type
+from gidapptools.types import PATH_TYPE
 
 from gidapptools.meta_data.meta_info import MetaInfoFactory, MetaInfo
 from gidapptools.meta_data.meta_paths import MetaPathsFactory, MetaPaths
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
+from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
+from gidapptools.meta_data.meta_print.meta_print_factory import MetaPrintFactory, MetaPrint
+
+from gidapptools.data import ENTRY_POINT_NAME
 
 # REMOVE_BEFORE_BUILDING_DIST
 from gidapptools.utility._debug_tools import dprint
@@ -87,88 +94,101 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion[Constants]
 
-META_FACTORY_TYPE = Union[MetaInfoFactory, MetaPathsFactory]
 
 META_ITEMS_TYPE = Any
 
 
 class AppMeta:
-    factories: dict[str, META_FACTORY_TYPE] = {'meta_info': MetaInfoFactory,
-                                               'meta_paths': MetaPathsFactory}
-
-    default_base_configuration = {}
+    factories: list[AbstractMetaFactory] = [MetaInfoFactory,
+                                            MetaPathsFactory,
+                                            MetaPrintFactory]
+    default_to_initialize = [factory.product_name for factory in factories]
+    default_base_configuration: dict[str, Any] = reduce(or_, (factory.default_configuration for factory in factories))
 
     def __init__(self) -> None:
-        self.meta_info: MetaInfo = None
-        self.meta_paths: MetaPaths = None
-        self.other_items: dict[str, Any] = {}
         self.is_setup = False
+        self.meta_items: dict[str, AbstractMetaItem] = {}
 
     @property
     def all_item_names(self) -> list[str]:
-        all_item_names = ['meta_info', 'meta_paths'] + list(self.other_items.values())
-        return all_item_names
+
+        return list(self.meta_items.keys())
 
     @property
     def all_items(self) -> list[META_ITEMS_TYPE]:
-        return [self.meta_info, self.meta_paths] + list(self.other_items.values())
+        return list(self.meta_items.values())
 
     def check_is_setup(self):
         if self.is_setup is False:
-            raise NotSetupError(f'{self.__class__.__name__!r} has to set up from the base_init_file first!')
+            raise NotSetupError(self)
 
-    @classmethod
-    def set_meta_info_factory(cls, factory) -> None:
-        if not isinstance(factory, AbstractMetaFactory):
-            raise TypeError(f"'factory' needs to be a subclass of {AbstractMetaFactory.__name__!r}")
-        cls.factories['meta_info'] = factory
+    def _get_plugins(self):
+        all_entry_points = entry_points()
+        if ENTRY_POINT_NAME not in all_entry_points:
+            return
+        for plugin in all_entry_points[ENTRY_POINT_NAME]:
+            try:
+                loaded_plugin = plugin.load()
+                loaded_plugin(self)
+            except AttributeError as e:
+                warn(f'plugin could not be loaded because of {e}.', stacklevel=4)
 
-    @classmethod
-    def set_meta_paths_factory(cls, factory) -> None:
-        if not isinstance(factory, AbstractMetaFactory):
-            raise TypeError(f"'factory' needs to be a subclass of {AbstractMetaFactory.__name__!r}")
-        cls.factories['meta_paths'] = factory
+    def register(self, factory: AbstractMetaFactory, name: str = None, default_configuration: dict[str, Any] = None) -> None:
+        if self.is_setup is True:
+            raise RegisterAfterSetupError(f'Unable to register new plug-ins after setting up {self.__class__.__name__!r}.')
+        if not issubclass(factory, AbstractMetaFactory):
+            raise TypeError(f"'factory' needs to be a subclass of {AbstractMetaFactory.__name__!r}.")
+        name = factory.product_name if name is None else name
 
-    @classmethod
-    def register(cls, name: str, factory: object) -> None:
-        cls.factories[name] = factory
+        self.factories.append(factory)
+        default_configuration = {} if default_configuration is None else default_configuration
+        default_configuration = factory.default_configuration | default_configuration
+
+        self.default_base_configuration |= default_configuration
 
     def __getitem__(self, item_name) -> META_ITEMS_TYPE:
         self.check_is_setup()
-        if item_name in {'meta_info', 'meta_paths'}:
-            return getattr(self, item_name)
-
-        _out = self.other_items.get(item_name)
-        if _out is None:
+        _out = self.meta_items.get(item_name, MiscEnum.NOTHING)
+        if _out is MiscEnum.NOTHING:
             raise MetaItemNotFoundError(item_name, self.all_item_names)
         return _out
 
     def get(self, item_name: str = None) -> META_ITEMS_TYPE:
         if item_name is None:
             self.check_is_setup()
-            return {'meta_info': self.meta_info, 'meta_paths': self.meta_paths} | self.other_items.copy()
+            return dict(self.meta_items)
         return self[item_name]
 
-    def __contains__(self, item_name: str) -> bool:
-        return item_name in self.all_item_names
-
-    def _initialize_other_app_meta_items(self, config_kwargs: ConfigKwargs) -> None:
-        other_app_meta_items = config_kwargs.get('other_app_meta_items', [])
-        for other_item_name in other_app_meta_items:
-            if other_item_name not in self.factories:
-                raise NoFactoryFoundError(other_item_name)
-            self.other_items[other_item_name] = self.factories.get(other_item_name).build(config_kwargs=config_kwargs)
+    def __contains__(self, item: Union[str, AbstractMetaItem]) -> bool:
+        if isinstance(item, str):
+            return item in self.all_item_names
+        if isinstance(item, AbstractMetaItem):
+            return item in self.all_items
+        if isinstance(item, AbstractMetaFactory):
+            return item in self.factories
+        return NotImplemented
 
     def _initialize_data(self, config_kwargs: ConfigKwargs) -> None:
-        self.meta_info = self.factories['meta_info'].build(config_kwargs=config_kwargs)
-        self.meta_paths = self.factories['meta_paths'].build(config_kwargs=config_kwargs)
+        factory_map = {factory.product_name: factory for factory in self.factories}
+        for name in config_kwargs.get('to_initialize'):
+            factory = factory_map.get(name, MiscEnum.NOTHING)
+            if factory is MiscEnum.NOTHING:
+                raise NoFactoryFoundError(name)
+            meta_item = factory.build(config_kwargs)
+            self.meta_items[factory.product_name] = meta_item
+            config_kwargs.created_meta_items[factory.product_name] = meta_item
 
-    def setup(self, init_path: general_path_type, **kwargs) -> None:
+    def setup(self, init_path: PATH_TYPE, **kwargs) -> None:
+        self._get_plugins()
         base_configuration = self.default_base_configuration.copy() | {'init_path': init_path}
+        kwargs_to_initialize = kwargs.pop('to_initialize', [])
+        if isinstance(kwargs_to_initialize, str):
+            kwargs_to_initialize = [kwargs_to_initialize]
+        to_initialize = self.default_to_initialize + kwargs_to_initialize + base_configuration.pop('to_initialize', [])
+        base_configuration['to_initialize'] = to_initialize
         config_kwargs = ConfigKwargs(base_configuration=base_configuration, **kwargs)
 
         self._initialize_data(config_kwargs=config_kwargs)
-        self._initialize_other_app_meta_items(config_kwargs=config_kwargs)
 
         self.is_setup = True
 
@@ -180,13 +200,16 @@ class AppMeta:
         """
 
         for item in self.all_items:
-            item.clean_up(**kwargs)
+            try:
+                item.clean_up(**kwargs)
+            except AttributeError:
+                warn(f"Meta-Item {item.name!r} has no Method named 'clean_up'.")
 
 
 app_meta = AppMeta()
 
 
-def setup_meta_data(init_path: general_path_type, **kwargs) -> None:
+def setup_meta_data(init_path: PATH_TYPE, **kwargs) -> None:
     app_meta.setup(init_path=Path(init_path), **kwargs)
 
 
@@ -202,8 +225,17 @@ def get_meta_paths() -> MetaPaths:
     return app_meta['meta_paths']
 
 
+def get_meta_print() -> MetaPrint:
+    return app_meta['meta_print']
+
     # region[Main_Exec]
 if __name__ == '__main__':
-    pass
+
+    from faked_pack_src import call_and_return
+    call_and_return(setup_meta_data)
+    pp = get_meta_print()
+
+    pp.print(app_meta.all_item_names)
+    pp.print(get_meta_paths().as_dict(pretty=True))
 
 # endregion[Main_Exec]

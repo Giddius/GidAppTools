@@ -1,2 +1,2 @@
 from .meta_paths_factory import *
-from .meta_paths_holder import *
+from .meta_paths_item import *

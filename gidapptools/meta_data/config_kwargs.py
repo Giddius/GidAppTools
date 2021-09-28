@@ -14,9 +14,9 @@ import json
 import queue
 import math
 import base64
-import pickle
+
 import random
-import shelve
+
 import dataclasses
 import shutil
 import asyncio
@@ -24,7 +24,7 @@ import logging
 import sqlite3
 import platform
 import importlib
-import subprocess
+
 import unicodedata
 import inspect
 
@@ -54,11 +54,12 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 from collections.abc import MutableMapping, Mapping
 
-from gidapptools.utility import NamedMetaPath, MiscEnum, KwargDict
-
+from gidapptools.utility.enums import NamedMetaPath
+from gidapptools.utility.kwarg_dict import KwargDict
+from gidapptools.general_helper.enums import MiscEnum
 if TYPE_CHECKING:
-    from gidapptools.meta_data.meta_info.meta_info_holder import MetaInfo
-    from gidapptools.meta_data.meta_paths.meta_paths_holder import MetaPaths
+    from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
+    from gidapptools.meta_data.meta_paths.meta_paths_item import MetaPaths
 
     meta_items_type = Union[MetaInfo, MetaPaths, object]
 # endregion[Imports]

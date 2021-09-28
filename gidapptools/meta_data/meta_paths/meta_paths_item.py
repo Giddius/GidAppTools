@@ -14,9 +14,9 @@ import json
 import queue
 import math
 import base64
-import pickle
+
 import random
-import shelve
+
 import dataclasses
 import shutil
 import asyncio
@@ -38,7 +38,7 @@ from pprint import pprint, pformat
 from pathlib import Path
 from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
 from timeit import Timer
-from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO
+from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, NoReturn
 from zipfile import ZipFile, ZIP_LZMA
 from datetime import datetime, timezone, timedelta
 from tempfile import TemporaryDirectory, mkdtemp, gettempdir
@@ -57,11 +57,13 @@ import attr
 import requests
 from yarl import URL
 from tzlocal import get_localzone
-from gidapptools.utility import OperatingSystem, memory_in_use, handle_path, utc_now, PathLibAppDirs, mark_appdir_path, NamedMetaPath
-
-from gidapptools.types import general_path_type
+from gidapptools.utility.enums import OperatingSystem, NamedMetaPath
+from gidapptools.utility.helper import memory_in_use, handle_path, utc_now, PathLibAppDirs, mark_appdir_path, make_pretty
+from gidapptools.general_helper.date_time import DatetimeFmt
+from gidapptools.types import PATH_TYPE
 from appdirs import AppDirs, user_data_dir, user_config_dir, user_cache_dir, user_log_dir
-
+import orjson
+from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 # REMOVE_BEFORE_BUILDING_DIST
 from gidapptools.utility._debug_tools import dprint
 
@@ -88,7 +90,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-class MetaPaths:
+class MetaPaths(AbstractMetaItem):
 
     def __init__(self, code_base_dir: Path, paths: dict[NamedMetaPath, Path]) -> None:
         self.code_base_dir = Path(code_base_dir).resolve()
@@ -131,6 +133,14 @@ class MetaPaths:
     def config_dir(self) -> Path:
         return self.get_path(NamedMetaPath.CONFIG)
 
+    @property
+    def config_spec_dir(self) -> Path:
+        return self.get_path(NamedMetaPath.CONFIG_SPEC)
+
+    @property
+    def db_dir(self) -> Path:
+        return self.get_path(NamedMetaPath.DB)
+
     def get_new_temp_dir(self, suffix: str = None) -> Path:
         temp_dir = Path(mkdtemp(dir=self.temp_dir, suffix=suffix))
         if temp_dir.exists() is False:
@@ -146,8 +156,16 @@ class MetaPaths:
 
     def clean_all_temp(self) -> None:
         while len(self._created_temp_dirs) != 0:
-            temp_dir = self.created_temp_dirs.pop()
+            temp_dir = self._created_temp_dirs.pop()
             shutil.rmtree(temp_dir)
+
+    def as_dict(self, pretty: bool = False) -> dict[str, Any]:
+
+        _out = vars(self)
+        if pretty is True:
+            _out = make_pretty(self)
+
+        return pformat(_out)
 
     def to_storager(self, storager: Callable = None) -> None:
         if storager is None:

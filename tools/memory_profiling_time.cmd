@@ -21,16 +21,42 @@ set _seconds=%_time:~4,2%
 rem ---------------------------------------------------
 
 
-
+SET FULLINPATH=%~1
 set INPATH=%~dp1
 set INFILE=%~nx1
 set INFILEBASE=%~n1
+set _INEXTENSION=%~x1
+SET INEXTENSION=%_INEXTENSION:~1%
+SET CLEANED_FILE_NAME=%INFILEBASE%_%INEXTENSION%
+
+set BASE_OUTPUT_FOLDER=%OLDHOME_FOLDER%reports
+set SUB_OUTPUT_FOLDER=%BASE_OUTPUT_FOLDER%\%CLEANED_FILE_NAME%\memory_profiling
+
+set "_FLAGS=--slope"
+
+SET DECORATOR_HANDLING_SCRIPT=%OLDHOME_FOLDER%temp_modfiy_profile_decorators.py
+
+SET CONVERT_SCRIPT_PATH=%OLDHOME_FOLDER%svg_to_png.py
+
+
+SET FILE_PATH_BASE=%SUB_OUTPUT_FOLDER%\[%_years%-%_months%-%_days%_%_hours%-%_minutes%-%_seconds%]%CLEANED_FILE_NAME%
+SET FILE_PATH_SLOPE=%FILE_PATH_BASE%_SLOPE.svg
+SET FILE_PATH_FLAME=%FILE_PATH_BASE%_FLAME.svg
+
 pushd %INPATH%
-mkdir %INPATH%reports\memory_profiling
+mkdir %SUB_OUTPUT_FOLDER%
+ECHO MODIFYNG FILE %INFILE% WITH DECORATORS
+call %DECORATOR_HANDLING_SCRIPT% %FULLINPATH%
 mprof.exe clean
 mprof.exe run --include-children %~1
-mprof.exe plot --flame
-mprof.exe plot -o %INPATH%reports\memory_profiling\[%_years%-%_months%-%_days%_%_hours%-%_minutes%-%_seconds%]_mem_%INFILEBASE%.svg
+
+mprof.exe plot -o %FILE_PATH_SLOPE% --slope --title "%INFILE% SLOPE" --backend svg
+mprof.exe plot -o %FILE_PATH_FLAME% --flame --title "%INFILE% FLAME" --backend svg
 mprof.exe clean
+ECHO REVERTING MODIFICATIONS IN FILE %INFILE%
+SET REVERSE_PROFILE_MODIFICATION=1
+call %DECORATOR_HANDLING_SCRIPT% 1
+call %CONVERT_SCRIPT_PATH% %FILE_PATH_SLOPE% %FILE_PATH_FLAME%
+
 pushd %OLDHOME_FOLDER%
 

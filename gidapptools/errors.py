@@ -14,9 +14,9 @@ import json
 import queue
 import math
 import base64
-import pickle
+
 import random
-import shelve
+
 import dataclasses
 import shutil
 import asyncio
@@ -38,7 +38,7 @@ from pprint import pprint, pformat
 from pathlib import Path
 from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
 from timeit import Timer
-from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO
+from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, Hashable, Literal
 from zipfile import ZipFile, ZIP_LZMA
 from datetime import datetime, timezone, timedelta
 from tempfile import TemporaryDirectory
@@ -52,7 +52,8 @@ from urllib.parse import urlparse
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
-
+if TYPE_CHECKING:
+    from gidapptools.general_helper.date_time import DateTimeFrame
 
 # endregion[Imports]
 
@@ -79,10 +80,58 @@ class GidAppToolsBaseError(Exception):
     """
 
 
+class DispatchError(GidAppToolsBaseError):
+    ...
+
+# TODO: accept AdvancedDict instance as parameter and show path_taken maybe.
+
+
+class AdvancedDictError(GidAppToolsBaseError):
+    ...
+
+
+class KeyPathError(AdvancedDictError):
+    def __init__(self, missing_key: Hashable, key_path: list[Hashable], last_key: Hashable = None) -> None:
+        self.missing_key = missing_key
+        self.last_key = last_key
+        self.key_path = key_path if self.last_key is None else key_path + [last_key]
+        self.missing_key_pos = self.key_path.index(self.missing_key) + 1
+        self.missing_key_pos_verbose = f"{self.missing_key_pos}."
+        self.message = f"The {self.missing_key_pos_verbose} key {self.missing_key!r} was not found, full key_path: {self.key_path!r}."
+        super().__init__(self.message)
+
+
+class NotMappingError(AdvancedDictError):
+    def __init__(self, key: Hashable, value: Any, key_path: list[Hashable], action: Union[Literal['set'], Literal['get']], last_key: Hashable = None) -> None:
+        self.key = key
+        self.value = value
+        self.value_type = type(value)
+        self.action = action
+        self.last_key = last_key
+        self.key_path = key_path if self.last_key is None else key_path + [last_key]
+        self.key_pos = self.key_path.index(self.key) + 1
+        self.key_pos_verbose = f"{self.key_pos}."
+        self.message = f"Unable to {self.action} {self.key_pos_verbose} {self.key!r} (key_path={self.key_path!r}), because value is not a Mapping but {self.value_type!r}."
+        super().__init__(self.message)
+
+
+class DateTimeFrameTimezoneError(GidAppToolsBaseError):
+    def __init__(self, duration_item: "DateTimeFrame", start_tz: Optional[timezone], end_tz: Optional[timezone], message: str) -> None:
+        self.duration_item = duration_item
+        self.start_tz = start_tz
+        self.end_tz = end_tz
+        self.message = message + f", {start_tz=}, {end_tz=}."
+        super().__init__(self.message)
+
+
 class BaseMetaDataError(GidAppToolsBaseError):
     """
     Base Error for Meta Data Errors.
     """
+
+
+class RegisterAfterSetupError(BaseMetaDataError):
+    ...
 
 
 class MetaItemNotFoundError(BaseMetaDataError):
