@@ -1,10 +1,8 @@
-from typing import Optional, Union, Iterable, Mapping, Any, TYPE_CHECKING, ClassVar
-from warnings import warn
+from typing import ClassVar, Iterable, Union
 from gidapptools.general_helper.deprecation import deprecated_argument
 import attr
 import inflect
 import re
-import os
 from gidapptools.data.conversion_data import NANOSECONDS_IN_SECOND, STRING_FALSE_VALUES, STRING_TRUE_VALUES
 from functools import cached_property, total_ordering
 from gidapptools.general_helper.timing import time_execution, time_func

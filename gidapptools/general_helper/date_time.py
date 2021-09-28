@@ -133,13 +133,6 @@ class DateTimeFrame:
 
 
 if __name__ == '__main__':
-    v = datetime.now(tz=NamedTimezone.get('cst'))
-    w = datetime.now(tz=NamedTimezone.get('LOCaL'))
-    x = get_utc_now()
-    y = datetime.now(tz=NamedTimezone.GMT)
-    z = datetime.now(tz=NamedTimezone.CET)
-    for i in [v, w, x, y, z]:
-
-        print(f"{DatetimeFmt.LOCAL_TZ.strf(i)=}")
+    pass
 
 # endregion[Main_Exec]

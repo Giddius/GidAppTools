@@ -47,12 +47,12 @@ pushd %INPATH%
 mkdir %SUB_OUTPUT_FOLDER%
 ECHO MODIFYNG FILE %INFILE% WITH DECORATORS
 call %DECORATOR_HANDLING_SCRIPT% %FULLINPATH%
-mprof.exe clean
-mprof.exe run --include-children %~1
+call mprof.exe clean
+call mprof.exe run --include-children %~1
 
-mprof.exe plot -o %FILE_PATH_SLOPE% --slope --title "%INFILE% SLOPE" --backend svg
-mprof.exe plot -o %FILE_PATH_FLAME% --flame --title "%INFILE% FLAME" --backend svg
-mprof.exe clean
+call mprof.exe plot -o %FILE_PATH_SLOPE% --slope --title "%INFILE% SLOPE" --backend svg
+call mprof.exe plot -o %FILE_PATH_FLAME% --flame --title "%INFILE% FLAME" --backend svg
+call mprof.exe clean
 ECHO REVERTING MODIFICATIONS IN FILE %INFILE%
 SET REVERSE_PROFILE_MODIFICATION=1
 call %DECORATOR_HANDLING_SCRIPT% 1

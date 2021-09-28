@@ -1,4 +1,4 @@
-from typing import Optional, Union, Iterable, Mapping, Any, TYPE_CHECKING, Callable
+from typing import Callable, Union
 from contextlib import contextmanager
 from time import perf_counter_ns, process_time_ns, time_ns, thread_time_ns
 
@@ -59,3 +59,7 @@ def time_func(time_ns_func: TIME_NS_FUNC_TYPE = perf_counter_ns,
         return func
 
     return _decorator
+
+
+if __name__ == '__main__':
+    pass
