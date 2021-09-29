@@ -48,6 +48,34 @@ class AdvancedDictError(GidAppToolsBaseError):
     ...
 
 
+class GidConfigError(GidAppToolsBaseError):
+    ...
+
+
+class ConfigSpecError(GidConfigError):
+    ...
+
+
+class UnconvertableTypusError(ConfigSpecError):
+    ...
+
+
+class ConversionError(GidConfigError):
+    ...
+
+
+class IniParsingError(GidConfigError):
+    ...
+
+
+class TrailingCommentError(IniParsingError):
+    ...
+
+
+class EmptyConfigTextError(IniParsingError):
+    ...
+
+
 class KeyPathError(AdvancedDictError):
     def __init__(self, missing_key: Hashable, key_path: list[Hashable], last_key: Hashable = None) -> None:
         self.missing_key = missing_key

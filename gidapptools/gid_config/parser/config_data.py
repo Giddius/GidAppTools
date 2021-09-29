@@ -13,7 +13,7 @@ from gidapptools.errors import AdvancedDictError, DispatchError
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_config.enums import SpecialTypus
 from gidapptools.gid_config.parser.tokens import Section, Entry
-
+from gidapptools.errors import ConversionError, UnconvertableTypusError
 if TYPE_CHECKING:
     from gidapptools.gid_config.conversion.conversion_table import ConversionTable
     from gidapptools.gid_config.conversion.spec_data import SpecData
@@ -85,8 +85,8 @@ class ConfigData:
             if _is_retry is False:
                 self.spec_data.reload()
                 return self._convert(key_path=key_path, value=value, typus=typus, _is_retry=True)
-            # TODO: Custom error
-            raise TypeError(typus)
+
+            raise UnconvertableTypusError(typus)
         converter = self.conversion_table.get_converter(typus)
 
         return converter(value)

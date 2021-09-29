@@ -52,19 +52,15 @@ class dispatch_mark:
 
 class BaseDispatchTable:
     DEFAULT = MiscEnum.DEFAULT
-    """
-    [summary]
-
-    [extended_summary]
-    """
+    mark = dispatch_mark
 
     def __init__(self,
                  instance: object = None,
                  auto_collect_prefix: str = None,
-                 extra_dispatch: dict[Hashable, Callable] = None,
+                 extra_dispatch: Mapping[Hashable, Callable] = None,
                  default_value: Callable = None,
                  key_conversion: Union[Mapping, Callable] = None,
-                 aliases: dict[Hashable, Hashable] = None) -> None:
+                 aliases: Mapping[Hashable, Hashable] = None) -> None:
         """
         [summary]
 
@@ -73,9 +69,10 @@ class BaseDispatchTable:
         Args:
             instance (object, optional): [description]. Defaults to None.
             auto_collect_prefix (str, optional): [description]. Defaults to None.
-            extra_dispatch (dict[Hashable, Callable], optional): [description]. Defaults to None.
+            extra_dispatch (Mapping[Hashable, Callable], optional): [description]. Defaults to None.
             default_value (Callable, optional): [description]. Defaults to None.
             key_conversion (Union[Mapping, Callable], optional): [description]. Defaults to None.
+            aliases (Mapping[Hashable, Hashable], optional): [description]. Defaults to None.
         """
         self.instance = instance
         self.auto_collect_prefix = auto_collect_prefix
@@ -105,7 +102,7 @@ class BaseDispatchTable:
             key = self.key_conversion(getattr(meth_obj, dispatch_mark.attribute_name, None))
             if key in self._aliases:
                 raise KeyError(f'An alias cannot be the same as a dispatch key, {key=!r}')
-            if key is dispatch_mark.DEFAULT:
+            if key is dispatch_mark.DEFAULT and self.default_value is None:
                 self.default_value = meth_obj
             if key is not None:
                 collected_data[key] = meth_obj

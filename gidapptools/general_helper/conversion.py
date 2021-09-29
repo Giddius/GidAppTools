@@ -125,8 +125,7 @@ class FileSizeReference:
 
     def get_unit_by_name(self, name: str, case_insensitive: bool = True) -> FileSizeUnit:
         try:
-            with time_execution(name):
-                all_names = [unit for unit in self.units if name in unit.all_names_casefolded]
+            all_names = [unit for unit in self.units if name in unit.all_names_casefolded]
             return all_names[0]
         except IndexError as error:
             if name in self.byte_unit.all_names_casefolded:
@@ -160,7 +159,6 @@ def bytes2human(n: int, annotate: bool = True) -> str:
     return f"{_out} b"
 
 
-@time_func()
 def human2bytes(in_text: str) -> int:
     def _clean_name(name: str) -> str:
         name = name.strip()

@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 import pyparsing as pp
+from pprint import pprint
 import pyparsing.common as ppc
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_config.enums import SpecialTypus
@@ -50,9 +51,13 @@ class IniToken(Token, metaclass=ABCMeta):
 class Comment(Token):
     def __init__(self, content: str) -> None:
         self.content = content.strip()
+        self.comment_indicator: str = '#'
 
     def __str__(self) -> str:
         return self.content
+
+    def as_text(self, **kwargs) -> str:
+        return f"{self.comment_indicator} {self}"
 
 
 class Section(IniToken):
@@ -65,11 +70,17 @@ class Section(IniToken):
     def add_entry(self, entry: "Entry") -> None:
         self.entries[entry.key] = entry
 
+    def __getitem__(self, key: str) -> "Entry":
+        return self.entries[key]
+
     def get(self, key, default=None) -> Any:
         try:
-            return self.entries[key].get_value()
+            return self[key].get_value()
         except KeyError:
             return default
+
+    def __len__(self) -> int:
+        return len(self.entries)
 
     def as_dict(self) -> dict[str, dict[str, str]]:
         data = {self.name: {}}
@@ -77,12 +88,22 @@ class Section(IniToken):
             data[self.name] |= entry.as_dict()
         return data
 
+    def as_text(self, **kwargs) -> str:
+        lines = []
+        lines += [comment.as_text(**kwargs) for comment in self.comments]
+        lines.append(f"[{self.name}]")
+        lines += ['' for i in range(kwargs.get("section_header_newlines", 1))]
+        lines += [entry.as_text(**kwargs) for entry in self.entries.values()]
+        lines += ['' for i in range(kwargs.get("extra_section_newlines", 2))]
+        return '\n'.join(lines)
+
 
 class Entry(IniToken):
 
     def __init__(self, key: str, value: str) -> None:
         self.key = key.strip()
         self.value = value.lstrip()
+        self.key_value_separator = '='
         self.comments = []
 
     def get_value(self) -> Any:
@@ -90,6 +111,12 @@ class Entry(IniToken):
 
     def as_dict(self) -> dict[str, str]:
         return {self.key: self.value}
+
+    def as_text(self, **kwargs) -> str:
+        lines = [comment.as_text() for comment in self.comments]
+        lines.append(f"{self.key} {self.key_value_separator} {self.get_value()}")
+        lines += ['' for i in range(kwargs.get("extra_entry_newlines", 0))]
+        return '\n'.join(lines)
 
 
 class TokenFactory:
