@@ -158,6 +158,13 @@ def make_pretty(inst) -> dict:
     return _make_pretty(vars(inst))
 
 
+def get_qualname_or_name(in_object: Any) -> str:
+    try:
+        return in_object.__qualname__
+    except AttributeError:
+        return in_object.__name__
+
+
 # region[Main_Exec]
 if __name__ == '__main__':
     a = PathLibAppDirs(appauthor='giddi', appname='check_appdir')
