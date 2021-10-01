@@ -71,6 +71,22 @@ def set_by_key_path(the_dict: dict, key_path: list[str], value: Any, *, create_i
     the_dict[last_key] = value
 
 
+def multiple_dict_get(key: Hashable, *dictionaries, final_default: Any = None) -> Any:
+    for _dict in dictionaries:
+        value = _dict.get(key, MiscEnum.NOT_FOUND)
+        if value is not MiscEnum.NOT_FOUND:
+            return value
+    return final_default
+
+
+def multiple_dict_pop(key: Hashable, *dictionaries, final_default: Any = None) -> Any:
+    for _dict in dictionaries:
+        value = _dict.pop(key, MiscEnum.NOT_FOUND)
+        if value is not MiscEnum.NOT_FOUND:
+            return value
+    return final_default
+
+
 RAW_KEYPATH_TYPE = Union[list[str], str, Hashable]
 MODDIFIED_KEYPATH_TYPE = list[Hashable]
 

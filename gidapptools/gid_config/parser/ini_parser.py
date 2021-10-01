@@ -17,7 +17,6 @@ import pyparsing as pp
 import pyparsing.common as ppc
 from gidapptools.gid_config.parser.tokens import Section, Entry, Comment, TokenFactory, Token
 from gidapptools.gid_config.parser.grammar import BaseIniGrammar
-from gidapptools.gid_config.parser.config_data import ConfigData
 from gidapptools.errors import TrailingCommentError, EmptyConfigTextError
 # endregion[Imports]
 

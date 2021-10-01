@@ -24,6 +24,7 @@ from hashlib import blake2b
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.general_helper.mixins.file_mixin import FileMixin
 from gidapptools.types import PATH_TYPE
+from gidapptools.gid_signal.interface import get_signal
 # endregion[Imports]
 
 # region [TODO]
@@ -230,26 +231,35 @@ class SpecData(AdvancedDict):
                           "sub_argument_separator": kwarg_dict.pop("sub_argument_separator", None)}
         return self.default_visitor_class(**visitor_kwargs)
 
-    def get_converter(self, key_path: Union[list[str], str]) -> EntryTypus:
-        return self[key_path]['converter']
+    def _get_section_default(self, section_name: str) -> EntryTypus:
+        return self[[section_name, '__default__']]
 
-    def _resolve_converter(self) -> None:
+    def get_entry_typus(self, section_name: str, entry_key: str) -> EntryTypus:
+        try:
+            return self[[section_name, entry_key]]
+        except KeyPathError as error:
+            try:
+                return self._get_section_default(section_name=section_name)
+            except KeyPathError:
+                raise error
+
+    def _resolve_values(self) -> None:
         self.modify_with_visitor(self.visitor)
 
     def reload(self) -> None:
         self.visitor.reload()
-        self._resolve_converter()
+        self._resolve_values()
 
 
-class SpecDataFile(FileMixin, SpecData):
+class SpecFile(FileMixin, SpecData):
     def __init__(self, file_path: PATH_TYPE, visitor: SpecVisitor = None, **kwargs) -> None:
         super().__init__(visitor=visitor, file_path=file_path, ** kwargs)
-        self._data = {}
+        self._data = None
         self.spec_name = self.file_path.stem.casefold()
 
     @property
     def data(self) -> dict:
-        if self.has_changed is True:
+        if self._data is None or self.has_changed is True:
             self.load()
         return self._data
 

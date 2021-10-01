@@ -81,10 +81,10 @@ class Signal(AbstractSignal):
             return
         for target in self.targets:
             name = get_qualname_or_name(target)
-            info = self.targets_info.get()
+            info = self.targets_info.get(name)
 
             if info.get('is_coroutine') is True:
-                task_name = f"{self.name}-Signal_{name}"
+                task_name = f"{str(self.key)}-Signal_{name}"
                 asyncio.create_task(target(*args, **kwargs), name=task_name)
             else:
                 target(*args, **kwargs)
@@ -96,7 +96,7 @@ class Signal(AbstractSignal):
         for target in self.targets:
             name = get_qualname_or_name(target)
             info = self.targets_info.get(name)
-            task_name = f"{self.name}-Signal_{name}"
+            task_name = f"{str(self.key)}-Signal_{name}"
             if info.get('is_coroutine') is False:
                 task = asyncio.to_thread(target, *args, **kwargs)
             else:

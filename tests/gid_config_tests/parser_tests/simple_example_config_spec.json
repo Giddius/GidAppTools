@@ -1,0 +1,9 @@
+{
+    "debug": { "current_testing_channel": "string" },
+    "general_settings": {
+        "cogs_location": "string",
+        "main_folder_name": "string",
+        "owner_ids": "list(integer)"
+    },
+    "this": { "something": "string", "that": "string" }
+}

@@ -6,14 +6,20 @@ Soon.
 
 # region [Imports]
 
-
+from enum import Enum
 from pathlib import Path
-from typing import Any, TYPE_CHECKING, Union
-from gidapptools.errors import AdvancedDictError, DispatchError
+from typing import Any, Literal, Mapping, Union
+from hashlib import blake2b
+from gidapptools.gid_config.parser.ini_parser import BaseIniParser
+from threading import Lock
+from pathlib import Path
+from typing import Any, TYPE_CHECKING, Union, Optional
+from gidapptools.errors import AdvancedDictError, DispatchError, SectionMissingError, EntryMissingError
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_config.enums import SpecialTypus
 from gidapptools.gid_config.parser.tokens import Section, Entry
 from gidapptools.errors import ConversionError, UnconvertableTypusError
+from gidapptools.general_helper.mixins.file_mixin import FileMixin
 if TYPE_CHECKING:
     from gidapptools.gid_config.conversion.conversion_table import ConversionTable
     from gidapptools.gid_config.conversion.spec_data import SpecData
@@ -37,80 +43,112 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
 class ConfigData:
-    AUTO = SpecialTypus.AUTO
-    RAW = SpecialTypus.RAW
 
-    def __init__(self,
-                 conversion_table: "ConversionTable",
-                 spec_data: "SpecData" = None,
-                 default_auto_convert: bool = True,
+    def __init__(self) -> None:
+        self._sections: dict[str, Section] = None
 
-                 default_if_section_missing: bool = True,
-                 empty_is_missing: bool = False) -> None:
-        self.conversion_table = conversion_table
-        self.spec_data = spec_data
-        self.sections: dict[str, Section] = {}
-        self.default_auto_convert = SpecialTypus.AUTO if default_auto_convert is None else SpecialTypus.RAW
+    @property
+    def sections(self) -> dict[str, Section]:
+        if self._sections is None:
+            self._sections = {}
+        return self._sections
 
-        self.default_if_section_missing = default_if_section_missing
-        self.empty_is_missing = empty_is_missing
+    @property
+    def all_sections(self) -> tuple[Section]:
+        return tuple(self.sections.values())
 
-    def add_section(self, section) -> None:
-        self.sections[section.name] = section
+    @property
+    def all_section_names(self) -> tuple[str]:
+        return tuple(self.sections)
 
-    def _get_section(self, section_name: str) -> Union[Section, MiscEnum]:
+    def get_section(self, section_name: str, create_missing_section: bool = False) -> Section:
         try:
             return self.sections[section_name]
         except KeyError as error:
-            if self.default_if_section_missing is True:
-                return MiscEnum.NOT_FOUND
-            raise
+            if create_missing_section is False:
+                raise SectionMissingError(section_name=section_name, config_data=self) from error
+            section = Section(section_name)
+            self.add_section(section=section)
+            return section
 
-    def _get_value(self, section: Section, key: str) -> Union[Section, MiscEnum]:
-        if section is MiscEnum.NOT_FOUND:
-            return MiscEnum.NOT_FOUND
+    def add_section(self, section) -> None:
+        self._sections[section.name] = section
 
-        value = section.get(key, MiscEnum.NOT_FOUND)
-        if self.empty_is_missing is True and value in {'', None, [], {}}:
-            value = MiscEnum.NOT_FOUND
-        return MiscEnum.NOT_FOUND
-
-    def _convert(self, key_path: list[str], value, typus: Union[SpecialTypus, type], *, _is_retry: bool = False) -> Any:
-        if typus is SpecialTypus.RAW:
-            return value
-
-        if typus is SpecialTypus.AUTO:
-            typus = self.spec_data.get_converter(key_path)
-        if typus is SpecialTypus.DELAYED:
-            if _is_retry is False:
-                self.spec_data.reload()
-                return self._convert(key_path=key_path, value=value, typus=typus, _is_retry=True)
-
-            raise UnconvertableTypusError(typus)
-        converter = self.conversion_table.get_converter(typus)
-
-        return converter(value)
-
-    def get(self, section_name: str, key: str, typus: Union[SpecialTypus, type] = None, default: Any = None) -> Any:
-        typus = self.default_auto_convert if typus is None else typus
-        section = self._get_section(section_name)
-        if section is MiscEnum.NOT_FOUND:
-            return default
-        value = self._get_value(section=section, key=key)
-
-        if value is MiscEnum.NOT_FOUND:
-            return default
-
-        if typus is SpecialTypus.RAW:
-            return value
+    def remove_section(self, section_name: str, missing_ok: bool = False) -> None:
         try:
-            return self._convert([section_name, key], value, typus)
-        except (KeyError, AdvancedDictError, DispatchError):
-            return default
+            del self._sections[section_name]
+        except KeyError as error:
+            if missing_ok is False:
+                raise SectionMissingError(section_name=section_name, config_data=self) from error
 
-    def clear_sections(self) -> None:
-        self.sections = {}
+    def clear_all_sections(self) -> None:
+        self._sections = None
 
+    def get_entry(self, section_name: str, entry_key: str) -> Entry:
+        section = self.get_section(section_name=section_name)
+        try:
+            return section[entry_key]
+        except KeyError as error:
+            raise EntryMissingError(section_name=section_name, entry_key=entry_key, config_data=self) from error
+
+    def add_entry(self, section_name: str, entry: Entry, create_missing_section: bool = False) -> None:
+        section = self.get_section(section_name=section_name, create_missing_section=create_missing_section)
+        section.add_entry(entry=entry)
+
+    def remove_entry(self, section_name: str, entry_key: str, missing_ok: bool = False) -> None:
+        try:
+            section = self.get_section(section_name=section_name)
+        except SectionMissingError:
+            if missing_ok is False:
+                raise
+            return
+
+        try:
+            del section[entry_key]
+        except KeyError as error:
+            if missing_ok is False:
+                raise EntryMissingError(section_name=section_name, entry_key=entry_key, config_data=self) from error
+            return
+
+    def clear_entries(self, section_name: str, missing_ok: bool = False):
+        try:
+            section = self.get_section(section_name=section_name)
+        except SectionMissingError:
+            if missing_ok is False:
+                raise
+            return
+        section.entries = {}
+
+    def reload(self) -> None:
+        pass
+
+    def as_dict(self) -> dict[str, dict[str, Any]]:
+        _out = {}
+        for section in self.sections.values():
+            _out |= section.as_dict()
+        return _out
+
+
+class ConfigFile(FileMixin, ConfigData):
+
+    def __init__(self,
+                 file_path: Path,
+                 parser: BaseIniParser = None,
+                 changed_parameter: Union[Literal['size'], Literal['file_hash']] = 'size') -> None:
+
+        self.parser: BaseIniParser = BaseIniParser() if parser is None else parser
+        super().__init__(file_path=file_path, changed_parameter=changed_parameter)
+
+    @property
+    def sections(self) -> dict[str, Section]:
+        if self._sections is None or self.has_changed is True:
+            self.reload()
+        return self._sections
+
+    def reload(self) -> None:
+        content = self.read()
+        self._sections = {section.name: section for section in self.parser.parse(content)}
+        self.changed_signal.emit(self)
 # region[Main_Exec]
 
 

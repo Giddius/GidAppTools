@@ -8,7 +8,7 @@ Soon.
 
 
 from pathlib import Path
-from typing import Any, Callable, Union, Hashable, Mapping
+from typing import Any, Callable, Union, Hashable, Mapping, TYPE_CHECKING
 from datetime import datetime, timezone
 from yarl import URL
 from gidapptools.general_helper.dispatch_table import BaseDispatchTable
@@ -20,6 +20,8 @@ from gidapptools.gid_config.conversion.entry_typus_item import EntryTypus
 from gidapptools.general_helper.conversion import str_to_bool
 from functools import partial
 from gidapptools.general_helper.timing import time_func
+
+from gidapptools.gid_config.parser.tokens import Entry
 # endregion[Imports]
 
 # region [TODO]
@@ -72,14 +74,11 @@ class ConfigValueConversionTable(BaseDispatchTable):
         string_value = str(value)
         return str_to_bool(string_value)
 
-    @time_func()
     @BaseDispatchTable.mark(list)
     def _list(self, value: str, **named_arguments) -> list[Any]:
         subtypus = named_arguments.get('subtypus')
 
-        converter = self.get(subtypus)
-
-        return [converter(item.strip(), **named_arguments) for item in value.split(',') if item]
+        return [self.convert(entry=item.strip(), typus=subtypus) for item in value.split(',') if item]
 
     @BaseDispatchTable.mark(datetime)
     def _datetime(self, value: str, **named_arguments) -> datetime:
@@ -108,6 +107,26 @@ class ConfigValueConversionTable(BaseDispatchTable):
     @BaseDispatchTable.mark(URL)
     def _url(self, value: str, **named_arguments) -> URL:
         return URL(value)
+
+    def _convert_by_type(self, entry: "Entry", typus: type) -> Any:
+        converter = self.get(typus)
+        value = entry.value if isinstance(entry, Entry) else entry
+        return converter(value=value)
+
+    def _convert_by_entry_typus(self, entry: "Entry", typus: EntryTypus) -> Any:
+        converter = self.get(typus.base_typus)
+        value = entry.value if isinstance(entry, Entry) else entry
+        return converter(value=value, **typus.named_arguments)
+
+    def convert(self, entry: "Entry", typus: Union[type, EntryTypus]) -> Any:
+        if not isinstance(typus, EntryTypus):
+            return self._convert_by_type(entry=entry, typus=typus)
+
+        return self._convert_by_entry_typus(entry=entry, typus=typus)
+
+    def __call__(self, entry: "Entry", typus: Union[type, EntryTypus]) -> Any:
+
+        return self.convert(entry=entry, typus=typus)
 
     def get_converter(self, typus: Union[type, EntryTypus]) -> Callable:
         if not isinstance(typus, EntryTypus):

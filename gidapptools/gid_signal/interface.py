@@ -77,11 +77,11 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-def get_signal(name: str, klass: Optional["AbstractSignal"] = None) -> "AbstractSignal":
+def get_signal(key: Hashable, klass: Optional["AbstractSignal"] = None) -> "AbstractSignal":
     klass = Signal if klass is None else klass
-    signal = signal_registry.get(name, None)
+    signal = signal_registry.get(key, None)
     if signal is None:
-        signal = klass(name=name)
+        signal = klass(key=key)
         signal_registry.register(signal)
 
     return signal

@@ -12,7 +12,7 @@ from typing import Any, Hashable, Literal, Optional, TYPE_CHECKING, Union
 from datetime import timezone
 if TYPE_CHECKING:
     from gidapptools.general_helper.date_time import DateTimeFrame
-
+    from gidapptools.gid_config.parser.config_data import ConfigData
 # endregion[Imports]
 
 # region [TODO]
@@ -52,6 +52,24 @@ class GidConfigError(GidAppToolsBaseError):
     ...
 
 
+class SectionMissingError(GidConfigError):
+
+    def __init__(self, section_name: str, config_data: "ConfigData") -> None:
+        self.section_name = section_name
+        self.config_data = config_data
+        self.message = f"No Section named {self.section_name!r} in config_data {self.config_data}."
+        super().__init__(self.message)
+
+
+class EntryMissingError(GidConfigError):
+    def __init__(self, section_name: str, entry_key: str, config_data: "ConfigData") -> None:
+        self.section_name = section_name
+        self.entry_key = entry_key
+        self.config_data = config_data
+        self.message = f"No Entry with key {self.entry_key!r} in Section named {self.section_name!r} in config_data {self.config_data}."
+        super().__init__(self.message)
+
+
 class ConfigSpecError(GidConfigError):
     ...
 
@@ -61,6 +79,10 @@ class UnconvertableTypusError(ConfigSpecError):
 
 
 class ConversionError(GidConfigError):
+    ...
+
+
+class MissingTypusOrSpecError(GidConfigError):
     ...
 
 

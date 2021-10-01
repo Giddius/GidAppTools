@@ -59,7 +59,10 @@ class BaseIniGrammar:
                   "value": {"exclude": value_exclusion_chars,
                             "extra": value_extra_chars}}
 
-    def __init__(self, key_value_separator: str = '=', comment_indicator: str = '#', token_factory: TokenFactory = None) -> None:
+    def __init__(self,
+                 key_value_separator: str = '=',
+                 comment_indicator: str = '#',
+                 token_factory: TokenFactory = None) -> None:
         self.token_factory = TokenFactory() if token_factory is None else token_factory
         self.raw_key_value_separator = key_value_separator
         self.key_value_separator = pp.Suppress(self.raw_key_value_separator)

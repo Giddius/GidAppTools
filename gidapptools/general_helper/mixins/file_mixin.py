@@ -19,6 +19,7 @@ from hashlib import blake2b, md5, sha256, sha3_512, blake2s
 from gidapptools.general_helper.timing import time_func
 from gidapptools.general_helper.conversion import human2bytes, bytes2human
 from gidapptools.types import PATH_TYPE
+from gidapptools.gid_signal.interface import get_signal
 # endregion[Imports]
 
 # region [TODO]
@@ -62,17 +63,17 @@ class FileMixin(os.PathLike):
         NEVER = "never"
         ALL = "all"
 
-    def __init__(self, *args, **kwargs) -> None:
-        self.file_path = Path(kwargs.pop("file_path"))
+    def __init__(self, file_path: Path, changed_parameter: str = None, **kwargs) -> None:
+        self.file_path = Path(file_path)
         self.name = self.file_path.name.casefold()
-        changed_parameter = kwargs.pop("changed_parameter", None)
         self.changed_parameter = self.ChangeParameter.SIZE if changed_parameter is None else self.ChangeParameter(changed_parameter)
         self.read_mode: READ_TYPE = 'r'
         self.write_mode: WRITE_TYPE = 'w'
         self.last_size: int = None
         self.last_file_hash: str = None
         self.last_changed_time: int = None
-        super().__init__(*args, **kwargs)
+        self.changed_signal = get_signal(key=self.file_path)
+        super().__init__(**kwargs)
 
     def set_changed_parameter(self, changed_parameter: Union["ChangeParameter", str]) -> None:
         if isinstance(changed_parameter, self.ChangeParameter):
@@ -131,7 +132,10 @@ class FileMixin(os.PathLike):
                   self.ChangeParameter.ALL: on_all,
                   self.ChangeParameter.ALWAYS: on_always,
                   self.ChangeParameter.NEVER: on_never}
-        return checks[self.changed_parameter]()
+        result = checks[self.changed_parameter]()
+        if result is True:
+            self.changed_signal.emit(self)
+        return result
 
     def _update_changed_data(self) -> None:
 

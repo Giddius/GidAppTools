@@ -45,11 +45,11 @@ THIS_FILE_DIR = Path(os.path.dirname(__file__)).absolute()
 class SignalRegistry(WeakValueDictionary):
 
     def register(self, signal: "AbstractSignal"):
-        name = signal.name
-        self[name] = signal
+        key = signal.key
+        self[key] = signal
 
     def unregister(self, signal: Union[str, "AbstractSignal"]):
-        signal_key = signal if isinstance(signal, str) else signal.name
+        signal_key = signal.key if isinstance(signal, AbstractSignal) else signal
         self.pop(signal_key)
 
     def get(self, key: str, default=None) -> "AbstractSignal":

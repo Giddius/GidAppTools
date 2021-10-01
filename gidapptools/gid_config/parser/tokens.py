@@ -16,6 +16,8 @@ from pprint import pprint
 import pyparsing.common as ppc
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_config.enums import SpecialTypus
+from weakref import proxy, ProxyType
+from gidapptools.errors import SectionMissingError, EntryMissingError
 # endregion[Imports]
 
 # region [TODO]
@@ -68,7 +70,11 @@ class Section(IniToken):
         self.entries = {}
 
     def add_entry(self, entry: "Entry") -> None:
+        entry.section = proxy(self)
         self.entries[entry.key] = entry
+
+    def remove_entry(self, entry_key: str) -> None:
+        del self.entries[entry_key]
 
     def __getitem__(self, key: str) -> "Entry":
         return self.entries[key]
@@ -105,6 +111,7 @@ class Entry(IniToken):
         self.value = value.lstrip()
         self.key_value_separator = '='
         self.comments = []
+        self.section: ProxyType[Section] = None
 
     def get_value(self) -> Any:
         return self.value

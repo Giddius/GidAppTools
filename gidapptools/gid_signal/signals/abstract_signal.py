@@ -78,7 +78,8 @@ class AdaptableWeakSet(WeakSet):
     def add(self, item) -> None:
         if self._pending_removals:
             self._commit_removals()
-        if inspect.ismethod(item):
+
+        elif inspect.ismethod(item):
             ref_item = WeakMethod(item, self._remove)
         else:
             ref_item = ref(item, self._remove)
@@ -90,8 +91,8 @@ class AdaptableWeakSet(WeakSet):
 
 class AbstractSignal(ABC):
 
-    def __init__(self, name: str, allow_sync_targets: bool = True, allow_async_target: bool = True) -> None:
-        self.name = name
+    def __init__(self, key: Hashable, allow_sync_targets: bool = True, allow_async_target: bool = True) -> None:
+        self.key = key
         self.allow_sync_targets = allow_sync_targets
         self.allow_async_targets = allow_async_target
         if self.allow_async_targets is False and self.allow_async_targets is False:
@@ -105,6 +106,8 @@ class AbstractSignal(ABC):
         self.targets_info[name] = info
 
     def _verify(self, target: Callable) -> None:
+        if inspect.isbuiltin(target):
+            raise TypeError('cannot weakreference built_ins.')
         target_is_coroutine = asyncio.iscoroutine(target)
         if target_is_coroutine is True and self.allow_async_targets is False:
             raise TypeError('Signal is set to only allow SYNC targets.')
@@ -130,10 +133,10 @@ class AbstractSignal(ABC):
         ...
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(name={self.name!r})"
+        return f"{self.__class__.__name__}(key={self.key!r})"
 
     def __str__(self):
-        return f"{self.__class__.__name__}-{self.name}(targets={self.targets!r})"
+        return f"{self.__class__.__name__}-{self.key}(targets={self.targets!r})"
 
 
 # region[Main_Exec]
