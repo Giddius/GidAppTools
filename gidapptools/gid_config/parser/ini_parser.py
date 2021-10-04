@@ -55,13 +55,12 @@ class BaseIniParser:
     inline_comment_regex_pattern = r"(?<=\w)[ \t]*{comment_indicator}[ \t\w]+"
 
     def __init__(self,
-                 grammar_class: BaseIniGrammar = None,
+                 grammar_class: BaseIniGrammar = BaseIniGrammar,
                  token_factory: TokenFactory = None,
                  key_value_separator: str = '=',
                  comment_indicator: str = '#',
                  remove_all_comments: bool = False) -> None:
 
-        grammar_class = BaseIniGrammar if grammar_class is None else grammar_class
         self.comment_indicator = comment_indicator
         self.key_value_separator = key_value_separator
         self.grammar_item = grammar_class(key_value_separator=self.key_value_separator, comment_indicator=self.comment_indicator, token_factory=token_factory)

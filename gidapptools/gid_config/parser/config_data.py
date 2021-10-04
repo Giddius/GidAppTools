@@ -14,7 +14,7 @@ from gidapptools.gid_config.parser.ini_parser import BaseIniParser
 from threading import Lock
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, Union, Optional
-from gidapptools.errors import AdvancedDictError, DispatchError, SectionMissingError, EntryMissingError
+from gidapptools.errors import AdvancedDictError, DispatchError, SectionMissingError, EntryMissingError, SectionExistsError
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_config.enums import SpecialTypus
 from gidapptools.gid_config.parser.tokens import Section, Entry
@@ -72,6 +72,8 @@ class ConfigData:
             return section
 
     def add_section(self, section) -> None:
+        if section.name in self._sections:
+            raise SectionExistsError(f"Section {section.name!r} already exists.")
         self._sections[section.name] = section
 
     def remove_section(self, section_name: str, missing_ok: bool = False) -> None:
@@ -84,8 +86,8 @@ class ConfigData:
     def clear_all_sections(self) -> None:
         self._sections = None
 
-    def get_entry(self, section_name: str, entry_key: str) -> Entry:
-        section = self.get_section(section_name=section_name)
+    def get_entry(self, section_name: str, entry_key: str, create_missing_section: bool = False) -> Entry:
+        section = self.get_section(section_name=section_name, create_missing_section=create_missing_section)
         try:
             return section[entry_key]
         except KeyError as error:
@@ -94,6 +96,14 @@ class ConfigData:
     def add_entry(self, section_name: str, entry: Entry, create_missing_section: bool = False) -> None:
         section = self.get_section(section_name=section_name, create_missing_section=create_missing_section)
         section.add_entry(entry=entry)
+
+    def set_value(self, section_name: str, entry_key: str, entry_value: str, create_missing_section: bool = False):
+        try:
+            entry = self.get_entry(section_name=section_name, entry_key=entry_key, create_missing_section=create_missing_section)
+            entry.value = entry_value
+        except EntryMissingError:
+            entry = Entry(entry_key, entry_value)
+            self.add_entry(section_name=section_name, entry=entry, create_missing_section=create_missing_section)
 
     def remove_entry(self, section_name: str, entry_key: str, missing_ok: bool = False) -> None:
         try:
@@ -122,7 +132,7 @@ class ConfigData:
     def reload(self) -> None:
         pass
 
-    def as_dict(self) -> dict[str, dict[str, Any]]:
+    def as_raw_dict(self) -> dict[str, dict[str, Any]]:
         _out = {}
         for section in self.sections.values():
             _out |= section.as_dict()
@@ -133,11 +143,11 @@ class ConfigFile(FileMixin, ConfigData):
 
     def __init__(self,
                  file_path: Path,
-                 parser: BaseIniParser = None,
-                 changed_parameter: Union[Literal['size'], Literal['file_hash']] = 'size') -> None:
+                 parser: BaseIniParser,
+                 changed_parameter: Union[Literal['size'], Literal['file_hash']] = 'size', **kwargs) -> None:
 
-        self.parser: BaseIniParser = BaseIniParser() if parser is None else parser
-        super().__init__(file_path=file_path, changed_parameter=changed_parameter)
+        self.parser = parser
+        super().__init__(file_path=file_path, changed_parameter=changed_parameter, **kwargs)
 
     @property
     def sections(self) -> dict[str, Section]:
@@ -146,9 +156,20 @@ class ConfigFile(FileMixin, ConfigData):
         return self._sections
 
     def reload(self) -> None:
+        self.load()
+
+    def load(self) -> None:
         content = self.read()
         self._sections = {section.name: section for section in self.parser.parse(content)}
         self.changed_signal.emit(self)
+
+    def set_value(self, section_name: str, entry_key: str, entry_value: str, create_missing_section: bool = False):
+        super().set_value(section_name, entry_key, entry_value, create_missing_section=create_missing_section)
+        self.save()
+
+    def save(self) -> None:
+        data = '\n\n'.join(section.as_text() for section in self.all_sections)
+        self.write(data)
 # region[Main_Exec]
 
 

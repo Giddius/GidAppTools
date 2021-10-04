@@ -25,7 +25,7 @@ from gidapptools.meta_data.meta_paths import MetaPathsFactory, MetaPaths
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 from gidapptools.meta_data.meta_print.meta_print_factory import MetaPrintFactory, MetaPrint
-
+import inspect
 from gidapptools.data import ENTRY_POINT_NAME
 
 # REMOVE_BEFORE_BUILDING_DIST
@@ -61,12 +61,14 @@ class AppMeta:
     factories: list[AbstractMetaFactory] = [MetaInfoFactory,
                                             MetaPathsFactory,
                                             MetaPrintFactory]
+    plugin_data: list[dict[str, Any]] = []
     default_to_initialize = [factory.product_name for factory in factories]
     default_base_configuration: dict[str, Any] = reduce(or_, (factory.default_configuration for factory in factories))
 
     def __init__(self) -> None:
         self.is_setup = False
         self.meta_items: dict[str, AbstractMetaItem] = {}
+        self._get_plugins()
 
     @property
     def all_item_names(self) -> list[str]:
@@ -92,18 +94,24 @@ class AppMeta:
             except AttributeError as e:
                 warn(f'plugin could not be loaded because of {e}.', stacklevel=4)
 
-    def register(self, factory: AbstractMetaFactory, name: str = None, default_configuration: dict[str, Any] = None) -> None:
+    def add_plugin_data(self, factory: AbstractMetaFactory) -> None:
+        plugin_dict = {"product_name": factory.product_name,
+                       "file": Path(inspect.getfile(factory)).resolve().as_posix(),
+                       "module": inspect.getmodule(factory).__name__}
+        self.plugin_data.append(plugin_dict)
+
+    def register(self, factory: AbstractMetaFactory, default_configuration: dict[str, Any] = None) -> None:
         if self.is_setup is True:
             raise RegisterAfterSetupError(f'Unable to register new plug-ins after setting up {self.__class__.__name__!r}.')
         if not issubclass(factory, AbstractMetaFactory):
             raise TypeError(f"'factory' needs to be a subclass of {AbstractMetaFactory.__name__!r}.")
-        name = factory.product_name if name is None else name
 
         self.factories.append(factory)
         default_configuration = {} if default_configuration is None else default_configuration
         default_configuration = factory.default_configuration | default_configuration
 
         self.default_base_configuration |= default_configuration
+        self.add_plugin_data(factory=factory)
 
     def __getitem__(self, item_name) -> META_ITEMS_TYPE:
         self.check_is_setup()

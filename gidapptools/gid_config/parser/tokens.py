@@ -9,7 +9,9 @@ Soon.
 
 from abc import ABCMeta
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
+from yarl import URL
+from datetime import datetime, timezone
 
 import pyparsing as pp
 from pprint import pprint
@@ -58,7 +60,7 @@ class Comment(Token):
     def __str__(self) -> str:
         return self.content
 
-    def as_text(self, **kwargs) -> str:
+    def as_text(self) -> str:
         return f"{self.comment_indicator} {self}"
 
 
@@ -94,13 +96,16 @@ class Section(IniToken):
             data[self.name] |= entry.as_dict()
         return data
 
-    def as_text(self, **kwargs) -> str:
+    def as_text(self,
+                section_header_newlines: int = 1,
+                extra_section_newlines: int = 2,
+                extra_entry_newlines: int = 0) -> str:
         lines = []
-        lines += [comment.as_text(**kwargs) for comment in self.comments]
+        lines += [comment.as_text() for comment in self.comments]
         lines.append(f"[{self.name}]")
-        lines += ['' for i in range(kwargs.get("section_header_newlines", 1))]
-        lines += [entry.as_text(**kwargs) for entry in self.entries.values()]
-        lines += ['' for i in range(kwargs.get("extra_section_newlines", 2))]
+        lines += ['' for i in range(section_header_newlines)]
+        lines += [entry.as_text(extra_entry_newlines=extra_entry_newlines) for entry in self.entries.values()]
+        lines += ['' for i in range(extra_section_newlines)]
         return '\n'.join(lines)
 
 
@@ -113,16 +118,13 @@ class Entry(IniToken):
         self.comments = []
         self.section: ProxyType[Section] = None
 
-    def get_value(self) -> Any:
-        return self.value
-
     def as_dict(self) -> dict[str, str]:
         return {self.key: self.value}
 
-    def as_text(self, **kwargs) -> str:
+    def as_text(self, extra_entry_newlines: int = 0) -> str:
         lines = [comment.as_text() for comment in self.comments]
-        lines.append(f"{self.key} {self.key_value_separator} {self.get_value()}")
-        lines += ['' for i in range(kwargs.get("extra_entry_newlines", 0))]
+        lines.append(f"{self.key} {self.key_value_separator} {self.value}")
+        lines += ['' for i in range(extra_entry_newlines)]
         return '\n'.join(lines)
 
 
@@ -140,10 +142,9 @@ class TokenFactory:
         token_class = self.token_map[name]
         return token_class(*tokens)
 
-# region[Main_Exec]
 
+# region[Main_Exec]
 
 if __name__ == '__main__':
     pass
-
 # endregion[Main_Exec]

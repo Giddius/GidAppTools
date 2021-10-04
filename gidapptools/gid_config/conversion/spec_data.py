@@ -12,11 +12,11 @@ import json
 
 
 from pathlib import Path
-from typing import Any, Callable, Hashable, Union
+from typing import Any, Callable, Hashable, Union, Literal
 from datetime import datetime
 from threading import Lock
 from yarl import URL
-from gidapptools.general_helper.dict_helper import AdvancedDict, AdvancedDictError, KeyPathError, BaseVisitor
+from gidapptools.general_helper.dict_helper import AdvancedDict, AdvancedDictError, KeyPathError, BaseVisitor, set_by_key_path
 from gidapptools.gid_config.conversion.conversion_table import EntryTypus
 from gidapptools.general_helper.general import defaultable_list_pop
 from gidapptools.general_helper.conversion import str_to_bool
@@ -51,6 +51,19 @@ class SpecVisitor(BaseVisitor):
         super().__init__(extra_handlers=extra_handlers, default_handler=default_handler)
         self.sub_argument_separator = sub_argument_separator
 
+    def visit(self, in_dict: Union["AdvancedDict", dict], key_path: tuple[str], value: Any) -> None:
+
+        key_path = tuple(key_path)
+        value_key = self._modify_value(value)
+
+        handler = self.handlers.get(key_path, self.handlers.get(value_key, self.default_handler))
+        if handler is None:
+            return
+        if isinstance(in_dict, AdvancedDict):
+            in_dict.set(key_path, handler(value, self._get_sub_arguments(value)))
+        else:
+            set_by_key_path(in_dict, key_path, handler(value, self._get_sub_arguments(value)))
+
     def _modify_value(self, value: Any) -> Any:
         value = super()._modify_value(value)
         try:
@@ -64,7 +77,7 @@ class SpecVisitor(BaseVisitor):
         return self.handlers.get(value, self._handle_string)
 
     def _get_sub_arguments(self, value: str, default: list[Any] = None) -> list[Any]:
-
+        default = [] if default is None else default
         try:
             match = self.sub_argument_regex.match(value)
             sub_arguments_string = match.groupdict().get("sub_arguments", default)
@@ -74,8 +87,12 @@ class SpecVisitor(BaseVisitor):
             return sub_arguments
         except AttributeError:
             return default
+        except TypeError:
+            print(f"{value=}")
+            print(f"{type(value)=}")
+            raise
 
-    def _handle_default(self, value: Any) -> EntryTypus:
+    def _handle_default(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
         """
         handles all values that other handlers, can't or that raised an error while dispatching to handlers.
 
@@ -89,7 +106,7 @@ class SpecVisitor(BaseVisitor):
         """
         return EntryTypus(original_value=value)
 
-    def _handle_boolean(self, value: Any) -> EntryTypus:
+    def _handle_boolean(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -102,7 +119,7 @@ class SpecVisitor(BaseVisitor):
 
         return EntryTypus(original_value=value, base_typus=bool, other_arguments=self._get_sub_arguments(value, None))
 
-    def _handle_string(self, value: Any) -> EntryTypus:
+    def _handle_string(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -112,9 +129,9 @@ class SpecVisitor(BaseVisitor):
         Returns:
             EntryTypus: [description]
         """
-        return EntryTypus(original_value=value, base_typus=str, other_arguments=self._get_sub_arguments(value, None))
+        return EntryTypus(original_value=value, base_typus=str, other_arguments=sub_arguments)
 
-    def _handle_integer(self, value: Any) -> EntryTypus:
+    def _handle_integer(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -124,9 +141,9 @@ class SpecVisitor(BaseVisitor):
         Returns:
             EntryTypus: [description]
         """
-        return EntryTypus(original_value=value, base_typus=int, other_arguments=self._get_sub_arguments(value, None))
+        return EntryTypus(original_value=value, base_typus=int, other_arguments=sub_arguments)
 
-    def _handle_float(self, value: Any) -> EntryTypus:
+    def _handle_float(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -136,9 +153,9 @@ class SpecVisitor(BaseVisitor):
         Returns:
             EntryTypus: [description]
         """
-        return EntryTypus(original_value=value, base_typus=float, other_arguments=self._get_sub_arguments(value, None))
+        return EntryTypus(original_value=value, base_typus=float, other_arguments=sub_arguments)
 
-    def _handle_bytes(self, value: Any) -> EntryTypus:
+    def _handle_bytes(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -148,9 +165,9 @@ class SpecVisitor(BaseVisitor):
         Returns:
             EntryTypus: [description]
         """
-        return EntryTypus(original_value=value, base_typus=bytes, other_arguments=self._get_sub_arguments(value, None))
+        return EntryTypus(original_value=value, base_typus=bytes, other_arguments=sub_arguments)
 
-    def _handle_list(self, value: Any) -> EntryTypus:
+    def _handle_list(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
         """
         Converts the value to `list` with optional sub_type (eg: `list[int]`).
 
@@ -163,48 +180,29 @@ class SpecVisitor(BaseVisitor):
             EntryTypus: [description]
         """
 
-        sub_arguments = self._get_sub_arguments(value)
-
         subtypus_string = defaultable_list_pop(sub_arguments, 0, "string")
 
         handler = self._get_handler_direct(subtypus_string)
 
-        subtypus = handler(subtypus_string)
+        subtypus = handler(subtypus_string, [])
         return EntryTypus(original_value=value, base_typus=list, named_arguments={"subtypus": subtypus}, other_arguments=sub_arguments)
 
-    def _handle_datetime(self, value: Any) -> EntryTypus:
+    def _handle_datetime(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
         """
         [summary]
 
         NAMED_VALUE_ARGUMENTS:
-            fmt: The format to use with `datetime.strptime`, if it is "isoformat" then `datetime.fromisoformat` will be used and if it is `timestamp` then `datetime.fromtimestamp`, defaults to "isoformat"
-            time_zone: The timezone to provide to datetime, defaults to: "utc"
+            None
         Args:
             value (Any): [description]
 
         Returns:
             EntryTypus: [description]
         """
-        sub_arguments = self._get_sub_arguments(value)
-        fmt = defaultable_list_pop(sub_arguments, 0, "isoformat")
-        time_zone = defaultable_list_pop(sub_arguments, 0, "utc")
-        return EntryTypus(original_value=value, base_typus=datetime, named_arguments={'fmt': fmt, 'tz': time_zone}, other_arguments=sub_arguments)
 
-    def _handle_path(self, value: Any) -> EntryTypus:
-        """
-        NAMED_VALUE_ARGUMENTS:
-            resolve: if the path should be auto-resolved or not.
-        Args:
-            value (Any): [description]
+        return EntryTypus(original_value=value, base_typus=datetime, other_arguments=sub_arguments)
 
-        Returns:
-            EntryTypus: [description]
-        """
-        sub_arguments = self._get_sub_arguments(value)
-        resolve = defaultable_list_pop(sub_arguments, 0, 'true')
-        return EntryTypus(original_value=value, base_typus=Path, named_arguments={'resolve': resolve}, other_arguments=sub_arguments)
-
-    def _handle_url(self, value: Any) -> EntryTypus:
+    def _handle_path(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -214,25 +212,33 @@ class SpecVisitor(BaseVisitor):
         Returns:
             EntryTypus: [description]
         """
-        sub_arguments = self._get_sub_arguments(value)
+
+        return EntryTypus(original_value=value, base_typus=Path, other_arguments=sub_arguments)
+
+    def _handle_url(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
+        """
+        NAMED_VALUE_ARGUMENTS:
+            None
+        Args:
+            value (Any): [description]
+
+        Returns:
+            EntryTypus: [description]
+        """
+
         return EntryTypus(original_value=value, base_typus=URL, other_arguments=sub_arguments)
 
 
 class SpecData(AdvancedDict):
     default_visitor_class = SpecVisitor
 
-    def __init__(self, data: dict = None, visitor: SpecVisitor = None, **kwargs) -> None:
-        self.visitor = self._make_default_visitor(kwarg_dict=kwargs) if visitor is None else visitor
-        super().__init__(data=data, **kwargs)
-
-    def _make_default_visitor(self, kwarg_dict: dict[str, Any]) -> SpecVisitor:
-        visitor_kwargs = {"extra_handlers": kwarg_dict.pop('extra_handlers', None),
-                          "default_handler": kwarg_dict.pop('default_handler', None),
-                          "sub_argument_separator": kwarg_dict.pop("sub_argument_separator", None)}
-        return self.default_visitor_class(**visitor_kwargs)
+    def __init__(self, visitor: SpecVisitor, **kwargs) -> None:
+        self.visitor = visitor
+        super().__init__(data=None, **kwargs)
 
     def _get_section_default(self, section_name: str) -> EntryTypus:
-        return self[[section_name, '__default__']]
+
+        return self.get([section_name, '__default__'], str)
 
     def get_entry_typus(self, section_name: str, entry_key: str) -> EntryTypus:
         try:
@@ -243,6 +249,11 @@ class SpecData(AdvancedDict):
             except KeyPathError:
                 raise error
 
+    def set_typus_value(self, section_name: str, entry_key: str, typus_value: str) -> None:
+        if section_name not in self:
+            self[section_name] = {}
+        self[section_name][entry_key] = typus_value
+
     def _resolve_values(self) -> None:
         self.modify_with_visitor(self.visitor)
 
@@ -252,8 +263,8 @@ class SpecData(AdvancedDict):
 
 
 class SpecFile(FileMixin, SpecData):
-    def __init__(self, file_path: PATH_TYPE, visitor: SpecVisitor = None, **kwargs) -> None:
-        super().__init__(visitor=visitor, file_path=file_path, ** kwargs)
+    def __init__(self, file_path: PATH_TYPE, visitor: SpecVisitor, changed_parameter: Union[Literal['size'], Literal['file_hash']] = 'size', **kwargs) -> None:
+        super().__init__(visitor=visitor, file_path=file_path, changed_parameter=changed_parameter, ** kwargs)
         self._data = None
         self.spec_name = self.file_path.stem.casefold()
 
@@ -263,10 +274,20 @@ class SpecFile(FileMixin, SpecData):
             self.load()
         return self._data
 
+    def reload(self) -> None:
+        self.load()
+
     def load(self) -> None:
         self._data = json.loads(self.read())
-        self.reload()
+        super().reload()
 
+    def save(self) -> None:
+        json_data = json.dumps(self.data, indent=4, sort_keys=False, default=lambda x: x.convert_for_json())
+        self.write(json_data)
+
+    def set_typus_value(self, section_name: str, entry_key: str, typus_value: str) -> None:
+        super().set_typus_value(section_name=section_name, entry_key=entry_key, typus_value=typus_value)
+        self.save()
 
 # class SpecDataFile(SpecData):
 
@@ -351,7 +372,6 @@ class SpecFile(FileMixin, SpecData):
 
 
 # region[Main_Exec]
-
 
 if __name__ == '__main__':
     pass

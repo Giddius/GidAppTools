@@ -18,13 +18,15 @@ dependencies = [
     "pytz",
     "inflect",
     "orjson",
-    "pyparsing==3.0.0rc1"
+    "pyparsing==3.0.0rc1",
+    "click"
 ]
 
 [project.urls]
 Source = "https://github.com/Giddius/GidAppTools"
 
 [project.scripts]
+appmeta = "gidapptools.__main__:appmeta_cli"
 
 [project.optional-dependencies]
 

@@ -18,7 +18,9 @@ SIMPLE_INI_CONFIG_W_TRAILING_COMMENT = THIS_FILE_DIR.joinpath("simple_example_co
                                                       (SIMPLE_INI_CONFIG_FILE.read_text(encoding='utf-8'), SIMPLE_INI_CONFIG_STRIPED_INLINE_COMMENTS_FILE.read_text(encoding='utf-8'))])
 def test_preprocess_comments_inline(in_text: str, expected_result: str):
     parser = BaseIniParser()
-    assert parser._preprocess_comments(in_text) == expected_result
+    check = '\n'.join([line for line in parser._preprocess_comments(in_text).splitlines() if line.strip()])
+    result = '\n'.join([line for line in expected_result.splitlines() if line.strip()])
+    assert check == result
 
 
 @pytest.mark.parametrize('in_text, expected_result', [("blah blah # something", "blah blah"),
@@ -27,7 +29,9 @@ def test_preprocess_comments_inline(in_text: str, expected_result: str):
                                                       (SIMPLE_INI_CONFIG_FILE.read_text(encoding='utf-8'), SIMPLE_INI_CONFIG_STRIPED_ALL_COMMENTS_FILE.read_text(encoding='utf-8'))])
 def test_preprocess_comments_all(in_text: str, expected_result: str):
     parser = BaseIniParser(remove_all_comments=True)
-    assert parser._preprocess_comments(in_text) == expected_result
+    check = [line for line in parser._preprocess_comments(in_text).splitlines() if line]
+    result = [line for line in expected_result.splitlines() if line]
+    assert check == result
 
 
 @pytest.mark.parametrize('in_text, resulting_exception', [("", EmptyConfigTextError),
@@ -44,7 +48,7 @@ def test_ini_parser_parse(config_file: Path):
     parser = BaseIniParser()
     text = config_file.read_text()
     data = parser.parse(text)
-    assert len(data) == 3
+    assert len(data) == 4
     assert isinstance(data, list) is True
     assert all(isinstance(item, Section) for item in data)
 

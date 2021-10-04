@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from gidapptools.gid_config.conversion.spec_data import SpecDataFile, AdvancedDict, AdvancedDictError, EntryTypus
+from gidapptools.gid_config.conversion.spec_data import SpecFile, AdvancedDict, AdvancedDictError, EntryTypus, SpecVisitor
 from pprint import pprint
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
@@ -9,16 +9,16 @@ simple_spec_file = THIS_FILE_DIR.joinpath("example_spec_file.json")
 
 
 def test_spec_data_file_init():
-    spec = SpecDataFile(simple_spec_file)
+    spec = SpecFile(simple_spec_file, visitor=SpecVisitor())
     assert spec.spec_name == "example_spec_file"
 
 
 def test_load():
-    spec = SpecDataFile(simple_spec_file)
-    assert spec._data == {}
+    spec = SpecFile(simple_spec_file, visitor=SpecVisitor())
+    assert spec._data == None
     assert spec.last_size is None
     spec.load()
-    assert spec.data != {}
+    assert spec.data != None
     assert spec.last_size is not None
     assert set(spec.data) == {"first_section", "second_section", "third_section"}
     assert isinstance(spec['first_section']['first_key'], EntryTypus)

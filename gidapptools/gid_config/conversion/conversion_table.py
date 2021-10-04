@@ -46,67 +46,119 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 #     ...
 
 
+class ValueEncoder:
+
+    def __init__(self, datetime_fmt: str = "isoformat") -> None:
+        self.datetime_fmt = datetime_fmt
+
+    def _encode_list(self, value: list) -> str:
+        return ', '.join(self.encode(item) for item in value)
+
+    def _encode_datetime(self, value: datetime) -> str:
+        if hasattr(value, self.datetime_fmt):
+            return self.encode(getattr(value, self.datetime_fmt)())
+        else:
+            return value.strftime(self.datetime_fmt)
+
+    def _encode_path(self, value: Path) -> str:
+        return value.as_posix()
+
+    def _encode_url(self, value: URL) -> str:
+        return value.human_repr()
+
+    def encode(self, value: Any) -> str:
+        if isinstance(value, str):
+            return value
+        sub_encoder = {int: str,
+                       float: str,
+                       bool: str,
+                       list: self._encode_list,
+                       datetime: self._encode_datetime,
+                       Path: self._encode_path,
+                       URL: self._encode_url}
+        for path_subclass in Path.__subclasses__():
+            sub_encoder[path_subclass] = self._encode_path
+
+        return sub_encoder.get(type(value), str)(value)
+
+    def __call__(self, value: Any) -> str:
+        return self.encode(value=value)
+
+
 class ConfigValueConversionTable(BaseDispatchTable):
 
-    def __init__(self, instance: object = None, extra_dispatch: Mapping[Hashable, Callable] = None, default_value: Callable = None) -> None:
-        super().__init__(instance=instance, extra_dispatch=extra_dispatch, default_value=default_value)
+    def __init__(self, extra_dispatch: Mapping[Hashable, Callable] = None) -> None:
+        super().__init__(extra_dispatch=extra_dispatch)
 
     # pylint: disable=no-self-use
     # pylint: disable=unused-argument
     @BaseDispatchTable.mark(MiscEnum.DEFAULT)
-    def _default(self, value: str, **named_arguments) -> str:
-        return value
+    def _default(self, value: str, mode: str = 'decode', **named_arguments) -> str:
+        if mode == "decode":
+            return value
+        elif mode == "encode":
+            return value
 
     @BaseDispatchTable.mark(str)
-    def _string(self, value: str, **named_arguments) -> str:
-        return str(value)
+    def _string(self, value: str, mode: str = 'decode', **named_arguments) -> str:
+        if mode == "decode":
+            return str(value)
+        elif mode == "encode":
+            return value
 
     @BaseDispatchTable.mark(int)
-    def _integer(self, value: str, **named_arguments) -> int:
-        return int(value)
+    def _integer(self, value: str, mode: str = 'decode', **named_arguments) -> int:
+        if mode == "decode":
+            return int(value)
+        elif mode == "encode":
+            str(value)
 
     @BaseDispatchTable.mark(float)
-    def _float(self, value: str, **named_arguments) -> float:
-        return float(value)
+    def _float(self, value: str, mode: str = 'decode', **named_arguments) -> float:
+        if mode == "decode":
+            return float(value)
+        elif mode == "encode":
+            return str(value)
 
     @BaseDispatchTable.mark(bool)
-    def _boolean(self, value: str, **named_arguments) -> bool:
-        string_value = str(value)
-        return str_to_bool(string_value)
+    def _boolean(self, value: str, mode: str = 'decode', **named_arguments) -> bool:
+        if mode == "decode":
+            string_value = str(value)
+            return str_to_bool(string_value)
+        elif mode == "encode":
+            return str(value)
 
     @BaseDispatchTable.mark(list)
-    def _list(self, value: str, **named_arguments) -> list[Any]:
-        subtypus = named_arguments.get('subtypus')
+    def _list(self, value: str, mode: str = 'decode', **named_arguments) -> list[Any]:
+        if mode == "decode":
+            subtypus = named_arguments.get('subtypus')
 
-        return [self.convert(entry=item.strip(), typus=subtypus) for item in value.split(',') if item]
+            return [self.convert(entry=item.strip(), typus=subtypus) for item in value.split(',') if item]
+        elif mode == "encode":
+            return ', '.join(self.encode(item) for item in value)
 
     @BaseDispatchTable.mark(datetime)
-    def _datetime(self, value: str, **named_arguments) -> datetime:
-        fmt = named_arguments.get('fmt')
-        time_zone = named_arguments.get('tz')
-        # TODO: NEEDS TO CHANGE TO BE ABLE TO PARSE MORE FORMATS
-        time_zone = timezone.utc if time_zone == 'utc' else time_zone
-        if hasattr(datetime, fmt):
-            try:
-                value = getattr(datetime, fmt)(value, tz=time_zone)
-            except TypeError:
-                value = getattr(datetime, fmt)(value)
-        else:
-            value = datetime.strptime(value, fmt)
-        if value.tzinfo is not time_zone:
-            value = value.replace(tzinfo=time_zone)
-        return value
+    def _datetime(self, value: str, mode: str = 'decode', **named_arguments) -> datetime:
+        if mode == "decode":
+            return datetime.fromisoformat(value)
+        elif mode == "encode":
+            return value.isoformat()
 
-    @BaseDispatchTable.mark(Path)
-    def _path(self, value: str, **named_arguments) -> Path:
-        path = Path(value)
-        if named_arguments.get("resolve") is True:
-            path = path.resolve()
-        return path
+    @BaseDispatchTable.mark(Path, aliases=Path.__subclasses__())
+    def _path(self, value: str, mode: str = 'decode', **named_arguments) -> Path:
+        if mode == "decode":
+            path = Path(value)
+
+            return path
+        elif mode == "encode":
+            return value.as_posix()
 
     @BaseDispatchTable.mark(URL)
-    def _url(self, value: str, **named_arguments) -> URL:
-        return URL(value)
+    def _url(self, value: str, mode: str = 'decode', **named_arguments) -> URL:
+        if mode == "decode":
+            return URL(value)
+        elif mode == "encode":
+            return value.human_repr()
 
     def _convert_by_type(self, entry: "Entry", typus: type) -> Any:
         converter = self.get(typus)
@@ -117,6 +169,10 @@ class ConfigValueConversionTable(BaseDispatchTable):
         converter = self.get(typus.base_typus)
         value = entry.value if isinstance(entry, Entry) else entry
         return converter(value=value, **typus.named_arguments)
+
+    def encode(self, value: Any) -> str:
+        converter = self.get_converter(type(value))
+        return converter(value, mode="encode")
 
     def convert(self, entry: "Entry", typus: Union[type, EntryTypus]) -> Any:
         if not isinstance(typus, EntryTypus):

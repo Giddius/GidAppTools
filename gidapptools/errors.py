@@ -52,6 +52,10 @@ class GidConfigError(GidAppToolsBaseError):
     ...
 
 
+class SectionExistsError(GidConfigError):
+    ...
+
+
 class SectionMissingError(GidConfigError):
 
     def __init__(self, section_name: str, config_data: "ConfigData") -> None:

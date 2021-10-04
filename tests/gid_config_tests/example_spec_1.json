@@ -5,7 +5,8 @@
     "general_settings": {
         "cogs_location": "string",
         "main_folder_name": "string",
-        "owner_ids": "list(integer)"
+        "owner_ids": "list(integer)",
+        "__default__": "integer"
     },
     "this": {
         "something": "string",

@@ -189,13 +189,16 @@ class FileMixin(os.PathLike):
             with self.file_path.open(**self._write_kwargs) as f:
                 f.write(data)
 
-    def __getattr__(self, name: str) -> Any:
-        if hasattr(self.file_path, name):
-            return getattr(self.file_path, name)
-        return super().__getattr__(name)
+    # def __getattr__(self, name: str) -> Any:
+    #     if hasattr(self.file_path, name):
+    #         return getattr(self.file_path, name)
+    #     return super().__getattr__(name)
 
     def __fspath__(self) -> str:
         return str(self.file_path)
+
+    def __str__(self) -> str:
+        return self.__fspath__()
 # region[Main_Exec]
 
 
