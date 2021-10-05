@@ -146,6 +146,7 @@ class AppMeta:
             config_kwargs.created_meta_items[factory.product_name] = meta_item
 
     def setup(self, init_path: PATH_TYPE, **kwargs) -> None:
+
         self._get_plugins()
         base_configuration = self.default_base_configuration.copy() | {'init_path': init_path}
         kwargs_to_initialize = kwargs.pop('to_initialize', [])
@@ -197,6 +198,7 @@ def get_meta_print() -> MetaPrint:
 
     # region[Main_Exec]
 if __name__ == '__main__':
-    pass
+    from faked_pack_src import call_and_return
+    call_and_return(setup_meta_data)
 
 # endregion[Main_Exec]

@@ -26,7 +26,7 @@ from gidapptools.gid_config.conversion.conversion_table import ConfigValueConver
 from gidapptools.gid_config.parser.ini_parser import BaseIniParser
 from gidapptools.gid_config.parser.tokens import Entry, Section
 from gidapptools.general_helper.timing import time_func
-from gidapptools.errors import MissingTypusOrSpecError
+from gidapptools.errors import MissingTypusOrSpecError, SectionExistsError
 
 from gidapptools.gid_config.parser.grammar import BaseIniGrammar, TokenFactory
 # endregion[Imports]
@@ -55,6 +55,7 @@ class GidIniConfig:
 
     def __init__(self,
                  config_file: ConfigFile,
+                 config_file_auto_write: bool = True,
                  spec_file: Optional[SpecFile] = None,
                  converter: ConfigValueConversionTable = None,
                  empty_is_missing: bool = True,
@@ -64,7 +65,7 @@ class GidIniConfig:
 
         self.parser = self.default_parser if parser is None else parser
         self.spec_visitor = self.default_spec_visitor if spec_visitor is None else spec_visitor
-        self.config = ConfigFile(file_path=config_file, parser=self.parser, changed_parameter=file_changed_parameter)
+        self.config = ConfigFile(file_path=config_file, parser=self.parser, changed_parameter=file_changed_parameter, auto_write=config_file_auto_write)
         self.spec = SpecFile(file_path=spec_file, visitor=self.spec_visitor, changed_parameter=file_changed_parameter) if spec_file is not None else None
         self.converter = self.default_converter if converter is None else converter
         self.empty_is_missing = empty_is_missing
@@ -95,6 +96,7 @@ class GidIniConfig:
             if self.spec is None:
                 raise MissingTypusOrSpecError("You have to provide a typus if no spec file has been set in the __init__.")
             typus = self.spec.get_entry_typus(section_name=section_name, entry_key=entry_key)
+
         return self.converter(entry=entry, typus=typus)
 
     def set(self, section_name: str, entry_key: str, entry_value: Any, create_missing_section: bool = False, spec_typus: str = None) -> None:
@@ -102,8 +104,15 @@ class GidIniConfig:
         if spec_typus is not None:
             self.spec.set_typus_value(section_name=section_name, entry_key=entry_key, typus_value=spec_typus)
 
-    def add_section(self, section_name: str) -> None:
-        self.config.add_section(section=Section(section_name))
+    def clear_section(self, section_name: str, missing_ok: bool = True) -> None:
+        self.config.clear_entries(section_name=section_name, missing_ok=missing_ok)
+
+    def remove_section(self, section_name: str, missing_ok: bool = True) -> None:
+        self.config.remove_section(section_name=section_name, missing_ok=missing_ok)
+
+    def add_section(self, section_name: str, existing_ok: bool = True) -> None:
+
+        self.config.add_section(section=Section(section_name), existing_ok=existing_ok)
 
     def add_spec_value_handler(self, target_name: str, handler: Callable[[Any, list[Any]], EntryTypus]) -> None:
         self.spec_visitor.add_handler(target_name=target_name, handler=handler)
@@ -127,4 +136,7 @@ class GidIniConfig:
 # region[Main_Exec]
 if __name__ == '__main__':
     pass
+    # x = GidIniConfig(config_file=Path(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\tests\gid_config_tests\example_config_1.ini"),
+    #                  spec_file=Path(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\tests\gid_config_tests\example_spec_1.json"))
+    # x.reload()
 # endregion[Main_Exec]

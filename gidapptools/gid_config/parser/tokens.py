@@ -6,7 +6,7 @@ Soon.
 
 # region [Imports]
 
-
+import os
 from abc import ABCMeta
 from pathlib import Path
 from typing import Any, Callable
@@ -107,6 +107,17 @@ class Section(IniToken):
         lines += [entry.as_text(extra_entry_newlines=extra_entry_newlines) for entry in self.entries.values()]
         lines += ['' for i in range(extra_section_newlines)]
         return '\n'.join(lines)
+
+
+class EnvSection(Section):
+    # pylint: disable=super-init-not-called
+    def __init__(self) -> None:
+        self.name = "ENV"
+        self.comments = None
+
+    @property
+    def entries(self) -> dict[str, "Entry"]:
+        return {key: Entry(key, value) for key, value in os.environ.items()}
 
 
 class Entry(IniToken):

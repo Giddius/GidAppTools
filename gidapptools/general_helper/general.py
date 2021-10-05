@@ -36,7 +36,6 @@ def defaultable_list_pop(in_list: list, idx: int, default: Any = None) -> Any:
     try:
         return in_list.pop(idx)
     except IndexError:
-        print(f"{default=}")
         return default
 
 # region[Main_Exec]

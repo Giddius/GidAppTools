@@ -1,4 +1,5 @@
 {
+    "ENV": { "__default__": "string", "PATH": "list(path,;)" },
     "debug": {
         "current_testing_channel": "string"
     },

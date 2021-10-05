@@ -132,8 +132,8 @@ class ConfigValueConversionTable(BaseDispatchTable):
     def _list(self, value: str, mode: str = 'decode', **named_arguments) -> list[Any]:
         if mode == "decode":
             subtypus = named_arguments.get('subtypus')
-
-            return [self.convert(entry=item.strip(), typus=subtypus) for item in value.split(',') if item]
+            split_char = named_arguments.get('split_char', ',')
+            return [self.convert(entry=item.strip(), typus=subtypus) for item in value.split(split_char) if item]
         elif mode == "encode":
             return ', '.join(self.encode(item) for item in value)
 

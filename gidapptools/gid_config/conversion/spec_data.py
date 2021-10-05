@@ -87,10 +87,6 @@ class SpecVisitor(BaseVisitor):
             return sub_arguments
         except AttributeError:
             return default
-        except TypeError:
-            print(f"{value=}")
-            print(f"{type(value)=}")
-            raise
 
     def _handle_default(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
         """
@@ -181,11 +177,11 @@ class SpecVisitor(BaseVisitor):
         """
 
         subtypus_string = defaultable_list_pop(sub_arguments, 0, "string")
-
+        split_char = defaultable_list_pop(sub_arguments, 0, ",")
         handler = self._get_handler_direct(subtypus_string)
 
         subtypus = handler(subtypus_string, [])
-        return EntryTypus(original_value=value, base_typus=list, named_arguments={"subtypus": subtypus}, other_arguments=sub_arguments)
+        return EntryTypus(original_value=value, base_typus=list, named_arguments={"subtypus": subtypus, "split_char": split_char}, other_arguments=sub_arguments)
 
     def _handle_datetime(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
         """
