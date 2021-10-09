@@ -23,8 +23,10 @@ from gidapptools.general_helper.conversion import str_to_bool
 from hashlib import blake2b
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.general_helper.mixins.file_mixin import FileMixin
+from gidapptools.general_helper.string_helper import split_quotes_aware
 from gidapptools.types import PATH_TYPE
 from gidapptools.gid_signal.interface import get_signal
+from icecream import ic
 # endregion[Imports]
 
 # region [TODO]
@@ -45,7 +47,8 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
 class SpecVisitor(BaseVisitor):
-    sub_argument_regex = re.compile(r"(?P<base_type>\w+)\(((?P<sub_arguments>.*)\))?")
+    argument_regex = re.compile(r"(?P<base_type>\w+)\(((?P<sub_arguments>.*)\))?")
+    sub_arguments_regex = re.compile(r"(?P<name>\w+)\s*\=\s*(?P<value>.*)")
 
     def __init__(self, extra_handlers: dict[Hashable, Callable] = None, default_handler: Callable = None, sub_argument_separator: str = ',') -> None:
         super().__init__(extra_handlers=extra_handlers, default_handler=default_handler)
@@ -67,7 +70,7 @@ class SpecVisitor(BaseVisitor):
     def _modify_value(self, value: Any) -> Any:
         value = super()._modify_value(value)
         try:
-            value = self.sub_argument_regex.sub(r"\g<base_type>", value)
+            value = self.argument_regex.sub(r"\g<base_type>", value)
         except (AttributeError, TypeError):
             pass
 
@@ -76,19 +79,31 @@ class SpecVisitor(BaseVisitor):
     def _get_handler_direct(self, value: str) -> Callable:
         return self.handlers.get(value, self._handle_string)
 
-    def _get_sub_arguments(self, value: str, default: list[Any] = None) -> list[Any]:
-        default = [] if default is None else default
+    def _get_sub_arguments(self, value: str, default: dict[str:str] = None) -> dict[str:str]:
+
+        def _get_key_value_from_part(in_part: str) -> dict[str, str]:
+            sub_match = self.sub_arguments_regex.match(in_part)
+            name = sub_match.group('name')
+            value = sub_match.group('value')
+            return {name.strip(): value.strip().strip('"' + "'").strip()}
+
+        default = {} if default is None else default
         try:
-            match = self.sub_argument_regex.match(value)
+            match = self.argument_regex.match(value)
             sub_arguments_string = match.groupdict().get("sub_arguments", default)
-            sub_arguments = [i.strip() for i in sub_arguments_string.split(self.sub_argument_separator) if i]
+            sub_arguments = {}
+            for part in split_quotes_aware(sub_arguments_string, quote_chars="'", strip_parts=True):
+                try:
+                    sub_arguments |= _get_key_value_from_part(part)
+                except AttributeError:
+                    continue
             if not sub_arguments:
                 return default
             return sub_arguments
         except AttributeError:
             return default
 
-    def _handle_default(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
+    def _handle_default(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
         """
         handles all values that other handlers, can't or that raised an error while dispatching to handlers.
 
@@ -102,7 +117,7 @@ class SpecVisitor(BaseVisitor):
         """
         return EntryTypus(original_value=value)
 
-    def _handle_boolean(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
+    def _handle_boolean(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -115,7 +130,7 @@ class SpecVisitor(BaseVisitor):
 
         return EntryTypus(original_value=value, base_typus=bool, other_arguments=self._get_sub_arguments(value, None))
 
-    def _handle_string(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
+    def _handle_string(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -125,9 +140,9 @@ class SpecVisitor(BaseVisitor):
         Returns:
             EntryTypus: [description]
         """
-        return EntryTypus(original_value=value, base_typus=str, other_arguments=sub_arguments)
+        return EntryTypus(original_value=value, base_typus=str)
 
-    def _handle_integer(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
+    def _handle_integer(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -137,9 +152,9 @@ class SpecVisitor(BaseVisitor):
         Returns:
             EntryTypus: [description]
         """
-        return EntryTypus(original_value=value, base_typus=int, other_arguments=sub_arguments)
+        return EntryTypus(original_value=value, base_typus=int)
 
-    def _handle_float(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
+    def _handle_float(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -149,9 +164,9 @@ class SpecVisitor(BaseVisitor):
         Returns:
             EntryTypus: [description]
         """
-        return EntryTypus(original_value=value, base_typus=float, other_arguments=sub_arguments)
+        return EntryTypus(original_value=value, base_typus=float)
 
-    def _handle_bytes(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
+    def _handle_bytes(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -161,9 +176,9 @@ class SpecVisitor(BaseVisitor):
         Returns:
             EntryTypus: [description]
         """
-        return EntryTypus(original_value=value, base_typus=bytes, other_arguments=sub_arguments)
+        return EntryTypus(original_value=value, base_typus=bytes)
 
-    def _handle_list(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
+    def _handle_list(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
         """
         Converts the value to `list` with optional sub_type (eg: `list[int]`).
 
@@ -175,15 +190,20 @@ class SpecVisitor(BaseVisitor):
         Returns:
             EntryTypus: [description]
         """
+        def _process_subtypus(in_sub_arguments: dict[str, str]) -> None:
+            subtypus_string = sub_arguments.pop('sub_typus', 'string')
+            subtypus = self._get_handler_direct(subtypus_string)(subtypus_string, {})
+            in_sub_arguments['sub_typus'] = subtypus
 
-        subtypus_string = defaultable_list_pop(sub_arguments, 0, "string")
-        split_char = defaultable_list_pop(sub_arguments, 0, ",")
-        handler = self._get_handler_direct(subtypus_string)
+        def _process_split_char(in_sub_arguments: dict[str, str]) -> None:
+            if "split_char" not in in_sub_arguments:
+                in_sub_arguments["split_char"] = ','
+        _process_subtypus(sub_arguments)
+        _process_split_char(sub_arguments)
+        ic(sub_arguments)
+        return EntryTypus(original_value=value, base_typus=list, named_arguments=sub_arguments)
 
-        subtypus = handler(subtypus_string, [])
-        return EntryTypus(original_value=value, base_typus=list, named_arguments={"subtypus": subtypus, "split_char": split_char}, other_arguments=sub_arguments)
-
-    def _handle_datetime(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
+    def _handle_datetime(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
         """
         [summary]
 
@@ -196,9 +216,9 @@ class SpecVisitor(BaseVisitor):
             EntryTypus: [description]
         """
 
-        return EntryTypus(original_value=value, base_typus=datetime, other_arguments=sub_arguments)
+        return EntryTypus(original_value=value, base_typus=datetime)
 
-    def _handle_path(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
+    def _handle_path(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -209,9 +229,9 @@ class SpecVisitor(BaseVisitor):
             EntryTypus: [description]
         """
 
-        return EntryTypus(original_value=value, base_typus=Path, other_arguments=sub_arguments)
+        return EntryTypus(original_value=value, base_typus=Path)
 
-    def _handle_url(self, value: Any, sub_arguments: list[Any]) -> EntryTypus:
+    def _handle_url(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -222,7 +242,7 @@ class SpecVisitor(BaseVisitor):
             EntryTypus: [description]
         """
 
-        return EntryTypus(original_value=value, base_typus=URL, other_arguments=sub_arguments)
+        return EntryTypus(original_value=value, base_typus=URL)
 
 
 class SpecData(AdvancedDict):

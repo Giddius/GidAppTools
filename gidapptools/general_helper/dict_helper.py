@@ -15,7 +15,7 @@ import inspect
 from pathlib import Path
 from typing import Any, Callable, Generator, Hashable, Iterable, Mapping, Optional, Union
 from collections import UserDict, defaultdict, namedtuple
-from gidapptools.errors import KeyPathError, NotMappingError, AdvancedDictError
+from gidapptools.errors import KeyPathError, NotMappingError, AdvancedDictError, DictMergeConflict
 from gidapptools.general_helper.checker import is_hashable
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_config.conversion.conversion_table import EntryTypus
@@ -40,6 +40,17 @@ from yarl import URL
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion[Constants]
+
+
+def replace_dict_keys(in_dict: dict, *replacement_pairs: tuple[Hashable, Hashable]) -> dict:
+    # replacement_table = {item[0]: item[1] for item in replacement_pairs}
+    # return in_dict.__class__(**{replacement_table.get(k, k): v for k, v in in_dict.items()})
+
+    for old_key, new_key in replacement_pairs:
+        if old_key in in_dict:
+            in_dict[new_key] = in_dict.pop(old_key)
+
+    return in_dict
 
 
 def get_by_keypath(the_dict: dict, key_path: list[str], default: Any = None, *, strict: bool = False) -> Any:
@@ -323,7 +334,63 @@ class BaseVisitor:
         else:
             set_by_key_path(in_dict, key_path, handler(value))
 
-        # region[Main_Exec]
+
+class SafeMergeDict(UserDict):
+    extra_none_values: set[Any] = set()
+
+    def __init__(self, __dict=None, raise_on_overwrite: bool = False, **kwargs) -> None:
+        self.data = {} if __dict is None else __dict
+        self.data |= kwargs
+        self.raise_on_overwrite = raise_on_overwrite
+
+    @classmethod
+    def add_none_value(cls, none_value: Any) -> None:
+        cls.extra_none_values.add(none_value)
+
+    @classmethod
+    def remove_none_value(cls, none_value: Any) -> None:
+        if none_value in cls.extra_none_values:
+            cls.extra_none_values.remove(none_value)
+
+    @property
+    def none_values(self) -> set[Any]:
+        return {None}.union(self.extra_none_values)
+
+    def safe_merge(self, first_dict: dict, second_dict: dict) -> dict:
+        if all(key not in first_dict for key in second_dict):
+            return self.__class__(first_dict | second_dict)
+        new_dict = first_dict.copy()
+        for key, value in second_dict.items():
+            print(key)
+            if key not in new_dict or new_dict[key] in self.none_values:
+                new_dict[key] = value
+            elif self.raise_on_overwrite is True:
+                raise DictMergeConflict(first_dict=first_dict, second_dict=second_dict, conflicting_key=key, none_values=self.none_values)
+        return self.__class__(new_dict)
+
+    def __or__(self, other):
+        if isinstance(other, UserDict):
+            return self.safe_merge(self.data, other.data)
+        if isinstance(other, dict):
+            return self.safe_merge(self.data, other)
+        return NotImplemented
+
+    def __ror__(self, other):
+        if isinstance(other, UserDict):
+            return self.safe_merge(other.data, self.data)
+        if isinstance(other, dict):
+            return self.safe_merge(other, self.data)
+        return NotImplemented
+
+    def __ior__(self, other):
+        if isinstance(other, UserDict):
+            self.data = self.safe_merge(self.data, other.data)
+        else:
+            self.data = self.safe_merge(self.data, other)
+        return self
+
+
+# region[Main_Exec]
 if __name__ == '__main__':
     pass
 # endregion[Main_Exec]

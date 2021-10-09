@@ -55,7 +55,6 @@ class MetaInfoFactory(AbstractMetaFactory):
     prefix_arg_getters = '_arg_get_'
     is_dev_env_name = 'IS_DEV'
     is_code_runner_env_name = 'IS_CODE_RUNNER'
-    default_configuration = {}
 
     def __init__(self, config_kwargs: ConfigKwargs) -> None:
         super().__init__(config_kwargs=config_kwargs)

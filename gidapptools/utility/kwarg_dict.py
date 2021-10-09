@@ -62,7 +62,7 @@ class KwargDict(UserDict, metaclass=PostInitMeta):
             else:
                 value = self.get(name, defaults.get(name, MiscEnum.NOTHING))
 
-            if value is MiscEnum.NOTHING:
+            if value is MiscEnum.NOTHING or value is MiscEnum.OPTIONAL:
                 continue
             _kwargs[name] = value
         return _kwargs

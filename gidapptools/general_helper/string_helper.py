@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Callable, Iterable, Mapping, Union
 from gidapptools.utility.enums import BaseGidEnum
 from gidapptools.general_helper.enums import StringCase
+from gidapptools.general_helper.timing import time_func
 # endregion[Imports]
 
 # region [TODO]
@@ -166,8 +167,59 @@ def shorten_string(in_text: str, max_length: int, shorten_side: str = "right", p
 
     return new_text[:last_space_position[-1].span()[0]].strip() + placeholder if shorten_side == 'right' else placeholder + new_text[last_space_position[0].span()[0]:].strip()
 
-# region[Main_Exec]
 
+def split_quotes_aware(text: str, split_chars: Iterable[str] = None, quote_chars: Iterable[str] = None, strip_parts: bool = True) -> list[str]:
+    """
+    Splits a string on but not if the separator char is inside of quotes.
+
+
+
+    Args:
+        text (str): The string to split.
+        split_chars (Iterable[str], optional): The characters to split on. Defaults to `,`.
+        quote_chars (Iterable[str], optional): The quote chars that should be considered real quotes. Defaults to `"` and `'`.
+        strip_parts (bool, optional): If each found substrin should be striped of preceding and trailing whitespace in the result. Defaults to True.
+
+    Returns:
+        list[str]: The found sub-parts.
+    """
+    split_chars = {','} if split_chars is None else set(split_chars)
+    quote_chars = {"'", '"'} if quote_chars is None else set(quote_chars)
+    parts = []
+    temp_chars = []
+    inside_quotes: str = None
+
+    def _add_part():
+        nonlocal parts
+        nonlocal temp_chars
+        part = ''.join(temp_chars)
+        if strip_parts is True:
+            part = part.strip()
+        for quote_char in quote_chars:
+            if part.startswith(quote_char) and part.endswith(quote_char):
+                part = part.strip(quote_char)
+        if part:
+            parts.append(part)
+        temp_chars.clear()
+
+    for char in text:
+        if char in split_chars and inside_quotes is None:
+            _add_part()
+        else:
+            temp_chars.append(char)
+
+            if char in quote_chars and inside_quotes is None:
+                inside_quotes = char
+            elif char in quote_chars and inside_quotes == char:
+                inside_quotes = None
+
+    if temp_chars:
+        _add_part()
+
+    return parts
+
+
+# region[Main_Exec]
 
 if __name__ == '__main__':
     pass

@@ -36,9 +36,13 @@ class MiscEnum(Enum):
     ALL = auto()
     DEFAULT = auto()
     NOT_FOUND = auto()
+    OPTIONAL = auto()
 
     def __repr__(self) -> str:
         return self.name
+
+    def __rich__(self) -> str:
+        return f"[u i medium_purple]{self.__repr__()}[/u i medium_purple]"
 
 
 class StringCase(BaseGidEnum):

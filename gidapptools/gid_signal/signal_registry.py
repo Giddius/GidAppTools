@@ -61,6 +61,10 @@ class SignalRegistry(WeakValueDictionary):
     def __str__(self) -> str:
         return f"{self.__class__.__name__}(signals={list(self.data)})"
 
+    def clear(self) -> None:
+        for key in list(self):
+            del self[key]
+
 
 signal_registry = SignalRegistry()
 

@@ -78,18 +78,28 @@ class GidIniConfig:
         section = self.config.get_section(section_name=section_name)
         return {entry.key: self.get(section_name=section_name, entry_key=entry.key) for entry in section.entries.values()}
 
-    def get(self, section_name: str, entry_key: str, typus: Union[type, EntryTypus] = SpecialTypus.AUTO, default: Any = MiscEnum.NOTHING) -> Any:
+    def get(self,
+            section_name: str,
+            entry_key: str,
+            typus: Union[type, EntryTypus] = SpecialTypus.AUTO,
+            fallback_entry: Iterable[str] = None,
+            default: Any = MiscEnum.NOTHING) -> Any:
         try:
             entry = self.config.get_entry(section_name=section_name, entry_key=entry_key)
 
         except (EntryMissingError, SectionMissingError):
-            if default is MiscEnum.NOTHING:
-                raise
-            return default
+            if fallback_entry is not None:
+                return self.get(fallback_entry[0], fallback_entry[1], default=default)
+            if default is not MiscEnum.NOTHING:
+                return default
+            raise
 
         if not entry.value:
-            if self.empty_is_missing is True and default is not MiscEnum.NOTHING:
-                return default
+            if self.empty_is_missing is True:
+                if fallback_entry is not None:
+                    return self.get(fallback_entry[0], fallback_entry[1], default=default)
+                if default is not MiscEnum.NOTHING:
+                    return default
             return None
 
         if typus is SpecialTypus.AUTO:

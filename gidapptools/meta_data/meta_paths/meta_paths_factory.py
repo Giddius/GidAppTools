@@ -11,9 +11,10 @@ import os
 
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 
 from gidapptools.utility.enums import NamedMetaPath, EnvName
+from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.errors import AppNameMissingError
 from gidapptools.meta_data.meta_paths.meta_paths_item import MetaPaths
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
@@ -57,6 +58,12 @@ class MetaPathsFactory(AbstractMetaFactory):
         path_overwrites = self.config_kwargs.get('path_overwrites', {})
         path_dict = self.appdirs_class.get_path_dict_direct(**_kwargs)
         return path_dict | path_overwrites
+
+    @classmethod
+    @property
+    def __default_configuration__(cls) -> dict[str, Any]:
+        default_configuration = {"roaming": MiscEnum.OPTIONAL, "multipath": MiscEnum.OPTIONAL}
+        return default_configuration | cls.product_class.__default_configuration__
 
     def setup(self) -> None:
         self.path_dict = self.get_path_dict()

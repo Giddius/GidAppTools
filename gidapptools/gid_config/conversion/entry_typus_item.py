@@ -74,12 +74,11 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-@attr.s(auto_attribs=True, auto_detect=True)
+@attr.s(auto_attribs=True, auto_detect=True, slots=True)
 class EntryTypus:
     original_value: str = attr.ib(on_setattr=attr.setters.NO_OP, default=None)
     base_typus: type = attr.ib(on_setattr=attr.setters.NO_OP, default=SpecialTypus.DELAYED)
     named_arguments: dict[str, Any] = attr.ib(default=None, converter=attr.converters.default_if_none(factory=dict))
-    other_arguments: list[Any] = attr.ib(default=None, converter=attr.converters.default_if_none(factory=list))
 
     def __hash__(self) -> int:
         return hash(self.base_typus)
@@ -133,8 +132,6 @@ class EntryTypus:
         args = ''
         if self.named_arguments:
             args = ', '.join(value for value in self.named_arguments.values())
-        if self.other_arguments:
-            args += ', ' + ', '.join(value for value in self.other_arguments)
 
         if args:
             _out += f"({args})"

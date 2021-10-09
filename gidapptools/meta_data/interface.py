@@ -10,11 +10,12 @@ Soon.
 from warnings import warn
 
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Union, Iterable, Callable, Hashable
 from functools import reduce
 from operator import or_
 from importlib.metadata import entry_points
 from gidapptools.utility.enums import NamedMetaPath
+from gidapptools.general_helper.dict_helper import SafeMergeDict
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.errors import NotSetupError, NoFactoryFoundError, MetaItemNotFoundError, RegisterAfterSetupError
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
@@ -63,7 +64,8 @@ class AppMeta:
                                             MetaPrintFactory]
     plugin_data: list[dict[str, Any]] = []
     default_to_initialize = [factory.product_name for factory in factories]
-    default_base_configuration: dict[str, Any] = reduce(or_, (factory.default_configuration for factory in factories))
+    default_base_configuration: dict[str, Any] = SafeMergeDict(raise_on_overwrite=True)
+    default_base_configuration: dict[str, Any] = reduce(or_, [default_base_configuration] + [factory.__default_configuration__ for factory in factories])
 
     def __init__(self) -> None:
         self.is_setup = False
@@ -107,9 +109,10 @@ class AppMeta:
             raise TypeError(f"'factory' needs to be a subclass of {AbstractMetaFactory.__name__!r}.")
 
         self.factories.append(factory)
-        default_configuration = {} if default_configuration is None else default_configuration
-        default_configuration = factory.default_configuration | default_configuration
 
+        default_configuration = {} if default_configuration is None else default_configuration
+
+        self.default_base_configuration |= factory.__default_configuration__
         self.default_base_configuration |= default_configuration
         self.add_plugin_data(factory=factory)
 
@@ -137,7 +140,7 @@ class AppMeta:
 
     def _initialize_data(self, config_kwargs: ConfigKwargs) -> None:
         factory_map = {factory.product_name: factory for factory in self.factories}
-        for name in config_kwargs.get('to_initialize'):
+        for name in config_kwargs.get('items_to_initialize'):
             factory = factory_map.get(name, MiscEnum.NOTHING)
             if factory is MiscEnum.NOTHING:
                 raise NoFactoryFoundError(name)
@@ -145,15 +148,11 @@ class AppMeta:
             self.meta_items[factory.product_name] = meta_item
             config_kwargs.created_meta_items[factory.product_name] = meta_item
 
-    def setup(self, init_path: PATH_TYPE, **kwargs) -> None:
+    def setup(self, init_path: PATH_TYPE, items_to_initialize: Iterable[str] = None, **kwargs) -> None:
+        items_to_initialize = [] if items_to_initialize is None else items_to_initialize
+        items_to_initialize += self.default_to_initialize
+        base_configuration = self.default_base_configuration.copy() | {'init_path': init_path, 'items_to_initialize': items_to_initialize}
 
-        self._get_plugins()
-        base_configuration = self.default_base_configuration.copy() | {'init_path': init_path}
-        kwargs_to_initialize = kwargs.pop('to_initialize', [])
-        if isinstance(kwargs_to_initialize, str):
-            kwargs_to_initialize = [kwargs_to_initialize]
-        to_initialize = self.default_to_initialize + kwargs_to_initialize + base_configuration.pop('to_initialize', [])
-        base_configuration['to_initialize'] = to_initialize
         config_kwargs = ConfigKwargs(base_configuration=base_configuration, **kwargs)
 
         self._initialize_data(config_kwargs=config_kwargs)
@@ -195,6 +194,7 @@ def get_meta_paths() -> MetaPaths:
 
 def get_meta_print() -> MetaPrint:
     return app_meta['meta_print']
+
 
     # region[Main_Exec]
 if __name__ == '__main__':

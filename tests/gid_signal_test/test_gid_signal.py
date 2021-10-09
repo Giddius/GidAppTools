@@ -2,8 +2,9 @@ import pytest
 from gidapptools.gid_signal.interface import get_signal, Signal, SignalRegistry, signal_registry
 
 
-@pytest.mark.parametrize('name', [('first_signal_name'), ('second_signal_name'), ('name_with_spaces')])
+@pytest.mark.parametrize('name', [('first_signal_name'), ('second_signal_name'), ('name_with_spaces')], scope='function')
 def test_get_signal(name: str):
+    signal_registry.clear()
     signal_1 = get_signal(name)
     signal_2 = get_signal(name)
     assert signal_1 is signal_2

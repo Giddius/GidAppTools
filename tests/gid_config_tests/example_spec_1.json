@@ -1,12 +1,15 @@
 {
-    "ENV": { "__default__": "string", "PATH": "list(path,;)" },
+    "ENV": {
+        "__default__": "string",
+        "PATH": "list(sub_typus=path,split_char=;)"
+    },
     "debug": {
         "current_testing_channel": "string"
     },
     "general_settings": {
         "cogs_location": "string",
         "main_folder_name": "string",
-        "owner_ids": "list(integer)",
+        "owner_ids": "list(sub_typus=integer)",
         "__default__": "integer"
     },
     "this": {

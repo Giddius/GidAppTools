@@ -37,6 +37,11 @@ class AbstractMetaItem(ABC):
 
     @classmethod
     @property
+    def __default_configuration__(cls) -> dict[str, Any]:
+        return {}
+
+    @classmethod
+    @property
     def name(cls) -> str:
         return StringCaseConverter.convert_to(cls.__name__, StringCaseConverter.SNAKE)
 

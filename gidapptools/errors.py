@@ -44,6 +44,16 @@ class DispatchError(GidAppToolsBaseError):
 # TODO: accept AdvancedDict instance as parameter and show path_taken maybe.
 
 
+class DictMergeConflict(GidAppToolsBaseError):
+    def __init__(self, first_dict: dict, second_dict: dict, conflicting_key: Hashable, none_values: set[Hashable]) -> None:
+        self.first_dict = first_dict
+        self.second_dict = second_dict
+        self.conflicting_key = conflicting_key
+        self.none_values = none_values
+        self.message = f"Unable to merge key {self.conflicting_key!r}, because it already exists in the first dictionary and has an value that is not a 'none_value'({', '.join(f'{item!r}' for item in self.none_values)}"
+        super().__init__(self.message)
+
+
 class AdvancedDictError(GidAppToolsBaseError):
     ...
 

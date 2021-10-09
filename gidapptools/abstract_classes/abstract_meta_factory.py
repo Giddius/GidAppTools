@@ -9,6 +9,7 @@ Soon.
 
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any, Callable, Hashable, Iterable, Optional, Union
 
 from gidapptools.utility.helper import abstract_class_property
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
@@ -33,7 +34,6 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
 class AbstractMetaFactory(ABC):
-    default_configuration = {}
     product_class: AbstractMetaItem = None
 
     def __init__(self, config_kwargs: ConfigKwargs) -> None:
@@ -42,6 +42,12 @@ class AbstractMetaFactory(ABC):
 
         self.is_setup = False
         self.config_kwargs = config_kwargs
+
+    @classmethod
+    @property
+    def __default_configuration__(cls) -> dict[str, Any]:
+        default_configuration = {}
+        return default_configuration | cls.product_class.__default_configuration__
 
     @classmethod
     @property

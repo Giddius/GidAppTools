@@ -28,6 +28,7 @@ from gidapptools.utility.helper import memory_in_use, handle_path, utc_now, make
 from gidapptools.general_helper.conversion import bytes2human
 from gidapptools.general_helper.date_time import DatetimeFmt
 from gidapptools.types import PATH_TYPE
+from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 # REMOVE_BEFORE_BUILDING_DIST
 from gidapptools.utility._debug_tools import dprint
@@ -75,8 +76,14 @@ class MetaInfo(AbstractMetaItem):
     python_version: str = attr.ib(factory=platform.python_version)
     started_at: datetime = attr.ib(factory=utc_now)
     base_mem_use: int = attr.ib(default=memory_in_use())
-    is_dev: bool = attr.ib(default=False)
-    is_gui: bool = attr.ib(default=False)
+    is_dev: bool = attr.ib(default=None, converter=attr.converters.default_if_none(False))
+    is_gui: bool = attr.ib(default=None, converter=attr.converters.default_if_none(False))
+
+    @classmethod
+    @property
+    def __default_configuration__(cls) -> dict[str, Any]:
+        default_configuration = {}
+        return default_configuration
 
     @property
     def pretty_base_mem_use(self) -> str:
@@ -99,6 +106,7 @@ class MetaInfo(AbstractMetaItem):
 
     def clean_up(self, **kwargs) -> None:
         pass
+
 
     # region[Main_Exec]
 if __name__ == '__main__':

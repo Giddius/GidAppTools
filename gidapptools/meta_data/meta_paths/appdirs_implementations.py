@@ -69,8 +69,8 @@ class GidAppDirs(PathLibAppDirs):
                              app_name: str,
                              app_author: str = None,
                              roaming: bool = True,
-                             **kwargs) -> dict[NamedMetaPath, Optional[Path]]:
-        inst = cls(appname=app_name, appauthor=app_author, roaming=roaming, **kwargs)
+                             multipath: bool = False) -> dict[NamedMetaPath, Optional[Path]]:
+        inst = cls(appname=app_name, appauthor=app_author, roaming=roaming, multipath=multipath)
         return inst.as_path_dict()
 
 
