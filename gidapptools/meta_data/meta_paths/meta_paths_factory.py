@@ -42,7 +42,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 class MetaPathsFactory(AbstractMetaFactory):
     appdirs_class = GidAppDirs
     product_class = MetaPaths
-    default_configuration = {}
+    default_configuration = {"roaming": MiscEnum.OPTIONAL, "multipath": MiscEnum.OPTIONAL}
 
     def __init__(self, config_kwargs: ConfigKwargs) -> None:
         super().__init__(config_kwargs=config_kwargs)
@@ -62,8 +62,7 @@ class MetaPathsFactory(AbstractMetaFactory):
     @classmethod
     @property
     def __default_configuration__(cls) -> dict[str, Any]:
-        default_configuration = {"roaming": MiscEnum.OPTIONAL, "multipath": MiscEnum.OPTIONAL}
-        return default_configuration | cls.product_class.__default_configuration__
+        return cls.default_configuration | cls.product_class.__default_configuration__
 
     def setup(self) -> None:
         self.path_dict = self.get_path_dict()

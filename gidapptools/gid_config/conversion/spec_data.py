@@ -25,6 +25,7 @@ from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.general_helper.mixins.file_mixin import FileMixin
 from gidapptools.general_helper.string_helper import split_quotes_aware
 from gidapptools.types import PATH_TYPE
+from gidapptools.gid_config.enums import SpecAttribute
 from gidapptools.gid_signal.interface import get_signal
 from icecream import ic
 # endregion[Imports]
@@ -57,6 +58,9 @@ class SpecVisitor(BaseVisitor):
     def visit(self, in_dict: Union["AdvancedDict", dict], key_path: tuple[str], value: Any) -> None:
 
         key_path = tuple(key_path)
+
+        if key_path[-1] != 'converter':
+            return
         value_key = self._modify_value(value)
 
         handler = self.handlers.get(key_path, self.handlers.get(value_key, self.default_handler))
@@ -200,7 +204,7 @@ class SpecVisitor(BaseVisitor):
                 in_sub_arguments["split_char"] = ','
         _process_subtypus(sub_arguments)
         _process_split_char(sub_arguments)
-        ic(sub_arguments)
+
         return EntryTypus(original_value=value, base_typus=list, named_arguments=sub_arguments)
 
     def _handle_datetime(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
@@ -254,16 +258,23 @@ class SpecData(AdvancedDict):
 
     def _get_section_default(self, section_name: str) -> EntryTypus:
 
-        return self.get([section_name, '__default__'], str)
+        return self.get([section_name, '__default__', "converter"], str)
 
     def get_entry_typus(self, section_name: str, entry_key: str) -> EntryTypus:
         try:
-            return self[[section_name, entry_key]]
+            return self[[section_name, entry_key, "converter"]]
         except KeyPathError as error:
             try:
                 return self._get_section_default(section_name=section_name)
             except KeyPathError:
                 raise error
+
+    def get_description(self, section_name: str, entry_key: str) -> str:
+        return self.get(key_path=[section_name, entry_key, SpecAttribute.DESCRIPTION.value], default="")
+
+    def get_spec_attribute(self, section_name: str, entry_key: str, attribute: Union[SpecAttribute, str], default=None) -> Any:
+        attribute = SpecAttribute(attribute) if isinstance(attribute, str) else attribute
+        self.get([section_name, entry_key, attribute.value], default=default)
 
     def set_typus_value(self, section_name: str, entry_key: str, typus_value: str) -> None:
         if section_name not in self:

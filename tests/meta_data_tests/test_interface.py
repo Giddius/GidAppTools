@@ -1,10 +1,9 @@
-from gidapptools.meta_data.interface import AppMeta, setup_meta_data, get_meta_info, get_meta_paths, get_meta_item
+from gidapptools.meta_data.interface import AppMeta, setup_meta_data, get_meta_info, get_meta_paths, get_meta_item, MetaConfigFactory, MetaConfig
 from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
 from gidapptools.meta_data.meta_info.meta_info_factory import MetaInfoFactory
 from gidapptools.meta_data.meta_paths.meta_paths_item import MetaPaths
 from gidapptools.meta_data.meta_paths.meta_paths_factory import MetaPathsFactory
-from gidapptools.meta_data.meta_print.meta_print_factory import MetaPrintFactory
-from gidapptools.meta_data.meta_print.meta_print_item import MetaPrint
+
 from gidapptools.errors import NotSetupError, MetaItemNotFoundError
 from typing import Any
 from pathlib import Path
@@ -43,22 +42,25 @@ def test_contains(app_meta_instance: AppMeta):
 
 
 def test_get(app_meta_instance: AppMeta):
-    assert app_meta_instance.get() == {'meta_paths': app_meta_instance['meta_paths'], 'meta_info': app_meta_instance["meta_info"], 'meta_print': app_meta_instance['meta_print']}
+    assert app_meta_instance.get() == {'meta_paths': app_meta_instance['meta_paths'], 'meta_info': app_meta_instance["meta_info"], "meta_config": app_meta_instance["meta_config"]}
     assert isinstance(app_meta_instance['meta_paths'], MetaPaths)
     assert isinstance(app_meta_instance['meta_info'], MetaInfo)
 
+    item = app_meta_instance.get(MetaInfo)
+    assert isinstance(item, MetaInfo)
+    assert hasattr(item, "pretty_started_at")
     with pytest.raises(MetaItemNotFoundError):
         item = app_meta_instance['not_existing_item']
 
 
 def test_all_names(app_meta_instance: AppMeta):
-    assert set(app_meta_instance.all_item_names) == {'meta_paths', 'meta_info', 'meta_print'}
+    assert set(app_meta_instance.all_item_names) == {'meta_paths', 'meta_info', 'meta_config'}
 
 
 def test_all_items(app_meta_instance: AppMeta):
     for item in app_meta_instance.all_items:
-        assert any(isinstance(item, compare_class) for compare_class in [MetaInfo, MetaPaths, MetaPrint])
+        assert any(isinstance(item, compare_class) for compare_class in [MetaInfo, MetaPaths, MetaConfig])
 
 
 def test_plugin(app_meta_instance: AppMeta):
-    assert set(app_meta_instance.factories) == {MetaInfoFactory, MetaPathsFactory, MetaPrintFactory, FakeFactory}
+    assert set(app_meta_instance.factories) == {MetaInfoFactory, MetaPathsFactory, FakeFactory, MetaConfigFactory}

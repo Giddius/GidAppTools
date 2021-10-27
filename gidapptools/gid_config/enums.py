@@ -9,7 +9,7 @@ Soon.
 
 from enum import Enum, auto
 from pathlib import Path
-
+from gidapptools.general_helper.enums import BaseGidEnum
 
 # endregion[Imports]
 
@@ -34,6 +34,13 @@ class SpecialTypus(Enum):
     AUTO = auto()
     RAW = auto()
     DELAYED = auto()
+
+
+class SpecAttribute(BaseGidEnum):
+    CONVERTER = "converter"
+    DESCRIPTION = "description"
+    SHORT_DESCRIPTION = "short_description"
+
 
 # region[Main_Exec]
 

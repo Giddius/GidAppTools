@@ -6,7 +6,6 @@ Soon.
 
 # region [Imports]
 
-import gc
 import os
 import re
 import sys
@@ -25,10 +24,8 @@ import sqlite3
 import platform
 import importlib
 import subprocess
-import unicodedata
 import inspect
 
-import asyncio
 from time import sleep, process_time, process_time_ns, perf_counter, perf_counter_ns
 from io import BytesIO, StringIO
 from abc import ABC, ABCMeta, abstractmethod
@@ -39,7 +36,7 @@ from pprint import pprint, pformat
 from pathlib import Path
 from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
 from timeit import Timer
-from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, Hashable, Generator, Literal, TypeVar, TypedDict, AnyStr, Awaitable, Coroutine
+from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, Hashable, Generator, Literal, TypeVar, TypedDict, AnyStr
 from zipfile import ZipFile, ZIP_LZMA
 from datetime import datetime, timezone, timedelta
 from tempfile import TemporaryDirectory
@@ -53,8 +50,7 @@ from urllib.parse import urlparse
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
-from gidapptools.utility.helper import get_qualname_or_name
-from .abstract_signal import AbstractSignal
+
 
 # endregion[Imports]
 
@@ -75,37 +71,9 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-class Signal(AbstractSignal):
-
-    def emit(self, *args, **kwargs):
-        if len(self.targets) <= 0:
-            return
-        for target in self.targets:
-            name = get_qualname_or_name(target)
-            info = self.targets_info.get(name)
-
-            if info.get('is_coroutine') is True:
-                task_name = f"{str(self.key)}-Signal_{name}"
-                asyncio.create_task(target(*args, **kwargs), name=task_name)
-            else:
-                target(*args, **kwargs)
-
-    async def aemit(self, *args, **kwargs):
-        if len(self.targets) <= 0:
-            return
-
-        for target in self.targets:
-            name = get_qualname_or_name(target)
-            info = self.targets_info.get(name)
-            task_name = f"{str(self.key)}-Signal_{name}"
-            if info.get('is_coroutine') is False:
-                task = asyncio.to_thread(target, *args, **kwargs)
-            else:
-                task = target(*args, **kwargs)
-            asyncio.create_task(task, name=task_name)
-
-
 # region[Main_Exec]
+
 if __name__ == '__main__':
     pass
+
 # endregion[Main_Exec]

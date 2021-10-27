@@ -35,6 +35,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 class AbstractMetaFactory(ABC):
     product_class: AbstractMetaItem = None
+    default_configuration: dict[str, Any] = {}
 
     def __init__(self, config_kwargs: ConfigKwargs) -> None:
         if self.product_class is None:
@@ -46,8 +47,8 @@ class AbstractMetaFactory(ABC):
     @classmethod
     @property
     def __default_configuration__(cls) -> dict[str, Any]:
-        default_configuration = {}
-        return default_configuration | cls.product_class.__default_configuration__
+
+        return cls.default_configuration | cls.product_class.__default_configuration__
 
     @classmethod
     @property

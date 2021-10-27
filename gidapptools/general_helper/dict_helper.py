@@ -150,7 +150,9 @@ class AdvancedDict(UserDict):
         if isinstance(key_path, str):
             key_path = key_path.split(self.keypath_separator)
 
-        return [self._modify_key(key) for key in key_path]
+        new_key_path = [self._modify_key(key) for key in key_path]
+
+        return new_key_path
 
     def _resolve_key_path(self, key_path: MODDIFIED_KEYPATH_TYPE, *, hold_last: bool = False, check_auto_set: bool = False) -> ResolveKeyPathResult:
         data = self.data

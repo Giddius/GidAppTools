@@ -1,22 +1,25 @@
 {
     "ENV": {
-        "__default__": "string",
-        "PATH": "list(sub_typus=path,split_char=;)"
+        "__default__": { "converter": "string" },
+        "PATH": { "converter": "list(sub_typus=path,split_char=;)" }
     },
     "debug": {
-        "current_testing_channel": "string"
+        "current_testing_channel": {
+            "converter": "string",
+            "description": "This is a description."
+        }
     },
     "general_settings": {
-        "cogs_location": "string",
-        "main_folder_name": "string",
-        "owner_ids": "list(sub_typus=integer)",
-        "__default__": "integer"
+        "cogs_location": { "converter": "string" },
+        "main_folder_name": { "converter": "string" },
+        "owner_ids": { "converter": "list(sub_typus=integer)" },
+        "__default__": { "converter": "integer" }
     },
     "this": {
-        "something": "string",
-        "that": "integer"
+        "something": { "converter": "string" },
+        "that": { "converter": "integer" }
     },
     "folder": {
-        "folder_1": "path"
+        "folder_1": { "converter": "path" }
     }
 }

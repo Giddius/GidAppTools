@@ -6,6 +6,8 @@ import re
 from gidapptools.data.conversion_data import NANOSECONDS_IN_SECOND, STRING_FALSE_VALUES, STRING_TRUE_VALUES
 from functools import cached_property, total_ordering
 from gidapptools.general_helper.timing import time_execution, time_func
+from datetime import datetime, timedelta, timezone
+import random
 
 
 @total_ordering
@@ -203,22 +205,60 @@ class TimeUnit:
         return in_seconds / self.factor
 
     def convert_with_rest(self, in_seconds: int) -> tuple[int, int]:
-        _amount = in_seconds // self.factor
-        if _amount > 0:
-            _rest = in_seconds - (_amount * self.factor)
-            _amount = f"{_amount} {self.symbol}"
-        else:
-            _rest = in_seconds
-            _amount = None
-        return _amount, _rest
+        _amount, _rest = divmod(in_seconds, self.factor)
+
+        return int(_amount), _rest
+
+    def value_to_string(self, in_value: int, use_symbols: bool = False) -> str:
+        if use_symbols is True:
+            return f"{in_value}{self.symbol}"
+        if in_value == 1:
+            return f"{in_value} {self.name}"
+        return f"{in_value} {self.plural}"
 
 
-TIMEUNITS = [TimeUnit(*item) for item in [('nanosecond', 'ns', 1 / NANOSECONDS_IN_SECOND), ('millisecond', 'ms', 1 / 1000), ('second', 's', 1), ('minute', 'm', 60), ('hour', 'h', 60 * 60), ('day', 'd', 60 * 60 * 24), ('week', 'w', 60 * 60 * 24 * 7)]]
+TIMEUNITS = [TimeUnit(*item) for item in [('nanosecond', 'ns', 1 / NANOSECONDS_IN_SECOND), ('millisecond', 'ms', 1 / 1000), ('second', 's', 1),
+                                          ('minute', 'm', 60), ('hour', 'h', 60 * 60), ('day', 'd', 60 * 60 * 24), ('week', 'w', 60 * 60 * 24 * 7), ("year", "y", (60 * 60 * 24 * 7 * 52) + (60 * 60 * 24))]]
 TIMEUNITS = sorted(TIMEUNITS, key=lambda x: x.factor, reverse=True)
 
 
-def seconds2human(in_seconds: int) -> str:
-    ...
+class TimeUnits:
+
+    def __init__(self, with_year: bool = True) -> None:
+        self._units = TIMEUNITS.copy()
+        self.with_year = with_year
+
+    @property
+    def smallest_unit(self) -> TimeUnit:
+        return self.units[-1]
+
+    @property
+    def units(self):
+        if self.with_year is False:
+            return [u for u in self._units.copy() if u.name != 'year']
+        return self._units.copy()
+
+    def __iter__(self):
+        return iter(self.units)
+
+
+def seconds2human(in_seconds: Union[int, float, timedelta], as_symbols: bool = False, with_year: bool = True) -> str:
+    rest = in_seconds.total_seconds() if isinstance(in_seconds, timedelta) else in_seconds
+    result = {}
+    _time_units = TimeUnits(with_year=with_year)
+    for unit in _time_units:
+        amount, rest = unit.convert_with_rest(rest)
+        if amount:
+            result[unit] = int(amount)
+
+    results = [k.value_to_string(v, as_symbols) for k, v in result.items()]
+    if not results:
+        _unit = _time_units.smallest_unit
+        _name = f" {_unit.plural}" if as_symbols is False else _unit.symbol
+        return f"0{_name}"
+    if len(results) > 1:
+        return ' '.join(results[:-1]) + ' and ' + results[-1]
+    return results[0]
 
 
 def str_to_bool(in_string: str, strict: bool = False) -> bool:
@@ -237,4 +277,8 @@ def str_to_bool(in_string: str, strict: bool = False) -> bool:
 
 
 if __name__ == '__main__':
-    pass
+    for i in range(5):
+        _amo = random.randint(0, 100000000)
+        amo = timedelta(seconds=_amo)
+        r = seconds2human(amo, with_year=False)
+        print(f"Param([timedelta(seconds={_amo!r}), {r!r}], 'timedela_value_{i+1}'),")

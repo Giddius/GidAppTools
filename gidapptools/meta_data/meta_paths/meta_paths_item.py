@@ -104,8 +104,11 @@ class MetaPaths(AbstractMetaItem):
     def db_dir(self) -> Path:
         return self.get_path(NamedMetaPath.DB)
 
-    def get_new_temp_dir(self, suffix: str = None) -> Path:
-        temp_dir = Path(mkdtemp(dir=self.temp_dir, suffix=suffix))
+    def get_new_temp_dir(self, suffix: str = None, name: str = None) -> Path:
+        if name is not None:
+            temp_dir = self.temp_dir.joinpath(name)
+        else:
+            temp_dir = Path(mkdtemp(dir=self.temp_dir, suffix=suffix))
         if temp_dir.exists() is False:
             temp_dir.mkdir(parents=True, exist_ok=True)
         self._created_temp_dirs.add(temp_dir)

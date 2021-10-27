@@ -54,7 +54,7 @@ class GidIniConfig:
     default_converter: ConfigValueConversionTable = ConfigValueConversionTable()
 
     def __init__(self,
-                 config_file: ConfigFile,
+                 config_file: Path,
                  config_file_auto_write: bool = True,
                  spec_file: Optional[SpecFile] = None,
                  converter: ConfigValueConversionTable = None,

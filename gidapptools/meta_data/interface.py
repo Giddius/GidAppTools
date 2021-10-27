@@ -25,10 +25,10 @@ from gidapptools.meta_data.meta_info import MetaInfoFactory, MetaInfo
 from gidapptools.meta_data.meta_paths import MetaPathsFactory, MetaPaths
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
-from gidapptools.meta_data.meta_print.meta_print_factory import MetaPrintFactory, MetaPrint
+
 import inspect
 from gidapptools.data import ENTRY_POINT_NAME
-
+from gidapptools.gid_config.meta_factory import MetaConfigFactory, MetaConfig
 # REMOVE_BEFORE_BUILDING_DIST
 from gidapptools.utility._debug_tools import dprint
 
@@ -61,7 +61,7 @@ META_ITEMS_TYPE = Any
 class AppMeta:
     factories: list[AbstractMetaFactory] = [MetaInfoFactory,
                                             MetaPathsFactory,
-                                            MetaPrintFactory]
+                                            MetaConfigFactory]
     plugin_data: list[dict[str, Any]] = []
     default_to_initialize = [factory.product_name for factory in factories]
     default_base_configuration: dict[str, Any] = SafeMergeDict(raise_on_overwrite=True)
@@ -123,10 +123,12 @@ class AppMeta:
             raise MetaItemNotFoundError(item_name, self.all_item_names)
         return _out
 
-    def get(self, item_name: str = None) -> META_ITEMS_TYPE:
+    def get(self, item_name: Union[str, type[META_ITEMS_TYPE]] = None) -> META_ITEMS_TYPE:
         if item_name is None:
             self.check_is_setup()
             return dict(self.meta_items)
+        if inspect.isclass(item_name):
+            item_name = item_name.name
         return self[item_name]
 
     def __contains__(self, item: Union[str, AbstractMetaItem]) -> bool:
@@ -180,7 +182,7 @@ def setup_meta_data(init_path: PATH_TYPE, **kwargs) -> None:
     app_meta.setup(init_path=Path(init_path), **kwargs)
 
 
-def get_meta_item(item_name: str = None) -> Union[dict[str, META_ITEMS_TYPE], META_ITEMS_TYPE]:
+def get_meta_item(item_name: str = None) -> Union[dict[str, type[META_ITEMS_TYPE]], META_ITEMS_TYPE]:
     return app_meta.get(item_name)
 
 
@@ -192,8 +194,8 @@ def get_meta_paths() -> MetaPaths:
     return app_meta['meta_paths']
 
 
-def get_meta_print() -> MetaPrint:
-    return app_meta['meta_print']
+def get_meta_config() -> MetaConfig:
+    return app_meta['meta_config']
 
 
     # region[Main_Exec]

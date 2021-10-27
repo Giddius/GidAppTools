@@ -15,15 +15,24 @@ def test_spec_data_file_init():
 
 def test_load():
     spec = SpecFile(simple_spec_file, visitor=SpecVisitor())
-    assert spec._data == None
+    assert spec._data is None
     assert spec.last_size is None
     spec.load()
-    assert spec.data != None
+    assert spec.data is not None
     assert spec.last_size is not None
     assert set(spec.data) == {"first_section", "second_section", "third_section"}
-    assert isinstance(spec['first_section']['first_key'], EntryTypus)
+    assert isinstance(spec['first_section']['first_key']["converter"], EntryTypus)
     all_end_values = []
     for section, entries in spec.items():
         for key, value in entries.items():
-            all_end_values.append(value)
+            all_end_values.append(value['converter'])
     assert all(isinstance(item, EntryTypus) for item in all_end_values)
+
+
+def test_spec_attribute():
+    spec = SpecFile(simple_spec_file, visitor=SpecVisitor())
+    spec.load()
+    assert spec.data["first_section"]["first_key"]["description"] == "This is the first key of the first section"
+    assert spec.get_description("first_section", "first_key") == "This is the first key of the first section"
+    assert spec.get_description("first_section", "missing_key") == ""
+    assert spec.get_description("first_section", "second_key") == ""

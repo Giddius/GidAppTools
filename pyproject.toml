@@ -19,7 +19,8 @@ dependencies = [
     "inflect",
     "orjson",
     "pyparsing==3.0.0rc1",
-    "click"
+    "click",
+    "python-dateutil"
 ]
 
 [project.urls]
