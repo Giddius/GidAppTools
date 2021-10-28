@@ -18,7 +18,8 @@ def test_gid_ini_config_general(example_config_1: Path, example_spec_1: Path):
                                                      'owner_ids': [122348088319803392,
                                                                    346595708180103170,
                                                                    262095121527472128,
-                                                                   225100859674066945]},
+                                                                   225100859674066945],
+                                                     "empty_entry": None},
                                 'this': {'something': 'blah', 'that': 40}}
 
     assert config.as_dict(raw=True) == {'debug': {'current_testing_channel': 'bot-testing'},
@@ -27,7 +28,8 @@ def test_gid_ini_config_general(example_config_1: Path, example_spec_1: Path):
                                                              'guild_id': '449481990513754112',
                                                              'main_folder_name': 'antipetros_discordbot',
                                                              'owner_ids': '122348088319803392, 346595708180103170, '
-                                                             '262095121527472128, 225100859674066945'},
+                                                             '262095121527472128, 225100859674066945',
+                                                             "empty_entry": None},
                                         'this': {'something': 'blah', 'that': '40'}}
     config.reload()
 
@@ -70,7 +72,8 @@ def test_gid_ini_config_get_section(gid_ini_config: GidIniConfig):
                                         'owner_ids': [122348088319803392,
                                                       346595708180103170,
                                                       262095121527472128,
-                                                      225100859674066945]}
+                                                      225100859674066945],
+                                        "empty_entry": None}
 
 
 def test_env_get(gid_ini_config: GidIniConfig):

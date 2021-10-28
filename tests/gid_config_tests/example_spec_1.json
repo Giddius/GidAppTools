@@ -13,6 +13,7 @@
         "cogs_location": { "converter": "string" },
         "main_folder_name": { "converter": "string" },
         "owner_ids": { "converter": "list(sub_typus=integer)" },
+        "empty_entry": { "converter": "string" },
         "__default__": { "converter": "integer" }
     },
     "this": {

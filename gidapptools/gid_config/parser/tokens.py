@@ -122,9 +122,9 @@ class EnvSection(Section):
 
 class Entry(IniToken):
 
-    def __init__(self, key: str, value: str) -> None:
+    def __init__(self, key: str, value: str = None) -> None:
         self.key = key.strip()
-        self.value = value.lstrip()
+        self.value = value.lstrip() if value is not None else value
         self.key_value_separator = '='
         self.comments = []
         self.section: ProxyType[Section] = None

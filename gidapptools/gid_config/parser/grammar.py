@@ -92,7 +92,7 @@ class BaseIniGrammar:
 
     @property
     def entry(self) -> pp.ParserElement:
-        entry = self.key + self.value
+        entry = self.key + pp.Optional(self.value)
         return entry.set_results_name('entry')
 
     @property
