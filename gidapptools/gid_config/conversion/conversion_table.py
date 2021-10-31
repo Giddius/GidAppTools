@@ -122,11 +122,14 @@ class ConfigValueConversionTable(BaseDispatchTable):
 
     @BaseDispatchTable.mark(bool)
     def _boolean(self, value: str, mode: str = 'decode', **named_arguments) -> bool:
+
         if mode == "decode":
             string_value = str(value)
-            return str_to_bool(string_value)
+            new_value = str_to_bool(string_value)
         elif mode == "encode":
-            return str(value)
+            new_value = str(value)
+
+        return new_value
 
     @BaseDispatchTable.mark(list)
     def _list(self, value: str, mode: str = 'decode', **named_arguments) -> list[Any]:

@@ -131,8 +131,8 @@ class MetaConfigFactory(AbstractMetaFactory):
         self.spec_paths: list[Path] = []
 
     def _dev_init(self) -> None:
-        self.config_dir: Path = self.config_kwargs.get("code_base_dir")
-        self.spec_dir: Path = self.config_kwargs.get("code_base_dir")
+        self.config_dir: Path = self.config_kwargs.get("code_base_dir").joinpath("dev_temp","config")
+        self.spec_dir: Path = self.config_kwargs.get("code_base_dir").joinpath("dev_temp","config", "spec")
 
     def _create_spec_file(self, name: str, content: Union[str, dict]) -> Path:
         self.spec_dir.mkdir(exist_ok=True, parents=True)

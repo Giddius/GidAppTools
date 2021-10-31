@@ -22,5 +22,6 @@
     },
     "folder": {
         "folder_1": { "converter": "path" }
-    }
+    },
+    "data_types": { "this_is_a_boolean": { "converter": "boolean" } }
 }

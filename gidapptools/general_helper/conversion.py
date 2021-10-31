@@ -30,7 +30,7 @@ class FileSizeUnit:
     def long_name(self) -> str:
         return f"{self._long_name}bytes"
 
-    def _get_names(self) -> Union[set[str]]:
+    def _get_names(self) -> set[str]:
         all_names = [self.short_name, self.long_name] + self.aliases
         all_names += [name.removesuffix('s') for name in all_names]
         all_names += [name + 's' for name in all_names if not name.endswith('s')]
@@ -277,8 +277,4 @@ def str_to_bool(in_string: str, strict: bool = False) -> bool:
 
 
 if __name__ == '__main__':
-    for i in range(5):
-        _amo = random.randint(0, 100000000)
-        amo = timedelta(seconds=_amo)
-        r = seconds2human(amo, with_year=False)
-        print(f"Param([timedelta(seconds={_amo!r}), {r!r}], 'timedela_value_{i+1}'),")
+    pass

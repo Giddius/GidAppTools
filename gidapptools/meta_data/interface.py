@@ -151,6 +151,8 @@ class AppMeta:
             config_kwargs.created_meta_items[factory.product_name] = meta_item
 
     def setup(self, init_path: PATH_TYPE, items_to_initialize: Iterable[str] = None, **kwargs) -> None:
+        if self.is_setup is True:
+            return
         items_to_initialize = [] if items_to_initialize is None else items_to_initialize
         items_to_initialize += self.default_to_initialize
         base_configuration = self.default_base_configuration.copy() | {'init_path': init_path, 'items_to_initialize': items_to_initialize}

@@ -20,7 +20,8 @@ def test_gid_ini_config_general(example_config_1: Path, example_spec_1: Path):
                                                                    262095121527472128,
                                                                    225100859674066945],
                                                      "empty_entry": None},
-                                'this': {'something': 'blah', 'that': 40}}
+                                'this': {'something': 'blah', 'that': 40},
+                                "data_types": {"this_is_a_boolean": True}}
 
     assert config.as_dict(raw=True) == {'debug': {'current_testing_channel': 'bot-testing'},
                                         'folder': {'folder_1': 'C:\\Program Files\\Git\\cmd'},
@@ -30,7 +31,8 @@ def test_gid_ini_config_general(example_config_1: Path, example_spec_1: Path):
                                                              'owner_ids': '122348088319803392, 346595708180103170, '
                                                              '262095121527472128, 225100859674066945',
                                                              "empty_entry": None},
-                                        'this': {'something': 'blah', 'that': '40'}}
+                                        'this': {'something': 'blah', 'that': '40'},
+                                        "data_types": {"this_is_a_boolean": "yes"}}
     config.reload()
 
 
@@ -43,20 +45,20 @@ def test_gid_ini_config_sections(gid_ini_config: GidIniConfig):
 
     gid_ini_config.reload()
     gid_ini_config.config.changed_signal.connect(config_has_changed)
-    assert len(gid_ini_config.config.all_sections) == 5
-    assert set(gid_ini_config.config.all_section_names) == {"general_settings", "debug", "this", "folder", 'ENV'}
-    gid_ini_config.add_section('a_new_section')
     assert len(gid_ini_config.config.all_sections) == 6
+    assert set(gid_ini_config.config.all_section_names) == {"general_settings", "debug", "this", "folder", 'ENV', 'data_types'}
+    gid_ini_config.add_section('a_new_section')
+    assert len(gid_ini_config.config.all_sections) == 7
     assert config_changes == 1
-    assert set(gid_ini_config.config.all_section_names) == {"general_settings", "debug", "this", "folder", "a_new_section", 'ENV'}
+    assert set(gid_ini_config.config.all_section_names) == {"general_settings", "debug", "this", "folder", "a_new_section", 'ENV', 'data_types'}
 
     gid_ini_config.add_section("this")
     with pytest.raises(SectionExistsError):
         gid_ini_config.add_section("this", existing_ok=False)
     gid_ini_config.remove_section("debug")
 
-    assert len(gid_ini_config.config.all_sections) == 5
-    assert set(gid_ini_config.config.all_section_names) == {"general_settings", "this", "folder", "a_new_section", 'ENV'}
+    assert len(gid_ini_config.config.all_sections) == 6
+    assert set(gid_ini_config.config.all_section_names) == {"general_settings", "this", "folder", "a_new_section", 'ENV', 'data_types'}
     assert config_changes == 2
     with pytest.raises(SectionMissingError):
         gid_ini_config.remove_section("debug", False)

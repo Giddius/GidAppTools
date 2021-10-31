@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 from typing import Any, Callable, Hashable, Union, Literal
 from datetime import datetime
-from threading import Lock
+from threading import Lock, RLock
 from yarl import URL
 from gidapptools.general_helper.dict_helper import AdvancedDict, AdvancedDictError, KeyPathError, BaseVisitor, set_by_key_path
 from gidapptools.gid_config.conversion.conversion_table import EntryTypus
@@ -132,7 +132,7 @@ class SpecVisitor(BaseVisitor):
             EntryTypus: [description]
         """
 
-        return EntryTypus(original_value=value, base_typus=bool, other_arguments=self._get_sub_arguments(value, None))
+        return EntryTypus(original_value=value, base_typus=bool)
 
     def _handle_string(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
         """
@@ -254,6 +254,7 @@ class SpecData(AdvancedDict):
 
     def __init__(self, visitor: SpecVisitor, **kwargs) -> None:
         self.visitor = visitor
+        self.visit_lock = RLock()
         super().__init__(data=None, **kwargs)
 
     def _get_section_default(self, section_name: str) -> EntryTypus:
@@ -285,8 +286,9 @@ class SpecData(AdvancedDict):
         self.modify_with_visitor(self.visitor)
 
     def reload(self) -> None:
-        self.visitor.reload()
-        self._resolve_values()
+        with self.visit_lock:
+            self.visitor.reload()
+            self._resolve_values()
 
 
 class SpecFile(FileMixin, SpecData):
