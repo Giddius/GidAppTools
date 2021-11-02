@@ -1,10 +1,10 @@
-from typing import Callable, Union
+from typing import Callable, Union, Optional
 from contextlib import contextmanager
 from time import perf_counter_ns, process_time_ns, time_ns, thread_time_ns
-
+from pathlib import Path
 from functools import wraps
 import os
-
+from threading import RLock
 
 TIME_NS_FUNC_TYPE = Union[perf_counter_ns, process_time_ns, time_ns, thread_time_ns]
 
@@ -13,10 +13,21 @@ def _check_env_var_condition(second_var_name: str) -> bool:
     return any(os.getenv(env_name, '0') == '1' for env_name in ["GIDAPPTOOLS_TIMING_ENABLED", second_var_name])
 
 
+time_execution_path_locks: dict[Path, RLock] = {}
+
+
+def get_time_execution_path_lock(path: Path) -> RLock:
+    lock = time_execution_path_locks.get(path, None)
+    if lock is None:
+        lock = RLock()
+        time_execution_path_locks[path] = lock
+    return lock
+
+
 @contextmanager
 def time_execution(identifier: str = None,
                    time_ns_func: TIME_NS_FUNC_TYPE = perf_counter_ns,
-                   output: Callable = print,
+                   output: Union[Callable, Path] = print,
                    condition: bool = None,
                    as_seconds: bool = True,
                    decimal_places: Union[int, None] = None) -> None:
@@ -33,7 +44,12 @@ def time_execution(identifier: str = None,
         else:
             unit = 'ns'
         identifier = '' if identifier is None else identifier
-        output(f"{identifier} took {full_time:f} {unit}")
+        if isinstance(output, Path):
+            with get_time_execution_path_lock(output):
+                with output.open('a', encoding='utf-8', errors='ignore') as f:
+                    f.write(f"{identifier} took {full_time:f} {unit}" + '\n')
+        else:
+            output(f"{identifier} took {full_time:f} {unit}")
     else:
         yield
 
