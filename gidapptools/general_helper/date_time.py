@@ -15,8 +15,8 @@ from datetime import datetime, timezone, timedelta, tzinfo
 from gidapptools.utility.enums import BaseGidEnum
 
 from gidapptools.general_helper.timing import time_execution
-from tzlocal import get_localzone
-import pytz
+# from tzlocal import get_localzone
+# import pytz
 import attr
 from functools import total_ordering
 from gidapptools.errors import DateTimeFrameTimezoneError
@@ -59,17 +59,17 @@ class DatetimeFmt(str, Enum):
         return date_time.strftime(tz_fmt)
 
 
-class NamedTimezone:
-    LOCAL = get_localzone()
-    UTC = timezone.utc
-    GMT = timezone(offset=timedelta(hours=0), name='GMT')
-    CET = pytz.timezone('CET')
-    CST = pytz.timezone('America/Winnipeg')
+# class NamedTimezone:
+#     LOCAL = get_localzone()
+#     UTC = timezone.utc
+#     GMT = timezone(offset=timedelta(hours=0), name='GMT')
+#     CET = pytz.timezone('CET')
+#     CST = pytz.timezone('America/Winnipeg')
 
-    @classmethod
-    def get(cls, name: str, default: Any = None) -> Optional[tzinfo]:
-        mod_name = name.upper().strip()
-        return getattr(cls, mod_name, default)
+#     @classmethod
+#     def get(cls, name: str, default: Any = None) -> Optional[tzinfo]:
+#         mod_name = name.upper().strip()
+#         return getattr(cls, mod_name, default)
 
 
 def get_aware_now(tz: timezone) -> datetime:
