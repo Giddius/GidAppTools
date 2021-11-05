@@ -16,10 +16,6 @@ from functools import wraps
 from warnings import warn
 from gidapptools.general_helper.enums import MiscEnum
 
-try:
-    from icecream import ic
-except ImportError:
-    ic = print
 
 # endregion[Imports]
 

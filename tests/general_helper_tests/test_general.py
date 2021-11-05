@@ -9,7 +9,9 @@ defaultable_list_pop_params = [
     Param([[1, 2, 3, 4, 5], 0, None, 1], "not_default_1"),
     Param([[1, 2, 3, 4, 5], 6, None, None], "default_None_1"),
     Param([[1, 2, 3, 4, 5], 7, 42, 42], "default_42"),
-    Param([[1, 2, 3, 4, 5], "not an int", 42, TypeError], "not_int_default_42")
+    Param([[1, 2, 3, 4, 5], "not an int", 42, TypeError], "not_int_default_42"),
+    Param([[], -1, 13, 13], "empty_list"),
+    Param([[1, 2, 3, 4, 5], 7, "text", "text"], "default_text"),
 ]
 actual_defaultable_list_pop_parameters = [item.param for item in defaultable_list_pop_params]
 actual_defaultable_list_pop_parameter_names = [item.name for item in defaultable_list_pop_params]

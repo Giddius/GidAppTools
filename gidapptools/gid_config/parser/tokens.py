@@ -134,7 +134,8 @@ class Entry(IniToken):
 
     def as_text(self, extra_entry_newlines: int = 0) -> str:
         lines = [comment.as_text() for comment in self.comments]
-        lines.append(f"{self.key} {self.key_value_separator} {self.value}")
+        text_value = "" if self.value is None else self.value
+        lines.append(f"{self.key} {self.key_value_separator} {text_value}")
         lines += ['' for i in range(extra_entry_newlines)]
         return '\n'.join(lines)
 

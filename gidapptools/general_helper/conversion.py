@@ -3,11 +3,29 @@ from gidapptools.general_helper.deprecation import deprecated_argument
 import attr
 import inflect
 import re
-from gidapptools.data.conversion_data import NANOSECONDS_IN_SECOND, STRING_FALSE_VALUES, STRING_TRUE_VALUES
 from functools import cached_property, total_ordering
-from gidapptools.general_helper.timing import time_execution, time_func
 from datetime import datetime, timedelta, timezone
 import random
+
+NANOSECONDS_IN_SECOND: int = 1_000_000_000
+
+
+RAW_STRING_TRUE_VALUES = {'yes',
+                          'y',
+                          '1',
+                          'true',
+                          '+'}
+
+RAW_STRING_FALSE_VALUES = {'no',
+                           'n',
+                           '0',
+                           'false',
+                           '-'}
+
+
+STRING_TRUE_VALUES = {str(value).casefold() for value in RAW_STRING_TRUE_VALUES}
+
+STRING_FALSE_VALUES = {str(value).casefold() for value in RAW_STRING_FALSE_VALUES}
 
 
 @total_ordering

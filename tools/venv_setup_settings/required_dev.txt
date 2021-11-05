@@ -4,7 +4,6 @@ memory-profiler
 numpy
 tomlkit
 invoke
-icecream
 dateparser
 rich
 matplotlib

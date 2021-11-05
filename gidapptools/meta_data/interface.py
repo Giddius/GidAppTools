@@ -29,12 +29,7 @@ from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 import inspect
 from gidapptools.data import ENTRY_POINT_NAME
 from gidapptools.gid_config.meta_factory import MetaConfigFactory, MetaConfig
-# REMOVE_BEFORE_BUILDING_DIST
-from gidapptools.utility._debug_tools import dprint
 
-print = dprint
-
-# end REMOVE_BEFORE_BUILDING_DIST
 
 # endregion[Imports]
 
