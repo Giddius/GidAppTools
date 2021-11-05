@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 from yarl import URL
 from gidapptools.general_helper.dispatch_table import BaseDispatchTable
 from gidapptools.errors import DispatchError
-import attr
+
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_config.enums import SpecialTypus
 from gidapptools.gid_config.conversion.entry_typus_item import EntryTypus

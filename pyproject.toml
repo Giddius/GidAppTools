@@ -20,7 +20,8 @@ dependencies = [
     "orjson",
     "pyparsing==3.0.0rc1",
     "click",
-    "python-dateutil"
+    "python-dateutil",
+    "attrs==21.2.0"
 ]
 
 [project.urls]
