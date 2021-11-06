@@ -9,7 +9,7 @@ Soon.
 
 from pathlib import Path
 from typing import Any
-
+import sys
 
 # endregion[Imports]
 
@@ -37,6 +37,10 @@ def defaultable_list_pop(in_list: list, idx: int, default: Any = None) -> Any:
         return in_list.pop(idx)
     except IndexError:
         return default
+
+
+def is_frozen() -> bool:
+    return getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
 
 # region[Main_Exec]
 

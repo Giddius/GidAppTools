@@ -21,7 +21,7 @@ from gidapptools.errors import NotSetupError, NoFactoryFoundError, MetaItemNotFo
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
 from gidapptools.types import PATH_TYPE
 
-from gidapptools.meta_data.meta_info import MetaInfoFactory, MetaInfo
+from gidapptools.meta_data.meta_info import MetaInfoFactory, MetaInfo, FrozenMetaInfo
 from gidapptools.meta_data.meta_paths import MetaPathsFactory, MetaPaths
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
@@ -183,8 +183,11 @@ def get_meta_item(item_name: str = None) -> Union[dict[str, type[META_ITEMS_TYPE
     return app_meta.get(item_name)
 
 
-def get_meta_info() -> MetaInfo:
-    return app_meta['meta_info']
+def get_meta_info() -> Union[MetaInfo, FrozenMetaInfo]:
+    try:
+        return app_meta['meta_info']
+    except MetaItemNotFoundError:
+        return app_meta['frozen_meta_info']
 
 
 def get_meta_paths() -> MetaPaths:
@@ -193,7 +196,6 @@ def get_meta_paths() -> MetaPaths:
 
 def get_meta_config() -> MetaConfig:
     return app_meta['meta_config']
-
 
     # region[Main_Exec]
 if __name__ == '__main__':

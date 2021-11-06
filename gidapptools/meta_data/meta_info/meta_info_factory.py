@@ -17,13 +17,13 @@ from pathlib import Path
 from typing import Any, Callable
 from functools import partial
 
-from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
+from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo, FrozenMetaInfo
 from gidapptools.utility.helper import PATH_TYPE, meta_data_from_path
 
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
 from gidapptools.general_helper.conversion import str_to_bool
-
+from gidapptools.general_helper.general import is_frozen
 # REMOVE_BEFORE_BUILDING_DIST
 from gidapptools.utility._debug_tools import dprint
 
@@ -51,7 +51,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
 class MetaInfoFactory(AbstractMetaFactory):
-    product_class = MetaInfo
+    product_class = MetaInfo if is_frozen() is False else FrozenMetaInfo
     prefix_arg_getters = '_arg_get_'
     is_dev_env_name = 'IS_DEV'
     is_code_runner_env_name = 'IS_CODE_RUNNER'
