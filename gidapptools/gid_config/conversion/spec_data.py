@@ -275,11 +275,16 @@ class SpecVisitor(BaseVisitor):
 
 class SpecData(AdvancedDict):
     default_visitor_class = SpecVisitor
+    visit_lock = RLock()
 
     def __init__(self, visitor: SpecVisitor, **kwargs) -> None:
         self.visitor = visitor
-        self.visit_lock = RLock()
         super().__init__(data=None, **kwargs)
+
+    @property
+    def data(self) -> dict:
+        with self.visit_lock:
+            return super().data
 
     def _get_section_default(self, section_name: str) -> EntryTypus:
 

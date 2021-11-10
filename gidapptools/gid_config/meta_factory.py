@@ -89,6 +89,7 @@ class MetaConfig(AbstractMetaItem):
     spec_name_suffix: str = attr.ib(default="_configspec", converter=lambda x: x.casefold())
     config_class: type = attr.ib(default=GidIniConfig)
     file_changed_parameter: str = attr.ib(default='size')
+    instances: dict[tuple[Path, Path], config_class] = {}
 
     @property
     def config_spec_pairs(self) -> CONFIG_SPEC_PAIRS_TYPE:
@@ -102,7 +103,12 @@ class MetaConfig(AbstractMetaItem):
 
     def get_config(self, name: str) -> Optional[GidIniConfig]:
         config_spec_pair = self.config_spec_pairs[name.casefold()]
-        return self.config_class(**config_spec_pair, file_changed_parameter=self.file_changed_parameter)
+        if (config_spec_pair.get("config_file"), config_spec_pair.get("spec_file")) not in self.instances:
+            config = self.config_class(**config_spec_pair, file_changed_parameter=self.file_changed_parameter)
+            config.reload()
+            self.instances[(config_spec_pair.get("config_file"), config_spec_pair.get("spec_file"))] = config
+
+        return self.instances[(config_spec_pair.get("config_file"), config_spec_pair.get("spec_file"))]
 
     def to_storager(self, storager: Callable = None) -> None:
         if storager is None:
@@ -131,8 +137,8 @@ class MetaConfigFactory(AbstractMetaFactory):
         self.spec_paths: list[Path] = []
 
     def _dev_init(self) -> None:
-        self.config_dir: Path = self.config_kwargs.get("code_base_dir").joinpath("dev_temp","config")
-        self.spec_dir: Path = self.config_kwargs.get("code_base_dir").joinpath("dev_temp","config", "spec")
+        self.config_dir: Path = self.config_kwargs.get("code_base_dir").joinpath("dev_temp", "config")
+        self.spec_dir: Path = self.config_kwargs.get("code_base_dir").joinpath("dev_temp", "config", "spec")
 
     def _create_spec_file(self, name: str, content: Union[str, dict]) -> Path:
         self.spec_dir.mkdir(exist_ok=True, parents=True)
