@@ -13,7 +13,7 @@ import json
 
 from pathlib import Path
 from typing import Any, Callable, Hashable, Union, Literal
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from threading import Lock, RLock
 from yarl import URL
 from gidapptools.general_helper.dict_helper import AdvancedDict, AdvancedDictError, KeyPathError, BaseVisitor, set_by_key_path
@@ -27,7 +27,7 @@ from gidapptools.general_helper.string_helper import split_quotes_aware
 from gidapptools.types import PATH_TYPE
 from gidapptools.gid_config.enums import SpecAttribute
 from gidapptools.gid_signal.interface import get_signal
-
+from gidapptools.gid_config.conversion.extra_base_typus import NonTypeBaseTypus
 # endregion[Imports]
 
 # region [TODO]
@@ -247,6 +247,30 @@ class SpecVisitor(BaseVisitor):
         """
 
         return EntryTypus(original_value=value, base_typus=URL)
+
+    def _handle_file_size(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
+        """
+        NAMED_VALUE_ARGUMENTS:
+            None
+        Args:
+            value (Any): [description]
+
+        Returns:
+            EntryTypus: [description]
+        """
+        return EntryTypus(original_value=value, base_typus=NonTypeBaseTypus.FILE_SIZE)
+
+    def _handle_timedelta(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
+        """
+        NAMED_VALUE_ARGUMENTS:
+            None
+        Args:
+            value (Any): [description]
+
+        Returns:
+            EntryTypus: [description]
+        """
+        return EntryTypus(original_value=value, base_typus=timedelta)
 
 
 class SpecData(AdvancedDict):

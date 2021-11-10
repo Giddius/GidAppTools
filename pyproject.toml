@@ -22,7 +22,8 @@ dependencies = [
     "click",
     "python-dateutil",
     "attrs==21.2.0",
-    "rich==10.12.0"
+    "rich==10.12.0",
+    "sortedcontainers==2.4.0"
 ]
 
 [project.urls]
@@ -78,3 +79,4 @@ sections = [
 
 [tool.pytest.ini_options]
 addopts = "-rP -vv --durations=0 --show-capture=all --color=auto --code-highlight=yes"
+pytest_plugins = []

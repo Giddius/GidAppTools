@@ -1,5 +1,5 @@
 import pytest
-from gidapptools.general_helper.conversion import seconds2human
+from gidapptools.general_helper.conversion import seconds2human, human2timedelta
 from collections import namedtuple
 import random
 from datetime import timedelta, datetime
@@ -37,3 +37,40 @@ actual_seconds2human_no_year_as_name_names = [item.name for item in seconds2huma
 @pytest.mark.parametrize("in_seconds, expected", actual_seconds2human_no_year_as_name_values, ids=actual_seconds2human_no_year_as_name_names)
 def test_seconds2human_no_year_as_name(in_seconds, expected):
     assert seconds2human(in_seconds, as_symbols=False, with_year=False) == expected
+
+
+def year_to_seconds(in_year_amount: int) -> int:
+    return in_year_amount * (60 * 60 * 24 * 7 * 52) + (60 * 60 * 24)
+
+
+def nanoseconds_to_seconds(in_nanoseconds: int) -> int:
+    return in_nanoseconds * (1 / 1_000_000_000)
+
+
+test_human2timedelta_params = [pytest.param("", timedelta(), id="empty string"),
+                               pytest.param("1 nanosecond", timedelta(seconds=nanoseconds_to_seconds(1)), id="nanosecond positive"),
+                               pytest.param("1 microsecond", timedelta(microseconds=1), id="microsecond positive"),
+                               pytest.param("1 millisecond", timedelta(milliseconds=1), id="millisecond positive"),
+                               pytest.param("1 second", timedelta(seconds=1), id='second positive'),
+                               pytest.param("1 minute", timedelta(minutes=1), id="minute positive"),
+                               pytest.param("1 hour", timedelta(hours=1), id="hour positive"),
+                               pytest.param("1 day", timedelta(days=1), id="day positive"),
+                               pytest.param("1 week", timedelta(weeks=1), id="week positive"),
+                               pytest.param("1 year", timedelta(seconds=year_to_seconds(1)), id="year positive"),
+                               pytest.param("-1 nanosecond", -timedelta(seconds=nanoseconds_to_seconds(1)), id="nanosecond negative"),
+                               pytest.param("-1 microsecond", -timedelta(microseconds=1), id="microsecond negative"),
+                               pytest.param("-1 millisecond", -timedelta(milliseconds=1), id="millisecond negative"),
+                               pytest.param("-1 second", -timedelta(seconds=1), id='second negative'),
+                               pytest.param("-1 minute", -timedelta(minutes=1), id="minute negative"),
+                               pytest.param("-1 hour", -timedelta(hours=1), id="hour negative"),
+                               pytest.param("-1 day", -timedelta(days=1), id="day negative"),
+                               pytest.param("-1 week", -timedelta(weeks=1), id="week negative"),
+                               pytest.param("-1 year", -timedelta(seconds=year_to_seconds(1)), id="year negative"),
+                               pytest.param("22 hours 7 seconds 4 microseconds", timedelta(hours=22, seconds=7, microseconds=4), id="combined 1 positive"),
+                               pytest.param("since 40 weeks 7 hours 1 second", -timedelta(weeks=40, hours=7, seconds=1), id="combined 2 word-negative")
+                               ]
+
+
+@ pytest.mark.parametrize("in_text, expected", test_human2timedelta_params)
+def test_human2timedelta(in_text, expected):
+    assert human2timedelta(in_text) == expected

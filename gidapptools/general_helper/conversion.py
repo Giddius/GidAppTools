@@ -1,11 +1,17 @@
-from typing import ClassVar, Iterable, Union
+from typing import ClassVar, Iterable, Union, Any
 from gidapptools.general_helper.deprecation import deprecated_argument
 import attr
 import inflect
 import re
-from functools import cached_property, total_ordering
+from functools import cached_property, total_ordering, reduce
 from datetime import datetime, timedelta, timezone
 import random
+import pyparsing as pp
+from collections import defaultdict
+import pyparsing.common as ppc
+from enum import Enum, auto, Flag
+from sortedcontainers import SortedList
+from operator import neg, pos, or_
 
 NANOSECONDS_IN_SECOND: int = 1_000_000_000
 
@@ -214,6 +220,7 @@ class TimeUnit:
     name: str = attr.ib()
     symbol: str = attr.ib()
     factor: int = attr.ib()
+    aliases: tuple[str] = attr.ib(default=tuple(), converter=tuple)
 
     @property
     def plural(self):
@@ -235,20 +242,46 @@ class TimeUnit:
         return f"{in_value} {self.plural}"
 
 
-TIMEUNITS = [TimeUnit(*item) for item in [('nanosecond', 'ns', 1 / NANOSECONDS_IN_SECOND), ('millisecond', 'ms', 1 / 1000), ('second', 's', 1),
-                                          ('minute', 'm', 60), ('hour', 'h', 60 * 60), ('day', 'd', 60 * 60 * 24), ('week', 'w', 60 * 60 * 24 * 7), ("year", "y", (60 * 60 * 24 * 7 * 52) + (60 * 60 * 24))]]
+TIMEUNITS = [TimeUnit(*item) for item in [('nanosecond', 'ns', 1 / NANOSECONDS_IN_SECOND), ("microsecond", "us", (1 / 1000) / 1000, ["mi", "mis", "mü", "müs", "μs"]), ('millisecond', 'ms', 1 / 1000), ('second', 's', 1, ["sec"]),
+                                          ('minute', 'm', 60, ["min", "mins"]), ('hour', 'h', 60 * 60), ('day', 'd', 60 * 60 * 24), ('week', 'w', 60 * 60 * 24 * 7), ("year", "y", (60 * 60 * 24 * 7 * 52) + (60 * 60 * 24))]]
 TIMEUNITS = sorted(TIMEUNITS, key=lambda x: x.factor, reverse=True)
 
 
 class TimeUnits:
 
     def __init__(self, with_year: bool = True) -> None:
-        self._units = TIMEUNITS.copy()
+        self._units = SortedList(TIMEUNITS.copy(), key=lambda x: -x.factor)
         self.with_year = with_year
 
-    @property
+    @cached_property
     def smallest_unit(self) -> TimeUnit:
         return self.units[-1]
+
+    @cached_property
+    def name_dict(self) -> dict[str, TimeUnit]:
+        return {item.name.casefold(): item for item in self.units} | {item.plural.casefold(): item for item in self.units}
+
+    @cached_property
+    def symbol_dict(self) -> dict[str, TimeUnit]:
+        return {item.symbol.casefold(): item for item in self.units}
+
+    @cached_property
+    def alias_dict(self) -> dict[str, TimeUnit]:
+        _out = {}
+        for item in self.units:
+            for alias in item.aliases:
+                _out[alias.casefold()] = item
+        return _out
+
+    @cached_property
+    def full_dict(self) -> dict[str, TimeUnit]:
+        return self.name_dict | self.symbol_dict | self.alias_dict
+
+    def __getitem__(self, key: Union[int, str]) -> TimeUnit:
+        if isinstance(key, int):
+            return self.units[key]
+
+        return self.full_dict[key]
 
     @property
     def units(self):
@@ -262,7 +295,13 @@ class TimeUnits:
 
 def seconds2human(in_seconds: Union[int, float, timedelta], as_symbols: bool = False, with_year: bool = True) -> str:
     rest = in_seconds.total_seconds() if isinstance(in_seconds, timedelta) else in_seconds
+    sign = ""
+    if rest < 0:
+        print(f"it is {in_seconds=}")
+        rest = abs(rest)
+        sign = "-"
     result = {}
+
     _time_units = TimeUnits(with_year=with_year)
     for unit in _time_units:
         amount, rest = unit.convert_with_rest(rest)
@@ -275,8 +314,81 @@ def seconds2human(in_seconds: Union[int, float, timedelta], as_symbols: bool = F
         _name = f" {_unit.plural}" if as_symbols is False else _unit.symbol
         return f"0{_name}"
     if len(results) > 1:
-        return ' '.join(results[:-1]) + ' and ' + results[-1]
-    return results[0]
+        return sign + ' '.join(results[:-1]) + ' and ' + results[-1]
+    return sign + results[0]
+
+
+class TimedeltaConversionModifiers(Flag):
+    POSITIVE = auto()
+    NEGATIVE = auto()
+
+    @property
+    def sign(self):
+        if self.__class__.NEGATIVE in self and self.__class__.POSITIVE in self:
+            raise ValueError("Parsed timedelta can not have positive and negative modifiers at the same time.")
+        if self.__class__.NEGATIVE in self:
+            return neg
+
+        return pos
+
+
+def get_timedelta_parsing_grammar() -> pp.ParserElement:
+
+    possible_time_units = []
+    _time_units = TimeUnits(with_year=True)
+
+    def _time_data_action(in_token: pp.ParseResults) -> dict[TimeUnit, int]:
+        _out = defaultdict(int)
+
+        for item in in_token:
+            key = item[1]
+            value = item[0]
+            if key == _time_units['y']:
+                value = value * key.factor
+                key = _time_units['s']
+            elif key == _time_units['ns']:
+                value = value * key.factor
+                key = _time_units['s']
+
+            _out[key] += value
+
+        return dict(_out)
+
+    for unit in _time_units:
+        possible_time_units.append(unit.name)
+        possible_time_units.append(unit.symbol)
+        possible_time_units.append(unit.plural)
+        possible_time_units += list(unit.aliases)
+
+    possible_time_units = pp.one_of(possible_time_units, caseless=True).set_parse_action(lambda x: _time_units[x[0]])
+
+    combine_words = pp.one_of(["and", ",", ":", ";"], caseless=True).suppress()
+    time_item = pp.Group(ppc.integer + possible_time_units)
+    prefixes = pp.Keyword("in", caseless=True).set_parse_action(lambda: TimedeltaConversionModifiers.POSITIVE) | pp.Keyword("since", caseless=True).set_parse_action(
+        lambda: TimedeltaConversionModifiers.NEGATIVE) | pp.Literal('-').set_parse_action(lambda: TimedeltaConversionModifiers.NEGATIVE)
+
+    postfixes = pp.Keyword("ago", caseless=True).set_parse_action(lambda: TimedeltaConversionModifiers.NEGATIVE)
+
+    return pp.ZeroOrMore(prefixes)("prefix") + pp.OneOrMore(time_item + pp.Optional(combine_words))('time_data').set_parse_action(_time_data_action) + pp.ZeroOrMore(postfixes)("postfix")
+
+
+TIMEDELTA_PARSING_GRAMMAR = get_timedelta_parsing_grammar()
+
+
+def human2timedelta(in_text: str, default: Any = timedelta()) -> timedelta:
+    try:
+        tokens = TIMEDELTA_PARSING_GRAMMAR.parse_string(in_text, parse_all=True).as_dict()
+    except pp.ParseBaseException:
+        return default
+    _raw_modifier_data = tokens.get("prefix") + tokens.get('postfix')
+    if _raw_modifier_data == []:
+        _raw_modifier_data = [TimedeltaConversionModifiers.POSITIVE]
+    modifiers = reduce(or_, {i for i in _raw_modifier_data if i})
+
+    raw_timedelta_kwargs = {k.plural: v for k, v in tokens.get('time_data').items() if v}
+
+    raw_timedelta = timedelta(**raw_timedelta_kwargs)
+    return modifiers.sign(raw_timedelta)
 
 
 def str_to_bool(in_string: str, strict: bool = False) -> bool:

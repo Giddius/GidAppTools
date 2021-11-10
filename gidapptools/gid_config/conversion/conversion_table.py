@@ -9,7 +9,7 @@ Soon.
 
 from pathlib import Path
 from typing import Any, Callable, Union, Hashable, Mapping, TYPE_CHECKING
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from yarl import URL
 from gidapptools.general_helper.dispatch_table import BaseDispatchTable
 from gidapptools.errors import DispatchError
@@ -17,11 +17,12 @@ from gidapptools.errors import DispatchError
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_config.enums import SpecialTypus
 from gidapptools.gid_config.conversion.entry_typus_item import EntryTypus
-from gidapptools.general_helper.conversion import str_to_bool
+from gidapptools.general_helper.conversion import str_to_bool, human2bytes, bytes2human, human2timedelta, seconds2human
 from functools import partial
 from gidapptools.general_helper.timing import time_func
 
 from gidapptools.gid_config.parser.tokens import Entry
+from gidapptools.gid_config.conversion.extra_base_typus import NonTypeBaseTypus
 # endregion[Imports]
 
 # region [TODO]
@@ -154,6 +155,8 @@ class ConfigValueConversionTable(BaseDispatchTable):
 
             return path
         elif mode == "encode":
+            if isinstance(value, str):
+                value = Path(value)
             return value.as_posix()
 
     @BaseDispatchTable.mark(URL)
@@ -161,7 +164,27 @@ class ConfigValueConversionTable(BaseDispatchTable):
         if mode == "decode":
             return URL(value)
         elif mode == "encode":
+            if isinstance(value, str):
+                return URL(value)
             return value.human_repr()
+
+    @BaseDispatchTable.mark(NonTypeBaseTypus.FILE_SIZE)
+    def _file_size(self, value: str, mode: str = 'decode', **named_arguments) -> int:
+        if mode == "decode":
+            return human2bytes(value)
+        elif mode == "encode":
+            if isinstance(value, int):
+                return bytes2human(value)
+            return value
+
+    @BaseDispatchTable.mark(timedelta)
+    def _timedelta(self, value: str, mode: str = 'decode', **named_arguments) -> timedelta:
+        if mode == "decode":
+            return human2timedelta(value, default=None)
+        elif mode == "encode":
+            if isinstance(value, (timedelta, int, float)):
+                return seconds2human(value)
+            return value
 
     def _convert_by_type(self, entry: "Entry", typus: type) -> Any:
         converter = self.get(typus)

@@ -27,7 +27,7 @@ from gidapptools.gid_config.parser.ini_parser import BaseIniParser
 from gidapptools.gid_config.parser.tokens import Entry, Section
 from gidapptools.general_helper.timing import time_func
 from gidapptools.errors import MissingTypusOrSpecError, SectionExistsError
-
+from functools import partial
 from gidapptools.gid_config.parser.grammar import BaseIniGrammar, TokenFactory
 # endregion[Imports]
 
@@ -77,6 +77,9 @@ class GidIniConfig:
     def get_section(self, section_name: str) -> dict[str, Any]:
         section = self.config.get_section(section_name=section_name)
         return {entry.key: self.get(section_name=section_name, entry_key=entry.key) for entry in section.entries.values()}
+
+    def get_section_accessor(self, section_name: str) -> Callable[[str, Optional[Union[type, EntryTypus]], Optional[Iterable[str]], Optional[Any]], Any]:
+        return partial(self.get, section_name=section_name)
 
     def get(self,
             section_name: str,
