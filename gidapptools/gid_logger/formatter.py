@@ -6,7 +6,6 @@ Soon.
 
 # region [Imports]
 
-import gc
 import os
 import re
 import sys
@@ -25,7 +24,6 @@ import sqlite3
 import platform
 import importlib
 import subprocess
-import unicodedata
 import inspect
 
 from time import sleep, process_time, process_time_ns, perf_counter, perf_counter_ns
@@ -51,13 +49,8 @@ from collections import Counter, ChainMap, deque, namedtuple, defaultdict
 from urllib.parse import urlparse
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from threading import Lock
 from importlib.machinery import SourceFileLoader
-
-from gidapptools.gid_signal.signal_registry import SignalRegistry, signal_registry
-from gidapptools.gid_signal.signals.basic_signal import Signal
-if TYPE_CHECKING:
-    from gidapptools.gid_signal.signals.abstract_signal import AbstractSignal
+import logging
 
 # endregion[Imports]
 
@@ -77,18 +70,9 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion[Constants]
 
-GET_SIGNAL_LOCK = Lock()
 
-
-def get_signal(key: Hashable, klass: Optional["AbstractSignal"] = None) -> "AbstractSignal":
-    klass = Signal if klass is None else klass
-    with GET_SIGNAL_LOCK:
-        signal = signal_registry.get(key, None)
-        if signal is None:
-            signal = klass(key=key)
-            signal_registry.register(signal)
-
-    return signal
+class GidLoggingFormatter(logging.Formatter):
+    ...
 
 
 # region[Main_Exec]

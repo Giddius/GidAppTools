@@ -48,6 +48,7 @@ def test_ini_parser_parse(config_file: Path):
     parser = BaseIniParser()
     text = config_file.read_text()
     data = parser.parse(text)
+
     assert len(data) == 4
     assert isinstance(data, list) is True
     assert all(isinstance(item, Section) for item in data)

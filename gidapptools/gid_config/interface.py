@@ -48,6 +48,27 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
+class SectionAccessor:
+
+    def __init__(self, config: "GidIniConfig", section_name: str) -> None:
+        self.config = config
+        self.section_name = section_name
+
+    def get(self,
+            entry_key: str,
+            typus: Union[type, EntryTypus] = SpecialTypus.AUTO,
+            fallback_entry: Iterable[str] = None,
+            default: Any = MiscEnum.NOTHING) -> Any:
+        return self.config.get(section_name=self.section_name, entry_key=entry_key, typus=typus, fallback_entry=fallback_entry, default=default)
+
+    def set(self,
+            entry_key: str,
+            entry_value: Any,
+            create_missing_section: bool = False,
+            spec_typus: str = None) -> None:
+        return self.config.set(section_name=self.section_name, entry_key=entry_key, entry_value=entry_value, create_missing_section=create_missing_section, spec_typus=spec_typus)
+
+
 class GidIniConfig:
     default_spec_visitor: SpecVisitor = SpecVisitor()
     default_parser: BaseIniParser = BaseIniParser()
@@ -112,7 +133,12 @@ class GidIniConfig:
 
         return self.converter(entry=entry, typus=typus)
 
-    def set(self, section_name: str, entry_key: str, entry_value: Any, create_missing_section: bool = False, spec_typus: str = None) -> None:
+    def set(self,
+            section_name: str,
+            entry_key: str,
+            entry_value: Any,
+            create_missing_section: bool = False,
+            spec_typus: str = None) -> None:
         self.config.set_value(section_name=section_name, entry_key=entry_key, entry_value=self.converter.encode(entry_value), create_missing_section=create_missing_section)
         if spec_typus is not None:
             self.spec.set_typus_value(section_name=section_name, entry_key=entry_key, typus_value=spec_typus)

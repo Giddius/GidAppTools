@@ -5,6 +5,6 @@ tzlocal
 pytz
 inflect
 orjson
-pyparsing==3.0.0rc1
+pyparsing==3.0.6
 click
 jsonschema[format]

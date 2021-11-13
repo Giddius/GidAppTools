@@ -41,16 +41,16 @@ class BaseIniGrammar:
         comment_indicator (str, optional): String that indicates the start of a comment, gets also used for transforming back into text. Defaults to '#'.
         token_factory (TokenFactory, optional): Factory that transforms pyparsing results into tokens, gets set as `set_parse_action`s. Defaults to None.
     """
-    l_sqr_bracket = pp.Suppress('[')
-    r_sqr_bracket = pp.Suppress(']')
+    l_sqr_bracket = pp.Literal("[").suppress()
+    r_sqr_bracket = pp.Literal("]").suppress()
 
     section_name_excluded_chars = ['[', ']', '.']
-    section_name_extra_chars = [' ', '\t']
+    section_name_extra_chars = ['\t']
 
     key_name_exclusion_chars = ['[', ']', '.']
-    key_name_extra_chars = [' ']
+    key_name_extra_chars = [" "]
 
-    value_exclusion_chars = []
+    value_exclusion_chars = [" "]
     value_extra_chars = [' ', '\t']
     base_chars = {"section": {"exclude": section_name_excluded_chars,
                               "extra": section_name_extra_chars},
@@ -76,26 +76,27 @@ class BaseIniGrammar:
 
     @property
     def section_name(self) -> pp.ParserElement:
-        section_name = pp.line_start + self.l_sqr_bracket + pp.Word(self.get_chars_for('section')) + self.r_sqr_bracket
+        section_name = pp.AtLineStart(self.l_sqr_bracket + pp.Word(self.get_chars_for('section')) + self.r_sqr_bracket)
         return section_name.set_results_name('section_name')
 
     @property
     def key(self) -> pp.ParserElement:
-        key = pp.line_start + pp.Word(self.get_chars_for('key')) + self.key_value_separator
+        key = pp.AtLineStart(pp.Word(init_chars=self.get_chars_for("key").replace('[', ''), body_chars=self.get_chars_for('key')) + self.key_value_separator)
         return key
 
     @property
     def value(self) -> pp.ParserElement:
-        value = pp.OneOrMore(pp.Word(self.get_chars_for('value')), stop_on=self.key | self.section_name | self.comment).set_parse_action(''.join)
+        value = pp.OneOrMore(pp.Word(init_chars=self.get_chars_for("value").replace('[', ''), body_chars=self.get_chars_for('value')),
+                             stop_on=(pp.White('\n') + self.key) | (pp.White('\n') + self.section_name) | self.comment).set_parse_action(''.join)
 
         return value
 
-    @property
+    @ property
     def entry(self) -> pp.ParserElement:
         entry = self.key + pp.Optional(self.value)
         return entry.set_results_name('entry')
 
-    @property
+    @ property
     def comment(self) -> pp.ParserElement:
         comment = self.comment_indicator + pp.rest_of_line
         return comment.set_results_name('comment')
@@ -109,6 +110,21 @@ class BaseIniGrammar:
 # region[Main_Exec]
 
 if __name__ == '__main__':
-    pass
+    x = BaseIniGrammar()
+    y = """[debug]
+
+current_testing_channel = bot-testing
+
+
+
+
+[this]
+
+# a key comment
+that = 40
+something = blah
+
+"""
+    print(list(x.get_grammar().scan_string(y)))
 
 # endregion[Main_Exec]

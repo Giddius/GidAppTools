@@ -56,9 +56,10 @@ def test_gid_ini_config_sections(gid_ini_config: GidIniConfig):
     with pytest.raises(SectionExistsError):
         gid_ini_config.add_section("this", existing_ok=False)
     gid_ini_config.remove_section("debug")
-
-    assert len(gid_ini_config.config.all_sections) == 6
+    assert gid_ini_config.get("this", "something") == "blah"
     assert set(gid_ini_config.config.all_section_names) == {"general_settings", "this", "folder", "a_new_section", 'ENV', 'data_types'}
+    assert len(gid_ini_config.config.all_sections) == 6
+
     assert config_changes == 2
     with pytest.raises(SectionMissingError):
         gid_ini_config.remove_section("debug", False)

@@ -18,7 +18,7 @@ dependencies = [
     "pytz",
     "inflect",
     "orjson",
-    "pyparsing==3.0.0rc1",
+    "pyparsing==3.0.6",
     "click",
     "python-dateutil",
     "attrs==21.2.0",
@@ -79,4 +79,3 @@ sections = [
 
 [tool.pytest.ini_options]
 addopts = "-rP -vv --durations=0 --show-capture=all --color=auto --code-highlight=yes"
-pytest_plugins = []

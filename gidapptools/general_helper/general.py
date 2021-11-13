@@ -10,7 +10,8 @@ Soon.
 from pathlib import Path
 from typing import Any
 import sys
-
+from typing import Hashable, Iterable, Union
+from gidapptools.general_helper.enums import MiscEnum
 # endregion[Imports]
 
 # region [TODO]
@@ -37,6 +38,14 @@ def defaultable_list_pop(in_list: list, idx: int, default: Any = None) -> Any:
         return in_list.pop(idx)
     except IndexError:
         return default
+
+
+def dict_pop_fallback(in_dict: dict, keys: Union[Iterable[Hashable], Hashable], default: Any = None) -> Any:
+    for key in keys:
+        value = in_dict.pop(key, MiscEnum.NOT_FOUND)
+        if value is not MiscEnum.NOT_FOUND:
+            return value
+    return default
 
 
 def is_frozen() -> bool:

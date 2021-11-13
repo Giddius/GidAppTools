@@ -5,7 +5,8 @@ from pathlib import Path
 from functools import wraps
 import os
 from threading import RLock
-
+import inspect
+import sys
 TIME_NS_FUNC_TYPE = Union[perf_counter_ns, process_time_ns, time_ns, thread_time_ns]
 
 
@@ -75,6 +76,40 @@ def time_func(time_ns_func: TIME_NS_FUNC_TYPE = perf_counter_ns,
         return func
 
     return _decorator
+
+
+# def profile(func):
+#     """
+#     from `https://gist.github.com/pavelpatrin/5a28311061bf7ac55cdd`
+#     """
+
+#     @wraps(func)
+#     def wrapper(*args, **kwargs):
+#         from line_profiler import LineProfiler
+#         prof = LineProfiler()
+#         try:
+#             return prof(func)(*args, **kwargs)
+#         finally:
+#             prof.print_stats()
+
+#     return wrapper
+
+
+def profile(func):
+    """
+    Dummy decorator to be able to leave the `line_profiler`-decorator `@profile` in place,
+    even when not line-profiling.
+    """
+    return func
+
+
+def get_dummy_profile_decorator_in_globals():
+
+    if "profile" in dir(__builtins__):
+        return
+    stk = inspect.stack()[1]
+    mod = inspect.getmodule(stk[0])
+    setattr(mod, "profile", profile)
 
 
 if __name__ == '__main__':
