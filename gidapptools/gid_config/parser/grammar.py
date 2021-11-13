@@ -123,7 +123,9 @@ current_testing_channel = bot-testing
 # a key comment
 that = 40
 something = blah
+[sosos]
 
+a_value_with_spaces = this is a test
 """
     print(list(x.get_grammar().scan_string(y)))
 

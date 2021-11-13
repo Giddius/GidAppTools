@@ -9,8 +9,8 @@ import os
 def test_gid_ini_config_general(example_config_1: Path, example_spec_1: Path):
     config = GidIniConfig(config_file=example_config_1, spec_file=example_spec_1)
     config.reload()
-
-    assert config.as_dict() == {'debug': {'current_testing_channel': 'bot-testing'},
+    assert config.get("debug", "a_value_with_spaces") == "this is a test"
+    assert config.as_dict() == {'debug': {'current_testing_channel': 'bot-testing', "a_value_with_spaces": "this is a test"},
                                 'folder': {'folder_1': Path('C:/Program Files/Git/cmd')},
                                 'general_settings': {'cogs_location': 'antipetros_discordbot.cogs',
                                                      'guild_id': 449481990513754112,
@@ -23,7 +23,7 @@ def test_gid_ini_config_general(example_config_1: Path, example_spec_1: Path):
                                 'this': {'something': 'blah', 'that': 40},
                                 "data_types": {"this_is_a_boolean": True}}
 
-    assert config.as_dict(raw=True) == {'debug': {'current_testing_channel': 'bot-testing'},
+    assert config.as_dict(raw=True) == {'debug': {'current_testing_channel': 'bot-testing', "a_value_with_spaces": "this is a test"},
                                         'folder': {'folder_1': 'C:\\Program Files\\Git\\cmd'},
                                         'general_settings': {'cogs_location': 'antipetros_discordbot.cogs',
                                                              'guild_id': '449481990513754112',
@@ -67,7 +67,7 @@ def test_gid_ini_config_sections(gid_ini_config: GidIniConfig):
 
 def test_gid_ini_config_get_section(gid_ini_config: GidIniConfig):
     debug_section = gid_ini_config.get_section('debug')
-    assert debug_section == {'current_testing_channel': 'bot-testing'}
+    assert debug_section == {'current_testing_channel': 'bot-testing', "a_value_with_spaces": "this is a test"}
     general_settings_section = gid_ini_config.get_section('general_settings')
     assert general_settings_section == {'cogs_location': 'antipetros_discordbot.cogs',
                                         'guild_id': 449481990513754112,

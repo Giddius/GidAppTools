@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import AnyStr, Literal, Union, Any
 from contextlib import nullcontext
 from collections import defaultdict
-from threading import Lock
+from threading import Lock, RLock
 from _thread import LockType
 from gidapptools.general_helper.enums import BaseGidEnum
 from hashlib import blake2b, md5, sha256, sha3_512, blake2s
@@ -52,7 +52,7 @@ class FileMixin(os.PathLike):
 
     hash_func: HASH_FUNC_TYPE = md5
     file_hash_size_threshold: int = human2bytes("100 mb")
-    path_locks: defaultdict[Path, Lock] = defaultdict(Lock)
+    path_locks: dict[Path, RLock] = {}
 
     @unique
     class ChangeParameter(BaseGidEnum):
@@ -82,9 +82,10 @@ class FileMixin(os.PathLike):
             self.changed_parameter = self.ChangeParameter(changed_parameter)
 
     @property
-    def lock(self) -> Lock:
-        lock = self.path_locks[self.file_path]
-        return lock
+    def lock(self) -> RLock:
+        if self.file_path not in self.path_locks:
+            self.path_locks[self.file_path] = RLock()
+        return self.path_locks[self.file_path]
 
     @property
     def size(self) -> int:
@@ -132,9 +133,10 @@ class FileMixin(os.PathLike):
                   self.ChangeParameter.ALL: on_all,
                   self.ChangeParameter.ALWAYS: on_always,
                   self.ChangeParameter.NEVER: on_never}
-        result = checks[self.changed_parameter]()
-        if result is True:
-            self.changed_signal.emit(self)
+        with self.lock:
+            result = checks[self.changed_parameter]()
+            if result is True:
+                self.changed_signal.emit(self)
         return result
 
     def _update_changed_data(self) -> None:

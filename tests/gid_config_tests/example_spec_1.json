@@ -7,7 +7,8 @@
         "current_testing_channel": {
             "converter": "string",
             "description": "This is a description."
-        }
+        },
+        "a_value_with_spaces": { "converter": "string" }
     },
     "general_settings": {
         "cogs_location": { "converter": "string" },

@@ -1,3 +1,6 @@
 pytest
 Faker
 mock
+pytest-html
+allure-pytest
+pyparsing==3.0.6

@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Literal, Mapping, Union
 from hashlib import blake2b
 from gidapptools.gid_config.parser.ini_parser import BaseIniParser
-from threading import Lock
+from threading import Lock, RLock
 from pathlib import Path
 from typing import Any, TYPE_CHECKING, Union, Optional
 from gidapptools.errors import AdvancedDictError, DispatchError, SectionMissingError, EntryMissingError, SectionExistsError
@@ -178,7 +178,8 @@ class ConfigFile(FileMixin, ConfigData):
         return self._sections
 
     def reload(self) -> None:
-        self.load()
+        with self.lock:
+            self.load()
 
     def set_value(self, section_name: str, entry_key: str, entry_value: str, create_missing_section: bool = False) -> bool:
         success = super().set_value(section_name, entry_key, entry_value, create_missing_section=create_missing_section)

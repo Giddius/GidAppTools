@@ -336,12 +336,14 @@ class SpecFile(FileMixin, SpecData):
         self.load()
 
     def load(self) -> None:
-        self._data = json.loads(self.read())
-        super().reload()
+        with self.lock:
+            self._data = json.loads(self.read())
+            super().reload()
 
     def save(self) -> None:
-        json_data = json.dumps(self.data, indent=4, sort_keys=False, default=lambda x: x.convert_for_json())
-        self.write(json_data)
+        with self.lock:
+            json_data = json.dumps(self.data, indent=4, sort_keys=False, default=lambda x: x.convert_for_json())
+            self.write(json_data)
 
     def set_typus_value(self, section_name: str, entry_key: str, typus_value: str) -> None:
         super().set_typus_value(section_name=section_name, entry_key=entry_key, typus_value=typus_value)

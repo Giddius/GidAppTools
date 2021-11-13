@@ -223,8 +223,13 @@ class FakeLogger:
         if self.as_panel is True:
             objects = [Panel(Renderables(objects), title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="dark_red", color="white")), box=SQUARE)]
         with self.console._record_buffer_lock:
+            self.console.line()
+
             self.console.rule(title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="dark_red", color="white")))
+            self.console.print("!" * 50)
             self.console.print(*objects, sep=sep, end=end, style=style, justify=justify, emoji=emoji, markup=markup, highlight=highlight)
+            self.console.print("!" * 50)
+            self.console.line()
 
     def error(self,
               *objects: Any,

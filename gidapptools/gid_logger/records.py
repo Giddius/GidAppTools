@@ -145,14 +145,14 @@ class GidLogRecordFactory:
 
 
 gid_log_record_factory = GidLogRecordFactory()
+
+
+class GidBaseLogRecord(logging.LogRecord):
+    ...
+
+
 # region[Main_Exec]
 if __name__ == '__main__':
-    log.info("cat")
-    gid_log_record_factory.activate()
-
-    log.info("something")
-    gid_log_record_factory.deactivate()
-
-    log.info("this")
+    pass
 
 # endregion[Main_Exec]
