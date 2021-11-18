@@ -52,6 +52,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 from rich.console import Console as RichConsole, JustifyMethod
 from rich.style import Style
+from rich.measure import measure_renderables
 from rich.text import Text as RichText
 from rich.rule import Rule
 from rich.panel import Panel
@@ -159,9 +160,9 @@ class FakeLogger:
         objects = tuple(self._fix_obj(o) for o in objects)
         if self.as_panel is True:
             objects = [Panel(Renderables(objects), title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="grey66", color="grey3")), box=SQUARE)]
-        with self.console._record_buffer_lock:
-            self.console.rule(title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="grey66", color="grey3")))
-            self.console.print(*objects, sep=sep, end=end, style=style, justify=justify, emoji=emoji, markup=markup, highlight=highlight)
+
+        self.console.rule(title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="grey66", color="grey3")))
+        self.console.print(*objects, sep=sep, end=end, style=style, justify=justify, emoji=emoji, markup=markup, highlight=highlight)
 
     def info(self,
              *objects: Any,
@@ -180,9 +181,9 @@ class FakeLogger:
         objects = tuple(self._fix_obj(o) for o in objects)
         if self.as_panel is True:
             objects = [Panel(Renderables(objects), title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="light_sky_blue1", color="dark_green")), box=SQUARE)]
-        with self.console._record_buffer_lock:
-            self.console.rule(title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="light_sky_blue1", color="dark_green")))
-            self.console.print(*objects, sep=sep, end=end, style=style, justify=justify, emoji=emoji, markup=markup, highlight=highlight)
+
+        self.console.rule(title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="light_sky_blue1", color="dark_green")))
+        self.console.print(*objects, sep=sep, end=end, style=style, justify=justify, emoji=emoji, markup=markup, highlight=highlight)
 
     def warning(self,
                 *objects: Any,
@@ -201,9 +202,9 @@ class FakeLogger:
         objects = tuple(self._fix_obj(o) for o in objects)
         if self.as_panel is True:
             objects = [Panel(Renderables(objects), title=RichText.styled(self._get_rule_title(), style=Style(overline=True, underline=True, color="bright_white")), box=SQUARE)]
-        with self.console._record_buffer_lock:
-            self.console.rule(title=RichText.styled(self._get_rule_title(), style=Style(overline=True, underline=True, color="bright_white")))
-            self.console.print(*objects, sep=sep, end=end, style=style, justify=justify, emoji=emoji, markup=markup, highlight=highlight)
+
+        self.console.rule(title=RichText.styled(self._get_rule_title(), style=Style(overline=True, underline=True, color="bright_white")))
+        self.console.print(*objects, sep=sep, end=end, style=style, justify=justify, emoji=emoji, markup=markup, highlight=highlight)
 
     def critical(self,
                  *objects: Any,
@@ -222,14 +223,14 @@ class FakeLogger:
         objects = tuple(self._fix_obj(o) for o in objects)
         if self.as_panel is True:
             objects = [Panel(Renderables(objects), title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="dark_red", color="white")), box=SQUARE)]
-        with self.console._record_buffer_lock:
-            self.console.line()
 
-            self.console.rule(title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="dark_red", color="white")))
-            self.console.print("!" * 50)
-            self.console.print(*objects, sep=sep, end=end, style=style, justify=justify, emoji=emoji, markup=markup, highlight=highlight)
-            self.console.print("!" * 50)
-            self.console.line()
+        width = measure_renderables(self.console, options=self.console.options, renderables=objects).maximum
+        self.console.line()
+        self.console.rule(title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="dark_red", color="white")))
+        self.console.print("!" * width)
+        self.console.print(*objects, sep=sep, end=end, style=style, justify=justify, emoji=emoji, markup=markup, highlight=highlight)
+        self.console.print("!" * width)
+        self.console.line()
 
     def error(self,
               *objects: Any,
@@ -249,9 +250,9 @@ class FakeLogger:
 
         if self.as_panel is True:
             objects = [Panel(Renderables(objects), title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="yellow3", color="red")), box=SQUARE)]
-        with self.console._record_buffer_lock:
-            self.console.rule(title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="yellow3", color="red")))
-            self.console.print(*objects, sep=sep, end=end, style=style, justify=justify, emoji=emoji, markup=markup, highlight=highlight)
+
+        self.console.rule(title=RichText.styled(self._get_rule_title(), style=Style(bold=True, bgcolor="yellow3", color="red")))
+        self.console.print(*objects, sep=sep, end=end, style=style, justify=justify, emoji=emoji, markup=markup, highlight=highlight)
 
     @staticmethod
     def _fix_obj(in_obj):

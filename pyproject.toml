@@ -20,6 +20,7 @@ dependencies = [
     "orjson",
     "pyparsing==3.0.6",
     "click",
+    "tzlocal>=4.1",
     "python-dateutil",
     "attrs==21.2.0",
     "rich==10.12.0",

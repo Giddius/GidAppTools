@@ -118,6 +118,13 @@ class GidIniConfig:
         with self.access_lock:
             return partial(self.get, section_name=section_name)
 
+    def get_entry_accessor(self, section_name: str,
+                           entry_key: str,
+                           typus: Union[type, EntryTypus] = SpecialTypus.AUTO,
+                           fallback_entry: Iterable[str] = None,
+                           default: Any = MiscEnum.NOTHING):
+        return partial(self.get, section_name=section_name, entry_key=entry_key, typus=typus, fallback_entry=fallback_entry, default=default)
+
     def get(self,
             section_name: str,
             entry_key: str,

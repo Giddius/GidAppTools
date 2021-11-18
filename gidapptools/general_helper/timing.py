@@ -109,7 +109,8 @@ def get_dummy_profile_decorator_in_globals():
         return
     stk = inspect.stack()[1]
     mod = inspect.getmodule(stk[0])
-    setattr(mod, "profile", profile)
+    if mod is not None:
+        setattr(mod, "profile", profile)
 
 
 if __name__ == '__main__':

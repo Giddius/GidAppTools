@@ -81,13 +81,13 @@ class BaseIniGrammar:
 
     @property
     def key(self) -> pp.ParserElement:
-        key = pp.AtLineStart(pp.Word(init_chars=self.get_chars_for("key").replace('[', ''), body_chars=self.get_chars_for('key')) + self.key_value_separator)
+        key = pp.AtLineStart(pp.Word(init_chars=self.get_chars_for("key").replace('[', ''), body_chars=self.get_chars_for('key'))) + self.key_value_separator
         return key
 
     @property
     def value(self) -> pp.ParserElement:
         value = pp.OneOrMore(pp.Word(init_chars=self.get_chars_for("value").replace('[', ''), body_chars=self.get_chars_for('value')),
-                             stop_on=(pp.White('\n') + self.key) | (pp.White('\n') + self.section_name) | self.comment).set_parse_action(''.join)
+                             stop_on=self.key | self.section_name | self.comment).set_parse_action(''.join)
 
         return value
 

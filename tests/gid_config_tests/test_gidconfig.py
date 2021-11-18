@@ -4,6 +4,7 @@ from gidapptools.gid_config.interface import GidIniConfig
 from gidapptools.errors import SectionExistsError, SectionMissingError
 from pprint import pprint
 import os
+from datetime import timedelta
 
 
 def test_gid_ini_config_general(example_config_1: Path, example_spec_1: Path):
@@ -95,3 +96,18 @@ def test_gid_ini_config_get(gid_ini_config: GidIniConfig):
     assert gid_ini_config.get("debug", 'not_existing', default=12345) == 12345
 
     assert gid_ini_config.get("debug", 'not_existing', fallback_entry=("general_settings", "also_missing"), default=56789) == 56789
+
+
+def test_gid_ini_config_2_get(gid_ini_config_2: GidIniConfig):
+    assert gid_ini_config_2.get("debug", "current_testing_channel") == "bot-testing"
+    assert gid_ini_config_2.get("general_settings", "guild_id") == 449481990513754112
+    assert gid_ini_config_2.get("folder", "folder_1") == Path(r"C:\Program Files\Git\cmd")
+
+    assert gid_ini_config_2.get("debug", 'not_existing', fallback_entry=("general_settings", "guild_id")) == 449481990513754112
+
+    assert gid_ini_config_2.get("debug", 'not_existing', default=12345) == 12345
+
+    assert gid_ini_config_2.get("debug", 'not_existing', fallback_entry=("general_settings", "also_missing"), default=56789) == 56789
+
+    assert gid_ini_config_2.get("this", "max_threads", default=None) is None
+    assert gid_ini_config_2.get("this", "max_update_time_frame", default=None) == timedelta(days=3)

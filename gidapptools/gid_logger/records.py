@@ -151,6 +151,8 @@ class GidBaseLogRecord(logging.LogRecord):
     ...
 
 
+LOG_RECORD_TYPES = Union[logging.LogRecord, GidBaseLogRecord]
+
 # region[Main_Exec]
 if __name__ == '__main__':
     pass

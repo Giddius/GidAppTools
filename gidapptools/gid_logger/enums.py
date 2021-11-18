@@ -51,7 +51,7 @@ from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 import logging
-
+from gidapptools.general_helper.enums import BaseGidEnum
 import warnings
 # endregion[Imports]
 
@@ -97,6 +97,42 @@ def _check_if_all_levels_are_in_LoggingLevel() -> None:
         warnings.warn_explicit(message=msg, category=Warning, filename=THIS_FILE_DIR.name, lineno=inspect.findsource(LoggingLevel)[1], module=__name__, module_globals=globals(), source=inspect.getmodule(__name__))
 
 
+def _align_left(text: str, width: int = 0) -> str:
+    return text.ljust(width)
+
+
+def _align_center(text: str, width: int = 0) -> str:
+    return text.center(width)
+
+
+def _align_right(text: str, width: int = 0) -> str:
+    return text.rjust(width)
+
+
+class LoggingSectionAlignment(Enum):
+    LEFT = (_align_left, "<")
+    CENTER = (_align_center, "^")
+    RIGHT = (_align_right, ">")
+
+    def __init__(self, align_func: Callable[[str, Optional[int]], str], aliases: str = "") -> None:
+        self.align_func = align_func
+        self.aliases = set(aliases)
+
+    def align(self, text: str, width: int = 0) -> str:
+        return self.align_func(text, width)
+
+    @classmethod
+    def _missing_(cls, value: object) -> Any:
+        if isinstance(value, str):
+            mod_value = value.casefold()
+            for member in cls.__members__.values():
+                if mod_value == member.name.casefold():
+                    return member
+                if mod_value in member.aliases:
+                    return member
+        return super()._missing_(value)
+
+
 class LoggingLevel(int, Enum):
     NOTSET = 0
     DEBUG = 10
@@ -128,6 +164,6 @@ _check_if_all_levels_are_in_LoggingLevel()
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    pass
-
+    x = LoggingSectionAlignment("center")
+    print('| ' + x.align('this', 2) + ' |')
 # endregion[Main_Exec]
