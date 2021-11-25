@@ -63,8 +63,14 @@ import_heading_gid = "* Gid Imports --------------------------------------------
 import_heading_pyqt = "* PyQt5 Imports --------------------------------------------------------------------------------------->"
 import_heading_stdlib = "* Standard Library Imports ---------------------------------------------------------------------------->"
 import_heading_thirdparty = "* Third Party Imports --------------------------------------------------------------------------------->"
-known_gid = ["gidtools", "gidlogger", "gidqtutils", "gidviewmodels"]
-known_pyqt = ["PyQt5"]
+known_gid = [
+    "gidtools",
+    "gidlogger",
+    "gidqtutils",
+    "gidviewmodels",
+    "gidapptools"
+]
+known_pyqt = ["PyQt5", "PySide6"]
 length_sort = true
 line_length = 200
 lines_after_imports = 1

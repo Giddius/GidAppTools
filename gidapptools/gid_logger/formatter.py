@@ -77,9 +77,50 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
+def get_all_func_names(file: Path, recursive: True):
+    import ast
+
+    def _get_names(source_file: Path) -> list[str]:
+        root = ast.parse(source_file.read_text(encoding='utf-8', errors='ignore'))
+        return sorted({node.name for node in ast.walk(root) if isinstance(node, ast.FunctionDef)})
+
+    def _process_item(_item: Path):
+        if _item.is_file() and _item.suffix == '.py':
+            yield _get_names(_item)
+        elif _item.is_dir():
+            for _sub_item in _item.iterdir():
+                yield from _process_item(_sub_item)
+    if recursive is False:
+        names = _get_names(file)
+    else:
+        names = []
+        for _names in _process_item(file.parent):
+            names += _names
+    return sorted(set(names), key=len)
+
+
+def get_all_module_names(file: Path) -> list[str]:
+
+    def _get_module_name(_item: Path) -> str:
+        module_name = _item.stem
+        return module_name
+
+    def _process_item(_item: Path):
+        if _item.is_file() and _item.suffix == '.py':
+            yield _get_module_name(_item)
+        elif _item.is_dir():
+            for _sub_item in _item.iterdir():
+                yield from _process_item(_sub_item)
+
+    if file.is_file():
+        file = file.parent
+    return sorted({i for i in _process_item(file)}, key=len)
+
+
 class AbstractLoggingStyleSection:
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.LEFT
     default_width: int = 0
+    default_text: str = str(None)
 
     def __init__(self,
                  position: int = None,
@@ -99,10 +140,16 @@ class AbstractLoggingStyleSection:
         ...
 
     def align(self, text: str) -> str:
-        return self.alignment.align(text, self.width)
+        width = self.width() if callable(self.width) else self.width
+        if len(text) > width:
+            text = '...' + text[-(width - 3):]
+        return self.alignment.align(text, width)
 
     def format(self, record: "LOG_RECORD_TYPES") -> str:
-        text = str(self.get_formated_value(record=record))
+        try:
+            text = str(self.get_formated_value(record=record))
+        except AttributeError:
+            text = self.default_text
         return self.align(text)
 
     @classmethod
@@ -136,6 +183,10 @@ class TimeSection(AbstractLoggingStyleSection):
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
         time_value = datetime.fromtimestamp(record.created, tz=self.local_timezone)
+        msec_value = record.msecs
+        if msec_value == 1000:
+            msec_value = 0
+            time_value = time_value + timedelta(seconds=1)
         if self.time_zone is not None:
             time_value = time_value.replace(tzinfo=self.time_zone)
         if self.time_format.casefold() == "isoformat":
@@ -146,7 +197,7 @@ class TimeSection(AbstractLoggingStyleSection):
 class LevelSection(AbstractLoggingStyleSection):
     default_case: StringCase = StringCase.UPPER
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.CENTER
-    default_width: int = 6
+    default_width: int = max(len(i) for i in LoggingLevel._member_names_)
 
     def __init__(self,
                  position: int = None,
@@ -167,6 +218,7 @@ class LevelSection(AbstractLoggingStyleSection):
 
 class ThreadSection(AbstractLoggingStyleSection):
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.CENTER
+    default_width: int = 20
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
         return record.threadName
@@ -188,22 +240,40 @@ class PathSection(AbstractLoggingStyleSection):
                  with_extension: bool = False,
                  width: int = None,
                  alignment: Union[LoggingSectionAlignment, str] = None) -> None:
-        super().__init__(position=position, width=width, alignment=alignment)
+        super().__init__(position=position, width=self.width_from_env, alignment=alignment)
         self.with_extension = with_extension
         self.depth = depth
+        self._width_cache: int = None
+
+    def width_from_env(self) -> int:
+        if self._width_cache is None:
+            self._width_cache = int(os.getenv("MAX_MODULE_NAME_LEN", "20"))
+        return self._width_cache
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
-        path, extension = record.pathname.rsplit('.', 1)
-        _out = '/'.join(part for part in path.split('/')[-self.depth:])
-        if self.with_extension is True:
-            return _out + '.' + extension
-        return _out
+        path = Path(record.pathname)
+        if self.with_extension is False:
+            path = path.with_suffix('')
+        return '.'.join(part for part in path.parts[-self.depth:])
 
 
 class FunctionNameSection(AbstractLoggingStyleSection):
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.LEFT
+    default_width: int = int(os.getenv("MAX_FUNC_NAME_LEN", "10"))
+    default_text: str = "-"
+
+    def __init__(self) -> None:
+        super().__init__(width=self.width_from_env)
+        self._width_cache: int = None
+
+    def width_from_env(self) -> int:
+        if self._width_cache is None:
+            self._width_cache = int(os.getenv("MAX_FUNC_NAME_LEN", "10"))
+        return self._width_cache
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
+        if record.funcName == "<module>":
+            return self.default_text
         return record.funcName
 
 
@@ -211,7 +281,7 @@ class AbstractSectionLoggingStyle(ABC):
     default_separator: str = " | "
     default_message_start_indicator: str = ' ||--> '
 
-    def __init__(self, sections: Iterable[Union[str, Any]], separator: str = None, message_start_indicator: str = None, message_section: AbstractLoggingStyleSection = None):
+    def __init__(self, sections: Iterable[Union[str, AbstractLoggingStyleSection]], separator: str = None, message_start_indicator: str = None, message_section: AbstractLoggingStyleSection = None):
         self.sections = sections
         self.sorted_sections: tuple[AbstractLoggingStyleSection] = self.sort_sections()
         self.separator = separator or self.default_separator
@@ -237,10 +307,7 @@ class AbstractSectionLoggingStyle(ABC):
         ...
 
     def format(self, record: "LOG_RECORD_TYPES"):
-        try:
-            return self._format(record)
-        except KeyError as e:
-            raise ValueError(f'Formatting field not found in record: {e}') from e
+        return self._format(record)
 
 
 class GidSectionLoggingStyle(AbstractSectionLoggingStyle):
@@ -249,7 +316,6 @@ class GidSectionLoggingStyle(AbstractSectionLoggingStyle):
         if any(isinstance(i, AbstractLoggingStyleSection) is False for i in self.sections):
             raise ValueError("invalid format")
 
-    @time_func(condition=True)
     def _format(self, record: "LOG_RECORD_TYPES") -> str:
 
         message_part = record.getMessage() if self.message_section is None else self.message_section.format(record)
@@ -258,28 +324,57 @@ class GidSectionLoggingStyle(AbstractSectionLoggingStyle):
 
 
 class GidLoggingFormatter(logging.Formatter):
-    ...
+    default_fmt = (TimeSection(), LineNumberSection(), LevelSection(), ThreadSection(), PathSection(), FunctionNameSection())
 
+    def __init__(self,
+                 fmt: Union[str, Iterable[Union[str, AbstractLoggingStyleSection]]] = None,
+                 style: Literal["section", "$", "{", "$"] = "section",
+                 validate: bool = False,
+                 **kwargs) -> None:
+        if style == "section":
+            if fmt is None:
+                fmt = self.default_fmt
+            self._style = GidSectionLoggingStyle(sections=fmt, separator=kwargs.pop("separator", None), message_start_indicator=kwargs.pop("message_start_indicator", None), message_section=kwargs.pop("message_section", None))
+        else:
+            self._style = logging._STYLES[style][0](fmt)
+            if validate:
+                self._style.validate()
+
+            self._fmt = self._style._fmt
+            self.datefmt = kwargs.pop("datefmt", None)
+
+    def set_time(self, record: "LOG_RECORD_TYPES") -> "LOG_RECORD_TYPES":
+        return record
+
+    def format_message(self, record: "LOG_RECORD_TYPES") -> str:
+        return self.formatMessage(record=record)
+
+    def format_stack(self, stack_info):
+        return self.formatStack(stack_info=stack_info)
+
+    def format_exception(self, record: "LOG_RECORD_TYPES") -> "LOG_RECORD_TYPES":
+        if record.exc_info:
+            if not record.exc_text:
+                record.exc_text = self.formatException(ei=record.exc_info)
+        return record
+
+    def format(self, record: "LOG_RECORD_TYPES") -> str:
+        record = self.set_time(record=record)
+        text = self.format_message(record=record)
+        record = self.format_exception(record=record)
+        if record.exc_text:
+            if text[-1:] != "\n":
+                text = text + "\n"
+            text = text + record.exc_text
+        if record.stack_info:
+            if text[-1:] != "\n":
+                text = text + "\n"
+            text = text + self.format_stack(record.stack_info)
+        return text
 
 # region[Main_Exec]
 
-class RR:
-    def __init__(self) -> None:
-        self.created = time()
-        self.msecs = 203
-        self.threadName = None
-        self.lineno = 20
-        self.pathname = Path(__file__).resolve().as_posix()
-        self.funcName = "wuff"
-
-    def getMessage(self) -> str:
-        return "no message"
-
 
 if __name__ == '__main__':
-    sections = [TimeSection(), ThreadSection(), LineNumberSection(), PathSection(), FunctionNameSection()]
-    x = GidSectionLoggingStyle(sections=sections)
-
-    for y in range(100):
-        x.format(RR())
+    pprint(get_all_module_names(Path(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\gidapptools\__main__.py")))
 # endregion[Main_Exec]
