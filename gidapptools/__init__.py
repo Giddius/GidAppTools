@@ -6,7 +6,7 @@ from gidapptools.meta_data.interface import setup_meta_data, get_meta_config, ge
 from gidapptools.gid_logger.logger import get_main_logger, get_logger
 
 
-__version__ = "0.1.8"
+__version__ = "0.1.9"
 
 
 from pathlib import Path
