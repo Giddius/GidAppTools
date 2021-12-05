@@ -1,9 +1,12 @@
 import pytest
 from pathlib import Path
 from gidapptools.gid_config.interface import GidIniConfig
-from gidapptools.errors import SectionExistsError, SectionMissingError
+from gidapptools.errors import SectionExistsError, SectionMissingError, ValueValidationError
+from gidapptools.gid_config.conversion.entry_typus_item import EntryTypus
 from pprint import pprint
 import os
+import re
+
 from datetime import timedelta
 
 
@@ -111,3 +114,30 @@ def test_gid_ini_config_2_get(gid_ini_config_2: GidIniConfig):
 
     assert gid_ini_config_2.get("this", "max_threads", default=None) is None
     assert gid_ini_config_2.get("this", "max_update_time_frame", default=None) == timedelta(days=3)
+
+
+def test_string_sub_arguments(gid_ini_config_3: GidIniConfig):
+    typus: EntryTypus = gid_ini_config_3.spec.get_spec_attribute("string_subargs", "this_has_choices", "converter")
+    assert typus.base_typus == str
+    assert typus.named_arguments == {"choices": ["alpha", "beta"]}
+
+    typus: EntryTypus = gid_ini_config_3.spec.get_spec_attribute("string_subargs", "choices_with_empty", "converter")
+    assert typus.base_typus == str
+    assert typus.named_arguments == {"choices": ["prima", "secundus"]}
+
+    typus: EntryTypus = gid_ini_config_3.spec.get_spec_attribute("string_subargs", "choices_with_wrong_value", "converter")
+    assert typus.base_typus == str
+    assert typus.named_arguments == {"choices": ["start", "end"]}
+
+    assert gid_ini_config_3.get("string_subargs", "this_has_choices") == 'alpha'
+
+    assert gid_ini_config_3.get("string_subargs", "choices_with_empty") is None
+
+    with pytest.raises(ValueValidationError, match=re.escape(r"""Value 'middle' with Base-Typus <class 'str'> failed its validation, value needs to be one of ['start', 'end']""")):
+        gid_ini_config_3.get("string_subargs", "choices_with_wrong_value")
+
+    assert gid_ini_config_3.get("string_subargs", "choices_with_wrong_value", default="the_default") == "the_default"
+
+
+def test_descriptions(gid_ini_config_3: GidIniConfig):
+    assert gid_ini_config_3.get_description("debug", "current_testing_channel") == "This is a description."

@@ -55,7 +55,7 @@ from logging.handlers import QueueHandler, QueueListener
 from gidapptools.gid_logger.enums import LoggingLevel
 import atexit
 from gidapptools.gid_logger.formatter import GidLoggingFormatter, GidSectionLoggingStyle, get_all_func_names, get_all_module_names
-
+from gidapptools.gid_logger.handler import GidBaseRotatingFileHandler
 # endregion[Imports]
 
 # region [TODO]
@@ -105,6 +105,29 @@ def get_main_logger(name: str, path: Path, log_level: LoggingLevel = LoggingLeve
     _log = get_logger(name)
     _log.addHandler(que_handler)
     _log.setLevel(log_level)
+    listener.start()
+    atexit.register(listener.stop)
+    return _log
+
+
+def get_main_logger_with_file_logging(name: str, log_file_base_name: str, path: Path, log_level: LoggingLevel = LoggingLevel.DEBUG, formatter: Union[logging.Formatter, GidLoggingFormatter] = None, extra_logger: Iterable[str] = tuple()) -> Union[logging.Logger, GidLogger]:
+    os.environ["MAX_FUNC_NAME_LEN"] = str(min([max(len(i) for i in get_all_func_names(path, True)), 20]))
+    os.environ["MAX_MODULE_NAME_LEN"] = str(min([max(len(i) for i in get_all_module_names(path)), 20]))
+    que = queue.Queue(-1)
+    que_handler = QueueHandler(que)
+
+    handler = logging.StreamHandler(stream=sys.stdout)
+    file_handler = GidBaseRotatingFileHandler(base_name=log_file_base_name, log_folder=path.parent.joinpath("logs"))
+
+    formatter = GidLoggingFormatter() if formatter is None else formatter
+    handler.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
+    listener = QueueListener(que, handler, file_handler)
+    _log = get_logger(name)
+    for logger in [_log] + [logging.getLogger(l) for l in extra_logger]:
+        logger.addHandler(que_handler)
+
+        logger.setLevel(log_level)
     listener.start()
     atexit.register(listener.stop)
     return _log

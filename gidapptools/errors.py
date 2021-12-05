@@ -13,6 +13,7 @@ from datetime import timezone
 if TYPE_CHECKING:
     from gidapptools.general_helper.date_time import DateTimeFrame
     from gidapptools.gid_config.parser.config_data import ConfigData
+    from gidapptools.gid_config.conversion.entry_typus_item import EntryTypus
 # endregion[Imports]
 
 # region [TODO]
@@ -82,6 +83,16 @@ class EntryMissingError(GidConfigError):
         self.config_data = config_data
         self.message = f"No Entry with key {self.entry_key!r} in Section named {self.section_name!r} in config_data {self.config_data}."
         super().__init__(self.message)
+
+
+class ValueValidationError(GidConfigError):
+
+    def __init__(self, config_value: Any, base_typus: "EntryTypus", validation_description: str = None) -> None:
+        self.config_value = config_value
+        self.base_typus = base_typus
+        self.validation_description = validation_description
+        self.msg = f"Value {self.config_value!r} with Base-Typus {self.base_typus!r} failed its validation, {self.validation_description}."
+        super().__init__(self.msg)
 
 
 class ConfigSpecError(GidConfigError):

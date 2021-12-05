@@ -12,7 +12,7 @@ from typing import Any, Callable, Union, Hashable, Mapping, TYPE_CHECKING
 from datetime import datetime, timezone, timedelta
 from yarl import URL
 from gidapptools.general_helper.dispatch_table import BaseDispatchTable
-from gidapptools.errors import DispatchError
+from gidapptools.errors import DispatchError, ValueValidationError
 
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_config.enums import SpecialTypus
@@ -102,9 +102,14 @@ class ConfigValueConversionTable(BaseDispatchTable):
 
     @BaseDispatchTable.mark(str)
     def _string(self, value: str, mode: str = 'decode', **named_arguments) -> str:
+        def _validate(_value: str, _named_arguments: dict[str, Any]):
+            if "choices" in _named_arguments and value not in named_arguments["choices"]:
+                raise ValueValidationError(config_value=value, base_typus=str, validation_description=f"value needs to be one of {_named_arguments['choices']!r}")
         if mode == "decode":
-            return str(value)
+            _validate(value, named_arguments)
+            return value
         elif mode == "encode":
+            _validate(value, named_arguments)
             return value
 
     @BaseDispatchTable.mark(int)

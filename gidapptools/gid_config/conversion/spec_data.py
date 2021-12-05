@@ -134,7 +134,7 @@ class SpecVisitor(BaseVisitor):
 
         return EntryTypus(original_value=value, base_typus=bool)
 
-    def _handle_string(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
+    def _handle_string(self, value: Any, sub_arguments: dict[str, str] = None) -> EntryTypus:
         """
         NAMED_VALUE_ARGUMENTS:
             None
@@ -144,7 +144,10 @@ class SpecVisitor(BaseVisitor):
         Returns:
             EntryTypus: [description]
         """
-        return EntryTypus(original_value=value, base_typus=str)
+        sub_arguments = sub_arguments or {}
+        if "choices" in sub_arguments:
+            sub_arguments["choices"] = [i.strip() for i in sub_arguments["choices"].split('|')]
+        return EntryTypus(original_value=value, base_typus=str, named_arguments=sub_arguments)
 
     def _handle_integer(self, value: Any, sub_arguments: dict[str, str]) -> EntryTypus:
         """
@@ -304,7 +307,7 @@ class SpecData(AdvancedDict):
 
     def get_spec_attribute(self, section_name: str, entry_key: str, attribute: Union[SpecAttribute, str], default=None) -> Any:
         attribute = SpecAttribute(attribute) if isinstance(attribute, str) else attribute
-        self.get([section_name, entry_key, attribute.value], default=default)
+        return self.get([section_name, entry_key, attribute.value], default=default)
 
     def set_typus_value(self, section_name: str, entry_key: str, typus_value: str) -> None:
         if section_name not in self:

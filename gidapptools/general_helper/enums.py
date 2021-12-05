@@ -37,6 +37,7 @@ class MiscEnum(Enum):
     DEFAULT = auto()
     NOT_FOUND = auto()
     OPTIONAL = auto()
+    AUTO = auto()
 
     def __repr__(self) -> str:
         return self.name

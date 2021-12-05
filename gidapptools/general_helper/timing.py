@@ -7,11 +7,12 @@ import os
 from threading import RLock
 import inspect
 import sys
+from gidapptools.general_helper.conversion import seconds2human
 TIME_NS_FUNC_TYPE = Union[perf_counter_ns, process_time_ns, time_ns, thread_time_ns]
 
 
 def _check_env_var_condition(second_var_name: str) -> bool:
-    return any(os.getenv(env_name, '0') == '1' for env_name in ["GIDAPPTOOLS_TIMING_ENABLED", second_var_name])
+    return any(os.getenv(env_name, '0').casefold() in {'1', "true"} for env_name in ["GIDAPPTOOLS_TIMING_ENABLED", "IS_DEV", second_var_name])
 
 
 time_execution_path_locks: dict[Path, RLock] = {}
@@ -31,7 +32,8 @@ def time_execution(identifier: str = None,
                    output: Union[Callable, Path] = print,
                    condition: bool = None,
                    as_seconds: bool = True,
-                   decimal_places: Union[int, None] = None) -> None:
+                   decimal_places: Union[int, None] = None,
+                   also_pretty: bool = False) -> None:
     if condition is None:
         condition = _check_env_var_condition("TIME_EXECUTION_ENABLED")
     if condition:
@@ -42,15 +44,18 @@ def time_execution(identifier: str = None,
             from gidapptools.general_helper.conversion import ns_to_s
             full_time = ns_to_s(full_time, decimal_places=decimal_places)
             unit = 's'
+            pretty = "" if also_pretty is False else f" ({seconds2human(full_time)})"
         else:
             unit = 'ns'
+            pretty = "" if also_pretty is False else f" ({seconds2human(ns_to_s(full_time))})"
         identifier = '' if identifier is None else identifier
+
         if isinstance(output, Path):
             with get_time_execution_path_lock(output):
                 with output.open('a', encoding='utf-8', errors='ignore') as f:
-                    f.write(f"{identifier} took {full_time:f} {unit}" + '\n')
+                    f.write(f"{identifier} took {full_time:f} {unit}{pretty}" + '\n')
         else:
-            output(f"{identifier} took {full_time:f} {unit}")
+            output(f"{identifier} took {full_time:f} {unit}{pretty}")
     else:
         yield
 
@@ -60,7 +65,8 @@ def time_func(time_ns_func: TIME_NS_FUNC_TYPE = perf_counter_ns,
               use_qualname: bool = True,
               condition: bool = None,
               as_seconds: bool = True,
-              decimal_places: int = None):
+              decimal_places: int = None,
+              also_pretty: bool = False):
 
     def _decorator(func):
         func_name = func.__name__ if use_qualname is False else func.__qualname__
@@ -68,7 +74,7 @@ def time_func(time_ns_func: TIME_NS_FUNC_TYPE = perf_counter_ns,
 
         @wraps(func)
         def _wrapped(*args, **kwargs):
-            with time_execution(f"executing {func_name!r}", time_ns_func=time_ns_func, output=output, as_seconds=as_seconds, decimal_places=decimal_places, condition=True):
+            with time_execution(f"executing {func_name!r}", time_ns_func=time_ns_func, output=output, as_seconds=as_seconds, decimal_places=decimal_places, condition=True, also_pretty=also_pretty):
                 return func(*args, **kwargs)
 
         if _actual_condition:

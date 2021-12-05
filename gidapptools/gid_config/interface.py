@@ -26,10 +26,11 @@ from gidapptools.gid_config.conversion.conversion_table import ConfigValueConver
 from gidapptools.gid_config.parser.ini_parser import BaseIniParser
 from gidapptools.gid_config.parser.tokens import Entry, Section
 from gidapptools.general_helper.timing import time_func
-from gidapptools.errors import MissingTypusOrSpecError, SectionExistsError
+from gidapptools.errors import MissingTypusOrSpecError, SectionExistsError, ValueValidationError
 from functools import partial
 from threading import RLock
 from gidapptools.gid_config.parser.grammar import BaseIniGrammar, TokenFactory
+from gidapptools.gid_config.conversion.spec_data import SpecAttribute
 # endregion[Imports]
 
 # region [TODO]
@@ -104,6 +105,9 @@ class GidIniConfig:
             lock = self.access_locks_storage[key]
         return lock
 
+    def get_description(self, section_name: str, entry_key: str) -> str:
+        return self.spec.get(key_path=[section_name, entry_key, SpecAttribute.DESCRIPTION.value], default="")
+
     def reload(self) -> None:
         with self.access_lock:
             self.config.reload()
@@ -154,8 +158,12 @@ class GidIniConfig:
                 if self.spec is None:
                     raise MissingTypusOrSpecError("You have to provide a typus if no spec file has been set in the __init__.")
                 typus = self.spec.get_entry_typus(section_name=section_name, entry_key=entry_key)
-
-            return self.converter(entry=entry, typus=typus)
+            try:
+                return self.converter(entry=entry, typus=typus)
+            except ValueValidationError:
+                if default is not MiscEnum.NOTHING:
+                    return default
+                raise
 
     def set(self,
             section_name: str,
