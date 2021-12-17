@@ -46,6 +46,7 @@ class StringCaseConverter:
     KEBAP = StringCase.KEBAP
     SPLIT = StringCase.SPLIT
     CLASS = StringCase.CLASS
+    TITLE = StringCase.TITLE
 
     split_pascal_case_regex = re.compile(r"(?<!\_)(\B[A-Z])")
     snake_case_to_pascal_case_regex = re.compile(r"(_|^)(\w)")
@@ -219,7 +220,19 @@ def split_quotes_aware(text: str, split_chars: Iterable[str] = None, quote_chars
     return parts
 
 
+def make_attribute_name(in_string: str) -> str:
+
+    # Remove invalid characters
+    in_string = re.sub(r'-', '_', in_string)
+    in_string = re.sub('[^0-9a-zA-Z_]', '', in_string)
+
+    # Remove leading characters until we find a letter or underscore
+    in_string = re.sub('^[^a-zA-Z_]+', '', in_string)
+
+    return in_string.casefold()
+
 # region[Main_Exec]
+
 
 if __name__ == '__main__':
     pass

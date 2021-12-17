@@ -12,7 +12,7 @@ import json
 
 
 from pathlib import Path
-from typing import Any, Callable, Hashable, Union, Literal
+from typing import Any, Callable, Hashable, Union, Literal, Optional
 from datetime import datetime, timedelta, timezone
 from threading import Lock, RLock
 from yarl import URL
@@ -292,6 +292,9 @@ class SpecData(AdvancedDict):
     def _get_section_default(self, section_name: str) -> EntryTypus:
 
         return self.get([section_name, '__default__', "converter"], str)
+
+    def _get_entry_default(self, section_name: str, entry_key: str) -> Union[str, MiscEnum]:
+        return self.get([section_name, entry_key, 'default'], MiscEnum.NOTHING)
 
     def get_entry_typus(self, section_name: str, entry_key: str) -> EntryTypus:
         try:

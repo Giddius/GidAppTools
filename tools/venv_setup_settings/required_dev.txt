@@ -10,3 +10,5 @@ matplotlib
 pylint
 pyenchant
 cairosvg
+objbrowser
+pp-ez==0.2.0

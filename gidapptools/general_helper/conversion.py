@@ -146,8 +146,12 @@ class FileSizeReference:
         self.units = tuple(sorted(self.units))
 
     @property
-    def symbols(self) -> Iterable[str]:
+    def symbols(self) -> tuple[str]:
         return tuple(item.short_name for item in self.units)
+
+    @property
+    def long_names(self) -> tuple[str]:
+        return tuple(item.long_name for item in self.units)
 
     def get_unit_by_name(self, name: str, case_insensitive: bool = True) -> FileSizeUnit:
         try:
@@ -192,16 +196,16 @@ def human2bytes(in_text: str) -> int:
         name = white_space_regex.sub(' ', name)
         return name
     white_space_regex = re.compile(r"\s{2,}")
-    number_regex_pattern = r"(?P<number>\d+)"
+    number_regex_pattern = r"(?P<number>[\d\.\,]+)"
     name_regex_pattern = r"(?P<name>\w([\w\s]+)?)"
     parse_regex = re.compile(number_regex_pattern + r'\s*' + name_regex_pattern)
 
     match = parse_regex.match(in_text.strip())
     if match:
-        number = int(match.group('number'))
+        number = float(match.group('number'))
         name = _clean_name(match.group('name'))
         unit = FILE_SIZE_REFERENCE.get_unit_by_name(name)
-        return number * unit.factor
+        return int(number * unit.factor)
     else:
         # TODO: custom error
         raise RuntimeError(f"Unable to parse input string {in_text!r}.")
@@ -293,7 +297,8 @@ class TimeUnits:
         return iter(self.units)
 
 
-def seconds2human(in_seconds: Union[int, float, timedelta], as_symbols: bool = False, with_year: bool = True) -> str:
+def seconds2human(in_seconds: Union[int, float, timedelta], as_list_result: bool = False, as_symbols: bool = False, with_year: bool = True, min_unit: str = None) -> Union[dict[TimeUnit, int], str]:
+
     rest = in_seconds.total_seconds() if isinstance(in_seconds, timedelta) else in_seconds
     sign = ""
     if rest < 0:
@@ -303,14 +308,23 @@ def seconds2human(in_seconds: Union[int, float, timedelta], as_symbols: bool = F
     result = {}
 
     _time_units = TimeUnits(with_year=with_year)
+
+    if min_unit is None:
+        sub_min_units = set()
+    else:
+        min_unit = _time_units[min_unit.casefold()]
+        sub_min_units = {unit for unit in _time_units if unit.factor < min_unit.factor}
+
     for unit in _time_units:
         amount, rest = unit.convert_with_rest(rest)
         if amount:
             result[unit] = int(amount)
+    if as_list_result is True:
+        return {k: v for k, v in result.items() if k not in sub_min_units}
+    results = [k.value_to_string(v, as_symbols) for k, v in result.items() if k not in sub_min_units]
 
-    results = [k.value_to_string(v, as_symbols) for k, v in result.items()]
     if not results:
-        _unit = _time_units.smallest_unit
+        _unit = _time_units.smallest_unit if min_unit is None else min_unit
         _name = f" {_unit.plural}" if as_symbols is False else _unit.symbol
         return f"0{_name}"
     if len(results) > 1:
@@ -407,4 +421,5 @@ def str_to_bool(in_string: str, strict: bool = False) -> bool:
 
 
 if __name__ == '__main__':
-    pass
+    import pp
+    pp(TIMEUNITS)

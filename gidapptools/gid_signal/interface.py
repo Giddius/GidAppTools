@@ -55,7 +55,7 @@ from threading import Lock
 from importlib.machinery import SourceFileLoader
 
 from gidapptools.gid_signal.signal_registry import SignalRegistry, signal_registry
-from gidapptools.gid_signal.signals.basic_signal import Signal
+from gidapptools.gid_signal.signals.basic_signal import GidSignal
 if TYPE_CHECKING:
     from gidapptools.gid_signal.signals.abstract_signal import AbstractSignal
 
@@ -81,7 +81,7 @@ GET_SIGNAL_LOCK = Lock()
 
 
 def get_signal(key: Hashable, klass: Optional["AbstractSignal"] = None) -> "AbstractSignal":
-    klass = Signal if klass is None else klass
+    klass = GidSignal if klass is None else klass
     with GET_SIGNAL_LOCK:
         signal = signal_registry.get(key, None)
         if signal is None:

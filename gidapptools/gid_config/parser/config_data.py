@@ -178,6 +178,8 @@ class ConfigFile(FileMixin, ConfigData):
         return self._sections
 
     def reload(self) -> None:
+        if self.disable_read_event.is_set() is True:
+            return
         with self.lock:
             self.load()
 
@@ -217,14 +219,17 @@ class ConfigFile(FileMixin, ConfigData):
         return success
 
     def save(self) -> None:
-        sections = self.sections.copy()
-        sections.pop(self.env_section.name)
-        data = '\n\n'.join(section.as_text() for section in sections.values())
-        self.write(data)
+        with self.lock:
+            sections = self.sections.copy()
+            sections.pop(self.env_section.name)
+            data = '\n\n'.join(section.as_text() for section in sections.values())
+
+            self.write(data)
 
     def load(self) -> None:
-        content = self.read()
-        self._sections = {section.name: section for section in self.parser.parse(content)} | {self.env_section.name: self.env_section}
+        with self.lock:
+            content = self.read()
+            self._sections = {section.name: section for section in self.parser.parse(content)} | {self.env_section.name: self.env_section}
 # region[Main_Exec]
 
 

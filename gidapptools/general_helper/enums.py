@@ -70,10 +70,17 @@ class FileTypus(BaseGidEnum):
     EXE = auto()
     BAT = auto()
     PS1 = auto()
+    PNG = auto()
+    JPEG = auto()
+    GIF = auto()
+    SVG = auto()
 
     # aliases
     CMD = BAT
     YML = YAML
+    JPG = JPEG
+
+
 # region[Main_Exec]
 
 

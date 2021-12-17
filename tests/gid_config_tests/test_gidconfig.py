@@ -69,6 +69,12 @@ def test_gid_ini_config_sections(gid_ini_config: GidIniConfig):
         gid_ini_config.remove_section("debug", False)
 
 
+def test_gid_ini_config_set(gid_ini_config: GidIniConfig):
+    gid_ini_config.reload()
+    gid_ini_config.set("this", "that", 5)
+    assert gid_ini_config.get("this", "that") == 5
+
+
 def test_gid_ini_config_get_section(gid_ini_config: GidIniConfig):
     debug_section = gid_ini_config.get_section('debug')
     assert debug_section == {'current_testing_channel': 'bot-testing', "a_value_with_spaces": "this is a test"}

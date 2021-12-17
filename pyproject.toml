@@ -24,7 +24,8 @@ dependencies = [
     "python-dateutil",
     "attrs==21.2.0",
     "rich==10.12.0",
-    "sortedcontainers==2.4.0"
+    "sortedcontainers==2.4.0",
+    "thecolorapi>=1.0.0"
 ]
 
 [project.urls]
@@ -85,4 +86,4 @@ sections = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-rA -vv --durations=0 --capture=tee-sys --show-capture=all --color=auto --code-highlight=yes --html=tests/reports/report.html --self-contained-html --alluredir=tests/reports/my_allure_results"
+addopts = "-rA -vv --durations=0 --capture=tee-sys --show-capture=all --color=auto --code-highlight=yes"

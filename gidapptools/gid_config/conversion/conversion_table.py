@@ -114,10 +114,11 @@ class ConfigValueConversionTable(BaseDispatchTable):
 
     @BaseDispatchTable.mark(int)
     def _integer(self, value: str, mode: str = 'decode', **named_arguments) -> int:
+
         if mode == "decode":
             return int(value)
         elif mode == "encode":
-            str(value)
+            return str(value)
 
     @BaseDispatchTable.mark(float)
     def _float(self, value: str, mode: str = 'decode', **named_arguments) -> float:

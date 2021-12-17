@@ -8,8 +8,8 @@ Soon.
 
 
 from pathlib import Path
-from typing import Any, Callable, Optional
-
+from typing import Any, Callable, Optional, Literal
+from rich import inspect as rinspect
 from rich.console import Console as RichConsole
 
 # endregion[Imports]
@@ -71,6 +71,23 @@ def make_dprint(**console_kwargs) -> Callable:
 
 
 dprint = make_dprint()
+
+
+def obj_inspection(obj: object, out_dir: Path = None, out_type: Literal["txt", "html"] = 'html') -> None:
+    console = RichConsole(soft_wrap=True, record=True)
+    rinspect(obj=obj, methods=True, help=True, console=console)
+    out_dir = Path.cwd() if out_dir is None else Path(out_dir)
+    try:
+        name = obj.__class__.__name__
+    except AttributeError:
+
+        name = obj.__name__
+    out_file = out_dir.joinpath(f"{name.casefold()}.{out_type}")
+    if out_type == "html":
+        console.save_html(out_file)
+    elif out_type == "txt":
+        console.save_text(out_file)
+
 
 # region[Main_Exec]
 if __name__ == '__main__':

@@ -73,6 +73,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 class NonTypeBaseTypus(Enum):
     FILE_SIZE = auto()
+    STRING_CHOICE = auto()
 
 
 # region[Main_Exec]

@@ -91,7 +91,7 @@ def get_logger(name: str) -> Union[logging.Logger, GidLogger]:
     return logging.getLogger(name)
 
 
-def get_main_logger(name: str, path: Path, log_level: LoggingLevel = LoggingLevel.DEBUG, formatter: Union[logging.Formatter, GidLoggingFormatter] = None) -> Union[logging.Logger, GidLogger]:
+def get_main_logger(name: str, path: Path, log_level: LoggingLevel = LoggingLevel.DEBUG, formatter: Union[logging.Formatter, GidLoggingFormatter] = None, extra_logger: Iterable[str] = tuple()) -> Union[logging.Logger, GidLogger]:
     os.environ["MAX_FUNC_NAME_LEN"] = str(min([max(len(i) for i in get_all_func_names(path, True)), 20]))
     os.environ["MAX_MODULE_NAME_LEN"] = str(min([max(len(i) for i in get_all_module_names(path)), 20]))
 
@@ -103,6 +103,10 @@ def get_main_logger(name: str, path: Path, log_level: LoggingLevel = LoggingLeve
     formatter = GidLoggingFormatter() if formatter is None else formatter
     handler.setFormatter(formatter)
     _log = get_logger(name)
+    for logger in [_log] + [logging.getLogger(l) for l in extra_logger]:
+        logger.addHandler(que_handler)
+
+        logger.setLevel(log_level)
     _log.addHandler(que_handler)
     _log.setLevel(log_level)
     listener.start()

@@ -135,6 +135,7 @@ class LoggingSectionAlignment(Enum):
 
 class LoggingLevel(int, Enum):
     NOTSET = 0
+    TRACE = 5
     DEBUG = 10
     INFO = 20
     WARNING = 30

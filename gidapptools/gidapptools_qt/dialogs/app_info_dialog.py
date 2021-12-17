@@ -6,7 +6,6 @@ Soon.
 
 # region [Imports]
 
-import gc
 import os
 import re
 import sys
@@ -25,10 +24,8 @@ import sqlite3
 import platform
 import importlib
 import subprocess
-import unicodedata
 import inspect
 
-import asyncio
 from time import sleep, process_time, process_time_ns, perf_counter, perf_counter_ns
 from io import BytesIO, StringIO
 from abc import ABC, ABCMeta, abstractmethod
@@ -39,7 +36,7 @@ from pprint import pprint, pformat
 from pathlib import Path
 from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
 from timeit import Timer
-from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, Hashable, Generator, Literal, TypeVar, TypedDict, AnyStr, Awaitable, Coroutine
+from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, Hashable, Generator, Literal, TypeVar, TypedDict, AnyStr
 from zipfile import ZipFile, ZIP_LZMA
 from datetime import datetime, timezone, timedelta
 from tempfile import TemporaryDirectory
@@ -53,8 +50,12 @@ from urllib.parse import urlparse
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
-from gidapptools.utility.helper import get_qualname_or_name
-from .abstract_signal import AbstractSignal
+
+
+from PySide6.QtCore import QCoreApplication, QDate, QDateTime, QLocale, QMetaObject, QObject, QPoint, QRect, QSize, QTime, QUrl, Qt
+from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QGradient, QIcon, QImage, QKeySequence,
+                           QLinearGradient, QPainter, QPalette, QPixmap, QRadialGradient, QTransform)
+from PySide6.QtWidgets import QApplication, QGridLayout, QMainWindow, QMenu, QMenuBar, QSizePolicy, QStatusBar, QWidget, QDialog, QLabel, QLineEdit, QBoxLayout, QVBoxLayout
 
 # endregion[Imports]
 
@@ -75,36 +76,47 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-class GidSignal(AbstractSignal):
+class AppInfoDialog(QDialog):
 
-    def fire_and_forget(self, *args, **kwargs):
-        if len(self.targets) <= 0:
-            return
-        with ThreadPoolExecutor(thread_name_prefix='signal_thread') as pool:
-            for target in self.targets:
-                pool.submit(target, *args, **kwargs)
+    def __init__(self) -> None:
+        super().__init__()
 
-    def emit(self, *args, **kwargs):
+        self.label_font = self.create_label_font()
+        self.parts = []
+        self.setup()
 
-        for target in self.targets:
-            target(*args, **kwargs)
+    def create_label_font(self) -> QFont:
+        font = QFont()
+        font.setPointSize(19)
+        font.setBold(True)
+        return font
 
-    async def aemit(self, *args, **kwargs):
-        if len(self.targets) <= 0:
-            return
+    def create_new_part(self, label_text: str, data_text: str) -> None:
+        label = QLabel(self)
+        label.setText(label_text)
+        label.setFont(self.label_font)
+        label.setAlignment(Qt.AlignCenter)
 
-        for target in self.targets:
-            name = get_qualname_or_name(target)
-            info = self.targets_info.get(name)
-            task_name = f"{str(self.key)}-Signal_{name}"
-            if info.get('is_coroutine') is False:
-                task = asyncio.to_thread(target, *args, **kwargs)
-            else:
-                task = target(*args, **kwargs)
-            asyncio.create_task(task, name=task_name)
+        data = QLineEdit(self)
+        data.setReadOnly(True)
+        data.setText(data_text)
+        data.setAlignment(Qt.AlignCenter)
+
+        self.parts.append((label, data))
+
+    def setup(self):
+        self.resize(400, 100)
+        self.setMaximumSize(QSize(400, 100))
+        self.verticalLayout = QVBoxLayout(self)
+
+        for label, data in self.parts:
+            self.verticalLayout.addWidget(label)
+            self.verticalLayout.addWidget(data)
 
 
 # region[Main_Exec]
+
 if __name__ == '__main__':
     pass
+
 # endregion[Main_Exec]

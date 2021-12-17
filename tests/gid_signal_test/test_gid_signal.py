@@ -1,5 +1,5 @@
 import pytest
-from gidapptools.gid_signal.interface import get_signal, Signal, SignalRegistry, signal_registry
+from gidapptools.gid_signal.interface import get_signal, GidSignal, SignalRegistry, signal_registry
 
 
 @pytest.mark.parametrize('name', [('first_signal_name'), ('second_signal_name'), ('name_with_spaces')], scope='function')

@@ -56,6 +56,7 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient, QCursor, Q
                            QLinearGradient, QPainter, QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import QApplication, QGridLayout, QMainWindow, QMenu, QMenuBar, QSizePolicy, QStatusBar, QWidget
 
+from gidapptools.utility._debug_tools import obj_inspection
 
 # endregion[Imports]
 
@@ -76,8 +77,59 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-# region[Main_Exec]
+class BaseMenuBar(QMenuBar):
 
+    def __init__(self, parent: Optional[QWidget] = None, auto_connect_standard_actions: bool = True) -> None:
+        super().__init__(parent=parent)
+        self.auto_connect_standard_actions = auto_connect_standard_actions
+        self.setup_menus()
+
+    def setup_default_menus(self) -> None:
+        self.file_menu = self.add_new_menu("File")
+        self.exit_action = self.add_new_action(self.file_menu, "Exit")
+        if self.parent() is not None and self.auto_connect_standard_actions is True:
+            self.exit_action.triggered.connect(self.parent().close)
+
+        self.edit_menu = self.add_new_menu("Edit")
+
+        self.view_menu = self.add_new_menu("View")
+
+        self.settings_menu = self.add_new_menu("Settings")
+
+        self.help_menu = self.add_new_menu("Help")
+        self.help_menu.addSeparator()
+        self.about_action = self.add_new_action(self.help_menu, "About")
+
+    def setup_menus(self) -> None:
+        self.setup_default_menus()
+
+    def add_new_menu(self, menu_title: str, icon: QIcon = None, add_before=None) -> QMenu:
+        menu = QMenu(self)
+        menu.setTitle(menu_title)
+        if icon is not None:
+            menu.setIcon(icon)
+        if add_before is not None:
+            if isinstance(add_before, QMenu):
+                add_before = add_before.menuAction()
+            self.insertMenu(add_before, menu)
+        else:
+            self.addMenu(menu)
+        return menu
+
+    def add_new_action(self, menu: QMenu, action_name: str, action_title: str = None):
+        action_title = action_title or action_name
+        action_name = action_name.casefold().replace(' ', '_')
+        action = QAction(parent=menu)
+
+        action.setText(action_title)
+        menu.addAction(action)
+
+        if not hasattr(menu, action_name + '_action'):
+            setattr(menu, action_name + '_action', action)
+        return action
+
+
+# region[Main_Exec]
 if __name__ == '__main__':
     pass
 

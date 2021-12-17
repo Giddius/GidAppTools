@@ -6,7 +6,6 @@ Soon.
 
 # region [Imports]
 
-import gc
 import os
 import re
 import sys
@@ -25,10 +24,8 @@ import sqlite3
 import platform
 import importlib
 import subprocess
-import unicodedata
 import inspect
 
-import asyncio
 from time import sleep, process_time, process_time_ns, perf_counter, perf_counter_ns
 from io import BytesIO, StringIO
 from abc import ABC, ABCMeta, abstractmethod
@@ -39,7 +36,7 @@ from pprint import pprint, pformat
 from pathlib import Path
 from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
 from timeit import Timer
-from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, Hashable, Generator, Literal, TypeVar, TypedDict, AnyStr, Awaitable, Coroutine
+from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, Hashable, Generator, Literal, TypeVar, TypedDict, AnyStr
 from zipfile import ZipFile, ZIP_LZMA
 from datetime import datetime, timezone, timedelta
 from tempfile import TemporaryDirectory
@@ -53,8 +50,8 @@ from urllib.parse import urlparse
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
-from gidapptools.utility.helper import get_qualname_or_name
-from .abstract_signal import AbstractSignal
+
+from gidapptools.data.json import THIS_FILE_DIR as JSON_DATA_DIR
 
 # endregion[Imports]
 
@@ -71,40 +68,27 @@ from .abstract_signal import AbstractSignal
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
-
+WEBCOLORS_JSON = JSON_DATA_DIR.joinpath("webcolors.json")
 # endregion[Constants]
 
 
-class GidSignal(AbstractSignal):
-
-    def fire_and_forget(self, *args, **kwargs):
-        if len(self.targets) <= 0:
-            return
-        with ThreadPoolExecutor(thread_name_prefix='signal_thread') as pool:
-            for target in self.targets:
-                pool.submit(target, *args, **kwargs)
-
-    def emit(self, *args, **kwargs):
-
-        for target in self.targets:
-            target(*args, **kwargs)
-
-    async def aemit(self, *args, **kwargs):
-        if len(self.targets) <= 0:
-            return
-
-        for target in self.targets:
-            name = get_qualname_or_name(target)
-            info = self.targets_info.get(name)
-            task_name = f"{str(self.key)}-Signal_{name}"
-            if info.get('is_coroutine') is False:
-                task = asyncio.to_thread(target, *args, **kwargs)
-            else:
-                task = target(*args, **kwargs)
-            asyncio.create_task(task, name=task_name)
-
-
+def get_webcolors_data() -> list[dict[str:Any]]:
+    with WEBCOLORS_JSON.open('r', encoding='utf-8', errors='ignore') as f:
+        data = json.load(f)
+    _out = []
+    for item_data in data:
+        new_item_data = {}
+        new_item_data["name"] = item_data.get("name").casefold()
+        new_item_data["r"] = item_data.get("rgb").get('r')
+        new_item_data["g"] = item_data.get("rgb").get('g')
+        new_item_data["b"] = item_data.get("rgb").get('b')
+        new_item_data["alpha"] = 1.0
+        _out.append(new_item_data)
+    return _out
 # region[Main_Exec]
+
+
 if __name__ == '__main__':
     pass
+
 # endregion[Main_Exec]

@@ -8,3 +8,4 @@ orjson
 pyparsing==3.0.6
 click
 jsonschema[format]
+thecolorapi>=1.0.0

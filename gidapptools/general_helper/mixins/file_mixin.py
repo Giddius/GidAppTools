@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import AnyStr, Literal, Union, Any
 from contextlib import nullcontext
 from collections import defaultdict
-from threading import Lock, RLock
+from threading import Lock, RLock, Event
 from _thread import LockType
 from gidapptools.general_helper.enums import BaseGidEnum
 from hashlib import blake2b, md5, sha256, sha3_512, blake2s
@@ -53,6 +53,7 @@ class FileMixin(os.PathLike):
     hash_func: HASH_FUNC_TYPE = md5
     file_hash_size_threshold: int = human2bytes("100 mb")
     path_locks: dict[Path, RLock] = {}
+    path_events: dict[Path, Event] = {}
 
     @unique
     class ChangeParameter(BaseGidEnum):
@@ -88,6 +89,12 @@ class FileMixin(os.PathLike):
         return self.path_locks[self.file_path]
 
     @property
+    def disable_read_event(self) -> Event:
+        if self.file_path not in self.path_events:
+            self.path_events[self.file_path] = Event()
+        return self.path_events[self.file_path]
+
+    @property
     def size(self) -> int:
         size = self.file_path.stat().st_size
         return size
@@ -110,6 +117,9 @@ class FileMixin(os.PathLike):
 
     @property
     def has_changed(self) -> bool:
+        if self.disable_read_event.is_set() is True:
+            return False
+
         def on_size() -> bool:
             return self.last_size is None or self.last_size != self.size
 

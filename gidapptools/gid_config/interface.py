@@ -152,7 +152,11 @@ class GidIniConfig:
                         return self.get(fallback_entry[0], fallback_entry[1], default=default)
                     if default is not MiscEnum.NOTHING:
                         return default
-                return None
+                spec_default = self.spec._get_entry_default(section_name=section_name, entry_key=entry_key)
+                if spec_default not in {MiscEnum.NOTHING, None}:
+                    entry.value = spec_default
+                else:
+                    return None
 
             if typus is SpecialTypus.AUTO:
                 if self.spec is None:
@@ -172,9 +176,14 @@ class GidIniConfig:
             create_missing_section: bool = False,
             spec_typus: str = None) -> None:
         with self.access_lock:
-            self.config.set_value(section_name=section_name, entry_key=entry_key, entry_value=self.converter.encode(entry_value), create_missing_section=create_missing_section)
-            if spec_typus is not None:
-                self.spec.set_typus_value(section_name=section_name, entry_key=entry_key, typus_value=spec_typus)
+            self.config.disable_read_event.set()
+            try:
+
+                self.config.set_value(section_name=section_name, entry_key=entry_key, entry_value=self.converter.encode(entry_value), create_missing_section=create_missing_section)
+                if spec_typus is not None:
+                    self.spec.set_typus_value(section_name=section_name, entry_key=entry_key, typus_value=spec_typus)
+            finally:
+                self.config.disable_read_event.clear()
 
     def clear_section(self, section_name: str, missing_ok: bool = True) -> None:
         with self.access_lock:
@@ -196,7 +205,7 @@ class GidIniConfig:
         with self.access_lock:
             self.converter[typus] = converter_function
 
-    def as_dict(self, raw: bool = False) -> dict[str, dict[str, Any]]:
+    def as_dict(self, raw: bool = False, with_typus: bool = False) -> dict[str, dict[str, Any]]:
         with self.access_lock:
             raw_dict = self.config.as_raw_dict()
             if raw is True:
@@ -205,9 +214,15 @@ class GidIniConfig:
             for section_name, values in raw_dict.items():
                 _out[section_name] = {}
                 for entry_name in values:
-                    _out[section_name][entry_name] = self.get(section_name, entry_name)
+                    if with_typus is True:
+                        _out[section_name][entry_name] = (self.get(section_name, entry_name), self.get_entry_typus(section_name, entry_name))
+                    else:
+                        _out[section_name][entry_name] = self.get(section_name, entry_name)
 
             return _out
+
+    def get_entry_typus(self, section_name: str, entry_key: str):
+        return self.spec.get_entry_typus(section_name=section_name, entry_key=entry_key)
 
 
 # region[Main_Exec]
