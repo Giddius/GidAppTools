@@ -83,6 +83,7 @@ from rich.bar import Bar
 from rich.traceback import Trace, Traceback
 from rich.tabulate import tabulate_mapping
 from gidapptools.general_helper.path_helper import find_file
+from tzlocal import get_localzone
 # endregion[Imports]
 
 # region [TODO]
@@ -205,9 +206,11 @@ def inspect_object_with_html(obj: object,
 
             _cmd = subprocess.run(cmd, check=True, text=True)
             sleep(0.5)
+
+
 # region[Main_Exec]
 
-
 if __name__ == '__main__':
-    inspect_object_with_html(Path.cwd(), show_all=True, show_help=True)
+    # inspect_object_with_html(, show_all=True, show_help=True),
+    pass
 # endregion[Main_Exec]

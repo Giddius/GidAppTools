@@ -116,6 +116,10 @@ class StringCaseConverter:
         word_list = cls._to_word_list(in_string)
         return cls.dispatch_table.get(target_case)(word_list)
 
+    @classmethod
+    def to_snake_case(cls, in_string: str) -> str:
+        return cls.convert_to(in_string=in_string, target_case=StringCase.SNAKE)
+
 
 def replace_by_dict(in_string: str, in_dict: dict[str, str]) -> str:
     mod_string = in_string

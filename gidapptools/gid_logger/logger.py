@@ -114,14 +114,23 @@ def get_main_logger(name: str, path: Path, log_level: LoggingLevel = LoggingLeve
     return _log
 
 
-def get_main_logger_with_file_logging(name: str, log_file_base_name: str, path: Path, log_level: LoggingLevel = LoggingLevel.DEBUG, formatter: Union[logging.Formatter, GidLoggingFormatter] = None, extra_logger: Iterable[str] = tuple()) -> Union[logging.Logger, GidLogger]:
+def get_main_logger_with_file_logging(name: str,
+                                      log_file_base_name: str,
+                                      path: Path,
+                                      log_level: LoggingLevel = LoggingLevel.DEBUG,
+                                      formatter: Union[logging.Formatter, GidLoggingFormatter] = None,
+                                      log_folder: Path = None,
+                                      extra_logger: Iterable[str] = tuple()) -> Union[logging.Logger, GidLogger]:
+    if os.getenv('IS_DEV', "false") != "false":
+        log_folder = path.parent.joinpath('logs')
+
     os.environ["MAX_FUNC_NAME_LEN"] = str(min([max(len(i) for i in get_all_func_names(path, True)), 20]))
     os.environ["MAX_MODULE_NAME_LEN"] = str(min([max(len(i) for i in get_all_module_names(path)), 20]))
     que = queue.Queue(-1)
     que_handler = QueueHandler(que)
 
     handler = logging.StreamHandler(stream=sys.stdout)
-    file_handler = GidBaseRotatingFileHandler(base_name=log_file_base_name, log_folder=path.parent.joinpath("logs"))
+    file_handler = GidBaseRotatingFileHandler(base_name=log_file_base_name, log_folder=log_folder)
 
     formatter = GidLoggingFormatter() if formatter is None else formatter
     handler.setFormatter(formatter)

@@ -7,6 +7,11 @@ Soon.
 # region [Imports]
 
 
+from functools import cached_property
+from gidapptools.utility._debug_tools import dprint
+from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
+from gidapptools.general_helper.enums import MiscEnum
+from gidapptools.general_helper.general import is_frozen
 import os
 
 
@@ -15,7 +20,7 @@ import platform
 import sys
 from pathlib import Path
 from typing import Any, Callable, Optional, ClassVar
-from datetime import datetime
+from datetime import datetime, timezone
 from itertools import cycle
 from gidapptools.errors import NotBaseInitFileError
 from urlextract import URLExtract
@@ -28,13 +33,11 @@ from gidapptools.utility.helper import memory_in_use, handle_path, utc_now, make
 from gidapptools.general_helper.conversion import bytes2human
 from gidapptools.general_helper.date_time import DatetimeFmt
 from gidapptools.types import PATH_TYPE
-from gidapptools.general_helper.enums import MiscEnum
-from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
+from zoneinfo import ZoneInfo
+from tzlocal import get_localzone, reload_localzone
+reload_localzone()
 # REMOVE_BEFORE_BUILDING_DIST
-from gidapptools.utility._debug_tools import dprint
-from functools import cached_property
 print = dprint
-from gidapptools.general_helper.general import is_frozen
 # end REMOVE_BEFORE_BUILDING_DIST
 
 
@@ -78,6 +81,7 @@ class MetaInfo(AbstractMetaItem):
     base_mem_use: int = attr.ib(default=memory_in_use())
     is_dev: bool = attr.ib(default=None, converter=attr.converters.default_if_none(False))
     is_gui: bool = attr.ib(default=None, converter=attr.converters.default_if_none(False))
+    local_tz: timezone = attr.ib(default=get_localzone())
 
     @cached_property
     def is_frozen(self) -> bool:
@@ -115,6 +119,7 @@ class MetaInfo(AbstractMetaItem):
 
     def clean_up(self, **kwargs) -> None:
         pass
+
 
     # region[Main_Exec]
 if __name__ == '__main__':
