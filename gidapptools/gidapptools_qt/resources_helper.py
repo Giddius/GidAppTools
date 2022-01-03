@@ -52,7 +52,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 
 from PySide6.QtGui import QPixmap, QIcon, QImage
-from PySide6.QtCore import QFile
+from PySide6.QtCore import QFile, QSize, Qt
 
 # endregion[Imports]
 
@@ -115,8 +115,12 @@ class MiscResourceItem(ResourceItem):
 
 class PixmapResourceItem(ResourceItem):
 
-    def get_as_pixmap(self) -> QPixmap:
-        return QPixmap(self.qt_path)
+    def get_as_pixmap(self, width=None, height=None) -> QPixmap:
+        pixmap = QPixmap(self.qt_path)
+        if any([width is None, height is None]):
+            return pixmap
+
+        return pixmap.scaled(QSize(width, height), Qt.KeepAspectRatioByExpanding)
 
     def get_as_icon(self) -> QIcon:
         return QIcon(self.qt_path)
@@ -138,7 +142,11 @@ def ressource_item_factory(file_path: str, qt_path: str) -> Union[MiscResourceIt
 class AllResourceItemsMeta(type):
 
     def __getattr__(cls, name: str) -> "ResourceItem":
-        return cls.placeholder
+        if any(name.casefold().endswith(f"_{cat}") for cat in cls.categories):
+            cat_name = name.split('_')[-1].casefold()
+            cls.missing_items[cat_name].add(name)
+            return cls.placeholder_image
+        raise AttributeError(f"{cls.__name__} has not attribute {name!r}")
 
 # region[Main_Exec]
 

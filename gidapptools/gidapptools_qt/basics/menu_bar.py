@@ -54,7 +54,7 @@ from importlib.machinery import SourceFileLoader
 from PySide6.QtCore import QCoreApplication, QDate, QDateTime, QLocale, QMetaObject, QObject, QPoint, QRect, QSize, QTime, QUrl, Qt
 from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QGradient, QIcon, QImage, QKeySequence,
                            QLinearGradient, QPainter, QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import QApplication, QGridLayout, QMainWindow, QMenu, QMenuBar, QSizePolicy, QStatusBar, QWidget, QDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QGridLayout, QMainWindow, QMenu, QMenuBar, QSizePolicy, QDialog, QStatusBar, QWidget, QMessageBox
 
 from gidapptools.utility._debug_tools import obj_inspection
 
@@ -100,8 +100,10 @@ class BaseMenuBar(QMenuBar):
         self.help_menu = self.add_new_menu("Help")
         self.help_menu.addSeparator()
         self.about_action = self.add_new_action(self.help_menu, "About")
+        self.about_qt_action = self.add_new_action(self.help_menu, "About Qt®")
         if self.auto_connect_standard_actions is True:
-            self.about_action.triggered.connect(self.show_about)
+            self.about_action.triggered.connect(self.app.show_about)
+            self.about_qt_action.triggered.connect(self.app.show_about_qt)
 
     @property
     def app(self) -> QApplication:
@@ -134,9 +136,6 @@ class BaseMenuBar(QMenuBar):
         if not hasattr(menu, action_name + '_action'):
             setattr(menu, action_name + '_action', action)
         return action
-
-    def show_about(self):
-        about = QMessageBox.about(self.parentWidget(), self.app.applicationName(), self.app.applicationVersion())
 
 
 # region[Main_Exec]

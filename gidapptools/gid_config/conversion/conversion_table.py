@@ -177,8 +177,15 @@ class ConfigValueConversionTable(BaseDispatchTable):
     @BaseDispatchTable.mark(NonTypeBaseTypus.FILE_SIZE)
     def _file_size(self, value: str, mode: str = 'decode', **named_arguments) -> int:
         if mode == "decode":
+
+            if value.isnumeric() is True:
+                return int(value)
+
             return human2bytes(value)
         elif mode == "encode":
+
+            if isinstance(value, str) and value.isnumeric() is True:
+                value = int(value)
             if isinstance(value, int):
                 return bytes2human(value)
             return value
@@ -202,8 +209,11 @@ class ConfigValueConversionTable(BaseDispatchTable):
         value = entry.value if isinstance(entry, Entry) else entry
         return converter(value=value, **typus.named_arguments)
 
-    def encode(self, value: Any) -> str:
-        converter = self.get_converter(type(value))
+    def encode(self, value: Any, entry_typus: EntryTypus = None) -> str:
+        if entry_typus is not None:
+            converter = self.get_converter(entry_typus)
+        else:
+            converter = self.get_converter(type(value))
         return converter(value, mode="encode")
 
     def convert(self, entry: "Entry", typus: Union[type, EntryTypus]) -> Any:

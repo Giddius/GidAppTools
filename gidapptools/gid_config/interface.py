@@ -178,8 +178,8 @@ class GidIniConfig:
         with self.access_lock:
             self.config.disable_read_event.set()
             try:
-
-                self.config.set_value(section_name=section_name, entry_key=entry_key, entry_value=self.converter.encode(entry_value), create_missing_section=create_missing_section)
+                entry_typus = self.spec.get_entry_typus(section_name=section_name, entry_key=entry_key)
+                self.config.set_value(section_name=section_name, entry_key=entry_key, entry_value=self.converter.encode(entry_value, entry_typus=entry_typus), create_missing_section=create_missing_section)
                 if spec_typus is not None:
                     self.spec.set_typus_value(section_name=section_name, entry_key=entry_key, typus_value=spec_typus)
             finally:

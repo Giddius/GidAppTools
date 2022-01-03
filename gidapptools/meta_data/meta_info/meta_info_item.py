@@ -31,6 +31,7 @@ from tzlocal import get_localzone
 from gidapptools.utility.enums import OperatingSystem
 from gidapptools.utility.helper import memory_in_use, handle_path, utc_now, make_pretty
 from gidapptools.general_helper.conversion import bytes2human
+from gidapptools.general_helper.string_helper import StringCase, StringCaseConverter
 from gidapptools.general_helper.date_time import DatetimeFmt
 from gidapptools.types import PATH_TYPE
 from zoneinfo import ZoneInfo
@@ -97,6 +98,18 @@ class MetaInfo(AbstractMetaItem):
     def __default_configuration__(cls) -> dict[str, Any]:
         default_configuration = {}
         return default_configuration
+
+    @property
+    def pretty_is_dev(self) -> str:
+        return "Yes" if self.is_dev else "No"
+
+    @property
+    def pretty_app_name(self) -> str:
+        return StringCaseConverter.convert_to(self.app_name, StringCase.TITLE)
+
+    @property
+    def pretty_app_author(self) -> str:
+        return StringCaseConverter.convert_to(self.app_author, StringCase.TITLE)
 
     @property
     def pretty_base_mem_use(self) -> str:

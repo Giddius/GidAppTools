@@ -189,12 +189,14 @@ def bytes2human(n: int, annotate: bool = True) -> str:
     return f"{_out} b"
 
 
-def human2bytes(in_text: str) -> int:
+def human2bytes(in_text: str, strict: bool = False) -> int:
     def _clean_name(name: str) -> str:
         name = name.strip()
         name = name.casefold()
         name = white_space_regex.sub(' ', name)
         return name
+    if in_text.strip() == "0" and strict is False:
+        return ""
     white_space_regex = re.compile(r"\s{2,}")
     number_regex_pattern = r"(?P<number>[\d\.\,]+)"
     name_regex_pattern = r"(?P<name>\w([\w\s]+)?)"
