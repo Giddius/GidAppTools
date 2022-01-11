@@ -16,17 +16,20 @@ dependencies = [
     "urlextract",
     "yarl",
     "tzlocal",
+    "PySide6>=6.2.2",
     "pytz",
     "inflect",
     "orjson",
-    "pyparsing==3.0.6",
+    "pyparsing>=3.0.6",
     "click",
+    "pprintpp",
+    "pp-ez",
     "tzlocal>=4.1",
     "python-dateutil",
-    "attrs==21.2.0",
-    "rich==10.12.0",
-    "sortedcontainers==2.4.0",
-    "thecolorapi>=1.0.0"
+    "attrs>=21.2.0",
+    "rich>=10.12.0",
+    "sortedcontainers>=2.4.0",
+    "py7zr"
 ]
 
 [project.urls]

@@ -12,6 +12,7 @@ from typing import Any
 import sys
 from typing import Hashable, Iterable, Union
 from gidapptools.general_helper.enums import MiscEnum
+from logging import Logger, Manager
 # endregion[Imports]
 
 # region [TODO]
@@ -51,6 +52,11 @@ def dict_pop_fallback(in_dict: dict, keys: Union[Iterable[Hashable], Hashable], 
 def is_frozen() -> bool:
     return getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
 
+
+def get_all_available_loggers(logger: Logger) -> tuple[str]:
+    manager = logger.manager
+    names = set(manager.loggerDict)
+    return tuple(sorted(names, key=len))
 # region[Main_Exec]
 
 

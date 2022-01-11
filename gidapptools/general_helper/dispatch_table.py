@@ -126,7 +126,7 @@ class BaseDispatchTable:
         return combined_table[key]
 
     def __setitem__(self, key: Hashable, value: Callable) -> None:
-        self.extra_dispatch[key] = Callable
+        self.extra_dispatch[key] = value
 
     def get(self, key: Hashable, default=MiscEnum.NOTHING) -> Callable:
         try:

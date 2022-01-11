@@ -13,7 +13,7 @@ import re
 import inspect
 
 from pathlib import Path
-from typing import Callable, Iterable, Mapping, Union
+from typing import Callable, Iterable, Mapping, Union, Literal
 from gidapptools.utility.enums import BaseGidEnum
 from gidapptools.general_helper.enums import StringCase
 from gidapptools.general_helper.timing import time_func
@@ -150,7 +150,7 @@ def clean_whitespace(in_text: str, replace_newline: bool = False) -> str:
     return cleaned_text
 
 
-def shorten_string(in_text: str, max_length: int, shorten_side: str = "right", placeholder: str = '...', clean_before: bool = True, ensure_space_around_placeholder: bool = False, split_on: str = '\s|\n') -> str:
+def shorten_string(in_text: str, max_length: int, shorten_side: Literal["right", "left"] = "right", placeholder: str = '...', clean_before: bool = True, ensure_space_around_placeholder: bool = False, split_on: str = '\s|\n') -> str:
     max_length = int(max_length)
     if shorten_side.casefold() not in {"left", "right"}:
         raise ValueError(shorten_side)

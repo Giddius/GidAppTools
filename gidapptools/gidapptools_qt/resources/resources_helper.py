@@ -50,9 +50,9 @@ from urllib.parse import urlparse
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
-
-from PySide6.QtGui import QPixmap, QIcon, QImage
-from PySide6.QtCore import QFile, QSize, Qt
+from threading import Lock, RLock
+from PySide6.QtGui import QPixmap, QIcon, QImage, QMovie
+from PySide6.QtCore import QFile, QSize, Qt, QByteArray
 
 # endregion[Imports]
 
@@ -83,22 +83,34 @@ def make_ressource_name(in_item_name: str, in_section_name: str = None) -> str:
 class ResourceTypus(Flag):
     MISC = auto()
     PIXMAP = auto()
+    MOVIE = auto()
 
     @classmethod
     def from_file_path(cls, file_path: Path) -> "ResourceTypus":
         suffix = file_path.suffix.casefold().strip('.')
-        if suffix in {"bmp", "gif", "jpg", "jpeg", "png", "pbm", "pgm", "ppm", "xbm", "xpm", "svg"}:
+        if suffix in {"bmp", "jpg", "jpeg", "png", "pbm", "pgm", "ppm", "xbm", "xpm", "svg"}:
             return cls.PIXMAP
-
+        if suffix in {"gif"}:
+            return cls.MOVIE
         return cls.MISC
 
 
 class ResourceItem:
+    cache_lock = RLock()
+    _cache = {}
 
     def __init__(self, file_path: str, qt_path: str) -> None:
         self.file_path = Path(file_path)
         self.qt_path = qt_path
         self.prefixes, self.name = self._get_qt_path_parts()
+
+    def get_from_cache(self, key):
+        with self.cache_lock:
+            return self._cache.get(key, None)
+
+    def store_in_cache(self, key, value):
+        with self.cache_lock:
+            self._cache[key] = value
 
     def _get_qt_path_parts(self) -> str:
         as_path = Path(self.qt_path)
@@ -106,7 +118,18 @@ class ResourceItem:
         return tuple(prefixes), name.rsplit('.')[0]
 
     def get_as_file(self) -> QFile:
-        return QFile(self.qt_path)
+        from_cache = self.get_from_cache(("file", self.name))
+        if from_cache is not None:
+            return from_cache
+
+        _out = QFile(self.qt_path)
+        self.store_in_cache(("image", self.name), _out)
+        return _out
+
+    @classmethod
+    def clear_cache(cls):
+        with cls.cache_lock:
+            cls._cache.clear()
 
 
 class MiscResourceItem(ResourceItem):
@@ -116,21 +139,49 @@ class MiscResourceItem(ResourceItem):
 class PixmapResourceItem(ResourceItem):
 
     def get_as_pixmap(self, width=None, height=None) -> QPixmap:
+        from_cache = self.get_from_cache(("pixmap", self.name, width, height))
+        if from_cache is not None:
+            return from_cache
+
         pixmap = QPixmap(self.qt_path)
         if any([width is None, height is None]):
-            return pixmap
-
-        return pixmap.scaled(QSize(width, height), Qt.KeepAspectRatioByExpanding)
+            _out = pixmap
+        else:
+            _out = pixmap.scaled(QSize(width, height), Qt.KeepAspectRatioByExpanding)
+        self.store_in_cache(("pixmap", self.name, width, height), _out)
+        return _out
 
     def get_as_icon(self) -> QIcon:
-        return QIcon(self.qt_path)
+        from_cache = self.get_from_cache(("icon", self.name))
+        if from_cache is not None:
+            return from_cache
+        _out = QIcon(self.qt_path)
+        self.store_in_cache(("icon", self.name), _out)
+        return _out
 
     def get_as_image(self, **kwargs) -> QImage:
-        return QImage(self.qt_path, **kwargs)
+        from_cache = self.get_from_cache(("image", self.name))
+        if from_cache is not None:
+            return from_cache
+        _out = QImage(self.qt_path, **kwargs)
+        self.store_in_cache(("image", self.name), _out)
+        return _out
+
+
+class MovieRessourceItem(ResourceItem):
+
+    def get_as_movie(self) -> QMovie:
+        from_cache = self.get_from_cache(("movie", self.name))
+        if from_cache is not None:
+            return from_cache
+        _out = QMovie(self.qt_path, QByteArray())
+        self.store_in_cache(("movie", self.name), _out)
+        return _out
 
 
 _ressource_item_factory_class_table = {ResourceTypus.MISC: MiscResourceItem,
-                                       ResourceTypus.PIXMAP: PixmapResourceItem}
+                                       ResourceTypus.PIXMAP: PixmapResourceItem,
+                                       ResourceTypus.MOVIE: MovieRessourceItem}
 
 
 def ressource_item_factory(file_path: str, qt_path: str) -> Union[MiscResourceItem, PixmapResourceItem]:

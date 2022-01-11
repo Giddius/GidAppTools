@@ -50,16 +50,18 @@ from urllib.parse import urlparse
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
-from weakref import WeakSet
-
 import PySide6
+from PySide6 import (QtCore, QtGui, QtWidgets, Qt3DAnimation, Qt3DCore, Qt3DExtras, Qt3DInput, Qt3DLogic, Qt3DRender, QtAxContainer, QtBluetooth,
+                     QtCharts, QtConcurrent, QtDataVisualization, QtDesigner, QtHelp, QtMultimedia, QtMultimediaWidgets, QtNetwork, QtNetworkAuth,
+                     QtOpenGL, QtOpenGLWidgets, QtPositioning, QtPrintSupport, QtQml, QtQuick, QtQuickControls2, QtQuickWidgets, QtRemoteObjects,
+                     QtScxml, QtSensors, QtSerialPort, QtSql, QtStateMachine, QtSvg, QtSvgWidgets, QtTest, QtUiTools, QtWebChannel, QtWebEngineCore,
+                     QtWebEngineQuick, QtWebEngineWidgets, QtWebSockets, QtXml)
 
-
-from PySide6.QtCore import (QByteArray, QTimer, QCoreApplication, QDate, QDateTime, QEvent, QLocale, QMetaObject, QModelIndex, QModelRoleData, QMutex,
+from PySide6.QtCore import (QByteArray, QCoreApplication, QDate, QDateTime, QEvent, QLocale, QMetaObject, QModelIndex, QModelRoleData, QMutex,
                             QMutexLocker, QObject, QPoint, QRect, QRecursiveMutex, QRunnable, QSettings, QSize, QThread, QThreadPool, QTime, QUrl,
                             QWaitCondition, Qt, QAbstractItemModel, QAbstractListModel, QAbstractTableModel, Signal, Slot)
 
-from PySide6.QtGui import (QAction, QBrush, QColor, QGuiApplication, QConicalGradient, QCursor, QFont, QFontDatabase, QFontMetrics, QGradient, QIcon, QImage,
+from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QFontMetrics, QGradient, QIcon, QImage,
                            QKeySequence, QLinearGradient, QPainter, QPalette, QPixmap, QRadialGradient, QTransform)
 
 from PySide6.QtWidgets import (QApplication, QBoxLayout, QCheckBox, QColorDialog, QColumnView, QComboBox, QDateTimeEdit, QDialogButtonBox,
@@ -68,11 +70,8 @@ from PySide6.QtWidgets import (QApplication, QBoxLayout, QCheckBox, QColorDialog
                                QProgressBar, QProgressDialog, QPushButton, QSizePolicy, QSpacerItem, QSpinBox, QStackedLayout, QStackedWidget,
                                QStatusBar, QStyledItemDelegate, QSystemTrayIcon, QTabWidget, QTableView, QTextEdit, QTimeEdit, QToolBox, QTreeView,
                                QVBoxLayout, QWidget, QAbstractItemDelegate, QAbstractItemView, QAbstractScrollArea, QRadioButton, QFileDialog, QButtonGroup)
-from gidapptools.gidapptools_qt.resources.placeholder import QT_PLACEHOLDER_IMAGE
-from gidapptools.gidapptools_qt.debug.event_analyzer import EventAnalyzer, JsonOutputter
-if TYPE_CHECKING:
-    from gidapptools.gidapptools_qt.resources.resources_helper import PixmapResourceItem
-    from gidapptools.meta_data.interface import MetaInfo
+
+from gidapptools.data.images import PLACEHOLDER_IMAGE, StoredImage
 # endregion[Imports]
 
 # region [TODO]
@@ -92,73 +91,31 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-class GidQtApplication(QApplication):
+class GidQtPlaceholderImage:
 
-    def __init__(self,
-                 argvs: list[str] = sys.argv,
-                 icon: Union["PixmapResourceItem", QPixmap, QImage, str, QIcon] = None):
-        super().__init__(self.argv_hook(argvs))
-        self.main_window: QMainWindow = None
-        self.sys_tray: QSystemTrayIcon = None
-        self.icon = self._icon_conversion(icon)
-        self.extra_windows = WeakSet()
+    def __init__(self, stored_image: StoredImage) -> None:
+        self.stored_image = stored_image
+        self._pixmap: QPixmap = None
+        self._icon = QIcon = None
 
-    @classmethod
-    def with_pre_flags(cls,
-                       argvs: list[str] = sys.argv,
-                       icon: Union["PixmapResourceItem", QPixmap, QImage, str, QIcon] = None,
-                       pre_flags: dict[Qt.ApplicationAttribute:bool] = None,
-                       desktop_settings_aware: bool = True):
-        QGuiApplication.setDesktopSettingsAware(desktop_settings_aware)
-        for flag, value in pre_flags.items():
-            cls.setAttribute(flag, value)
-        return cls(argvs=argvs, icon=icon)
+    @property
+    def pixmap(self) -> QPixmap:
+        if self._pixmap is None:
+            self._pixmap = QPixmap(self.stored_image.path)
+        return self._pixmap
 
-    def setup(self) -> "GidQtApplication":
-        self.setWindowIcon(self.icon)
-        return self
+    @property
+    def icon(self) -> QIcon:
+        if self._icon is None:
+            self._icon = QIcon(self.pixmap)
+        return self._icon
 
-    def argv_hook(self, argvs: list[str]) -> list[str]:
-        return argvs
 
-    @staticmethod
-    def _icon_conversion(icon: Union["PixmapResourceItem", QPixmap, QImage, str, QIcon] = None) -> Optional[QIcon]:
-        if icon is None:
-            return QT_PLACEHOLDER_IMAGE.icon
-
-        if isinstance(icon, QIcon):
-            return icon
-
-        if isinstance(icon, (QPixmap, QImage, str)):
-            return QIcon(icon)
-
-        return icon.get_as_icon()
-
-    def show_about_qt(self) -> None:
-        self.aboutQt()
-
-    def _get_about_text(self) -> str:
-        text_parts = {"Name": self.applicationDisplayName(),
-                      "Author": self.organizationName(),
-                      "Link": f'<a href="{self.organizationDomain()}">{self.organizationDomain()}</a>',
-                      "Version": self.applicationVersion()}
-
-        return '<br>'.join(f"<b>{k:<20}:</b>{v:>50}" for k, v in text_parts.items())
-
-    def show_about(self) -> None:
-        title = f"About {self.applicationDisplayName()}"
-        text = self._get_about_text()
-        QMessageBox.about(self.main_window, title, text)
-
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(name={self.applicationDisplayName()!r})"
-
+QT_PLACEHOLDER_IMAGE = GidQtPlaceholderImage(PLACEHOLDER_IMAGE)
 
 # region[Main_Exec]
+
 if __name__ == '__main__':
-    app = GidQtApplication(sys.argv)
-    m = QMainWindow()
-    m.show()
-    app.exec_()
+    pass
 
 # endregion[Main_Exec]
