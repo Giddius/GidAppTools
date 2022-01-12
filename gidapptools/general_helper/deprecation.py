@@ -6,16 +6,15 @@ Soon.
 
 # region [Imports]
 
-
+# * Standard Library Imports ---------------------------------------------------------------------------->
 import inspect
-
 from enum import Enum, auto
 from pathlib import Path
+from warnings import warn
 from functools import wraps
 
-from warnings import warn
+# * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import MiscEnum
-
 
 # endregion[Imports]
 

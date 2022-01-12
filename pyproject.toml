@@ -56,8 +56,8 @@ exclude = [
 ]
 
 [tool.autopep8]
-ignore = ["E402", "E501"]
-max-line-length = 250
+ignore = ["E402", "E501", "E731"]
+max_line_length = 250
 
 [tool.isort]
 balanced_wrapping = true
@@ -65,17 +65,11 @@ ensure_newline_before_comments = true
 group_by_package = true
 import_heading_firstparty = "* Local Imports --------------------------------------------------------------------------------------->"
 import_heading_gid = "* Gid Imports ----------------------------------------------------------------------------------------->"
-import_heading_pyqt = "* PyQt5 Imports --------------------------------------------------------------------------------------->"
+import_heading_qt = "* Qt Imports --------------------------------------------------------------------------------------->"
 import_heading_stdlib = "* Standard Library Imports ---------------------------------------------------------------------------->"
 import_heading_thirdparty = "* Third Party Imports --------------------------------------------------------------------------------->"
-known_gid = [
-    "gidtools",
-    "gidlogger",
-    "gidqtutils",
-    "gidviewmodels",
-    "gidapptools"
-]
-known_pyqt = ["PyQt5", "PySide6"]
+known_gid = ["gid*"]
+known_qt = ["PyQt5", "PyQt6", "PySide6", "pyqtgraph"]
 length_sort = true
 line_length = 200
 lines_after_imports = 1
@@ -83,11 +77,20 @@ sections = [
     "FUTURE",
     "STDLIB",
     "THIRDPARTY",
-    "PYQT",
+    "QT",
     "GID",
     "FIRSTPARTY",
     "LOCALFOLDER",
 ]
+indented_import_headings = false
+
+[tool.autoflake]
+# additional_imports=None
+expand_star_imports = true
+remove_all_unused_imports = true
+remove_duplicate_keys = false
+remove_unused_variables = false
+ignore_init_module_imports = false
 
 [tool.pytest.ini_options]
 addopts = "-rA -vv --durations=0 --capture=tee-sys --show-capture=all --color=auto --code-highlight=yes"

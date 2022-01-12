@@ -1,13 +1,16 @@
-from typing import Callable, Union, Optional
-from contextlib import contextmanager
-from time import perf_counter_ns, process_time_ns, time_ns, thread_time_ns
+# * Standard Library Imports ---------------------------------------------------------------------------->
+import os
+import inspect
+from time import time_ns, thread_time_ns, perf_counter_ns, process_time_ns
+from typing import Union, Callable
 from pathlib import Path
 from functools import wraps
-import os
 from threading import RLock
-import inspect
-import sys
+from contextlib import contextmanager
+
+# * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.conversion import seconds2human
+
 TIME_NS_FUNC_TYPE = Union[perf_counter_ns, process_time_ns, time_ns, thread_time_ns]
 
 

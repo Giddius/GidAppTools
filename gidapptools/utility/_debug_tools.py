@@ -6,9 +6,11 @@ Soon.
 
 # region [Imports]
 
-
+# * Standard Library Imports ---------------------------------------------------------------------------->
+from typing import Any, Literal, Callable, Optional
 from pathlib import Path
-from typing import Any, Callable, Optional, Literal
+
+# * Third Party Imports --------------------------------------------------------------------------------->
 from rich import inspect as rinspect
 from rich.console import Console as RichConsole
 

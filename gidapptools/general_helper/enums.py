@@ -6,9 +6,11 @@ Soon.
 
 # region [Imports]
 
-
+# * Standard Library Imports ---------------------------------------------------------------------------->
 from enum import Enum, auto, unique
 from pathlib import Path
+
+# * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.utility.enums import BaseGidEnum
 
 # endregion[Imports]

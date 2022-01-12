@@ -6,14 +6,15 @@ Soon.
 
 # region [Imports]
 
-
+# * Standard Library Imports ---------------------------------------------------------------------------->
 from abc import ABC, abstractmethod
+from typing import Any
 from pathlib import Path
-from typing import Any, Callable, Hashable, Iterable, Optional, Union
 
-from gidapptools.utility.helper import abstract_class_property
+# * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
+
 # endregion[Imports]
 
 # region [TODO]

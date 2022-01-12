@@ -6,22 +6,18 @@ Soon.
 
 # region [Imports]
 
-
+# * Standard Library Imports ---------------------------------------------------------------------------->
 import re
-
-
 import inspect
-
+from typing import Any, Union, Mapping, Callable, Hashable, Iterable, Optional, Generator
 from pathlib import Path
-from typing import Any, Callable, Generator, Hashable, Iterable, Mapping, Optional, Union
-from collections import UserDict, defaultdict, namedtuple
-from gidapptools.errors import KeyPathError, NotMappingError, AdvancedDictError, DictMergeConflict
-from gidapptools.general_helper.checker import is_hashable
-from gidapptools.general_helper.enums import MiscEnum
-from gidapptools.gid_config.conversion.conversion_table import EntryTypus
-from gidapptools.general_helper.conversion import str_to_bool
 from threading import Lock
-from yarl import URL
+from collections import UserDict, namedtuple
+
+# * Gid Imports ----------------------------------------------------------------------------------------->
+from gidapptools.errors import KeyPathError, NotMappingError, AdvancedDictError, DictMergeConflict
+from gidapptools.general_helper.enums import MiscEnum
+from gidapptools.general_helper.checker import is_hashable
 
 # endregion[Imports]
 

@@ -6,12 +6,12 @@ Soon.
 
 # region [Imports]
 
-
+# * Standard Library Imports ---------------------------------------------------------------------------->
 import inspect
-
+from typing import Union, Mapping, Callable, Hashable, Iterable
 from pathlib import Path
-from typing import Callable, Hashable, Mapping, Union, Iterable
 
+# * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import MiscEnum
 
 # endregion[Imports]

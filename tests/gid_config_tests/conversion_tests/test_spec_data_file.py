@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from gidapptools.gid_config.conversion.spec_data import SpecFile, AdvancedDict, AdvancedDictError, EntryTypus, SpecVisitor
+from gidapptools.gid_config.conversion.spec_data import SpecFile, AdvancedDict, EntryTypus, SpecVisitor
 from pprint import pprint
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()

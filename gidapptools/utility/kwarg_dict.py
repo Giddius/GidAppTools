@@ -6,15 +6,16 @@ Soon.
 
 # region [Imports]
 
-
+# * Standard Library Imports ---------------------------------------------------------------------------->
 import inspect
-
 from abc import ABCMeta
+from typing import Any, Union, Iterable, Optional
 from pathlib import Path
-from typing import Any, Iterable, Optional, Union
 from collections import UserDict
 
+# * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import MiscEnum
+
 # endregion[Imports]
 
 # region [TODO]

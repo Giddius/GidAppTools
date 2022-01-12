@@ -6,33 +6,21 @@ Soon.
 
 # region [Imports]
 
-
+# * Standard Library Imports ---------------------------------------------------------------------------->
 import shutil
-
-
 from pprint import pformat
+from typing import Any, Union, Callable, Optional
 from pathlib import Path
-from typing import Any, Callable, Optional, Union
 from tempfile import mkdtemp
 from contextlib import contextmanager
-from itertools import product, combinations
-import attr
-import requests
-from yarl import URL
-from tzlocal import get_localzone
-from gidapptools.utility.enums import OperatingSystem, NamedMetaPath
-from gidapptools.utility.helper import memory_in_use, handle_path, utc_now, PathLibAppDirs, mark_appdir_path, make_pretty
-from gidapptools.general_helper.date_time import DatetimeFmt
-from gidapptools.types import PATH_TYPE
-from appdirs import AppDirs, user_data_dir, user_config_dir, user_cache_dir, user_log_dir
-import orjson
-from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
-# REMOVE_BEFORE_BUILDING_DIST
+
+# * Gid Imports ----------------------------------------------------------------------------------------->
+from gidapptools.utility.enums import NamedMetaPath
+from gidapptools.utility.helper import make_pretty
 from gidapptools.utility._debug_tools import dprint
+from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 
 print = dprint
-
-# end REMOVE_BEFORE_BUILDING_DIST
 
 # endregion[Imports]
 

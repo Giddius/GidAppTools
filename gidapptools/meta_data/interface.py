@@ -6,30 +6,28 @@ Soon.
 
 # region [Imports]
 
-
-from warnings import warn
-
-from pathlib import Path
-from typing import Any, Union, Iterable, Callable, Hashable
-from functools import reduce
-from operator import or_
-from importlib.metadata import entry_points
-from gidapptools.utility.enums import NamedMetaPath
-from gidapptools.general_helper.dict_helper import SafeMergeDict
-from gidapptools.general_helper.enums import MiscEnum
-from gidapptools.errors import NotSetupError, NoFactoryFoundError, MetaItemNotFoundError, RegisterAfterSetupError
-from gidapptools.meta_data.config_kwargs import ConfigKwargs
-from gidapptools.types import PATH_TYPE
-
-from gidapptools.meta_data.meta_info import MetaInfoFactory, MetaInfo
-from gidapptools.meta_data.meta_paths import MetaPathsFactory, MetaPaths
-from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
-from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
-
+# * Standard Library Imports ---------------------------------------------------------------------------->
 import inspect
-from gidapptools.data import ENTRY_POINT_NAME
-from gidapptools.gid_config.meta_factory import MetaConfigFactory, MetaConfig
+from typing import Any, Union, Iterable
+from pathlib import Path
+from operator import or_
+from warnings import warn
+from functools import reduce
+from importlib.metadata import entry_points
+import pp
 
+# * Gid Imports ----------------------------------------------------------------------------------------->
+from gidapptools.data import ENTRY_POINT_SELECT_ARGS
+from gidapptools.types import PATH_TYPE
+from gidapptools.errors import NotSetupError, NoFactoryFoundError, MetaItemNotFoundError, RegisterAfterSetupError
+from gidapptools.meta_data.meta_info import MetaInfo, MetaInfoFactory
+from gidapptools.general_helper.enums import MiscEnum
+from gidapptools.meta_data.meta_paths import MetaPaths, MetaPathsFactory
+from gidapptools.gid_config.meta_factory import MetaConfig, MetaConfigFactory
+from gidapptools.meta_data.config_kwargs import ConfigKwargs
+from gidapptools.general_helper.dict_helper import SafeMergeDict
+from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
+from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
 
 # endregion[Imports]
 
@@ -82,9 +80,9 @@ class AppMeta:
 
     def _get_plugins(self):
         all_entry_points = entry_points()
-        if ENTRY_POINT_NAME not in all_entry_points:
-            return
-        for plugin in all_entry_points[ENTRY_POINT_NAME]:
+
+        for plugin in all_entry_points.select(**ENTRY_POINT_SELECT_ARGS):
+
             try:
                 loaded_plugin = plugin.load()
                 loaded_plugin(self)
@@ -196,6 +194,7 @@ def get_meta_paths() -> MetaPaths:
 
 def get_meta_config() -> MetaConfig:
     return app_meta['meta_config']
+
 
     # region[Main_Exec]
 if __name__ == '__main__':

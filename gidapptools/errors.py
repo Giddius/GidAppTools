@@ -6,14 +6,17 @@ Soon.
 
 # region [Imports]
 
-
+# * Standard Library Imports ---------------------------------------------------------------------------->
+from typing import TYPE_CHECKING, Any, Union, Literal, Hashable, Optional
 from pathlib import Path
-from typing import Any, Hashable, Literal, Optional, TYPE_CHECKING, Union
 from datetime import timezone
+
+# * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.general_helper.date_time import DateTimeFrame
     from gidapptools.gid_config.parser.config_data import ConfigData
     from gidapptools.gid_config.conversion.entry_typus_item import EntryTypus
+
 # endregion[Imports]
 
 # region [TODO]

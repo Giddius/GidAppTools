@@ -6,13 +6,15 @@ Soon.
 
 # region [Imports]
 
-
-from pathlib import Path
+# * Standard Library Imports ---------------------------------------------------------------------------->
 from typing import Optional
-
-from gidapptools.utility.helper import PathLibAppDirs
-from gidapptools.utility.enums import NamedMetaPath
+from pathlib import Path
 from tempfile import gettempdir
+
+# * Gid Imports ----------------------------------------------------------------------------------------->
+from gidapptools.utility.enums import NamedMetaPath
+from gidapptools.utility.helper import PathLibAppDirs
+
 # endregion[Imports]
 
 # region [TODO]

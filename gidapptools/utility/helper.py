@@ -6,22 +6,25 @@ Soon.
 
 # region [Imports]
 
-
+# * Standard Library Imports ---------------------------------------------------------------------------->
 import inspect
-
 from abc import abstractmethod
 from enum import Enum
+from typing import Any, Mapping, TypeVar, Callable, Optional
 from pathlib import Path
-from typing import Any, Callable, Mapping, Optional, TypeVar
 from datetime import datetime, timezone
 from importlib.metadata import metadata
-from urlextract import URLExtract
-from yarl import URL
+
+# * Third Party Imports --------------------------------------------------------------------------------->
 import psutil
-from gidapptools.types import PATH_TYPE
+from yarl import URL
 from appdirs import AppDirs
+
+# * Gid Imports ----------------------------------------------------------------------------------------->
+from gidapptools.types import PATH_TYPE
 from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.general_helper.date_time import DatetimeFmt
+
 # endregion[Imports]
 
 # region [TODO]

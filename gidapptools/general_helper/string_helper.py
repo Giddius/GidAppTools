@@ -6,17 +6,15 @@ Soon.
 
 # region [Imports]
 
-
+# * Standard Library Imports ---------------------------------------------------------------------------->
 import re
-
-
 import inspect
-
+from typing import Union, Literal, Mapping, Callable, Iterable
 from pathlib import Path
-from typing import Callable, Iterable, Mapping, Union, Literal
-from gidapptools.utility.enums import BaseGidEnum
+
+# * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import StringCase
-from gidapptools.general_helper.timing import time_func
+
 # endregion[Imports]
 
 # region [TODO]

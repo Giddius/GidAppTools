@@ -1,17 +1,21 @@
-from typing import ClassVar, Iterable, Union, Any
-from gidapptools.general_helper.deprecation import deprecated_argument
+# * Standard Library Imports ---------------------------------------------------------------------------->
+import re
+from enum import Flag, auto
+from typing import Any, Union, ClassVar, Iterable
+from datetime import timedelta
+from operator import neg, or_, pos
+from functools import reduce, total_ordering, cached_property
+from collections import defaultdict
+
+# * Third Party Imports --------------------------------------------------------------------------------->
 import attr
 import inflect
-import re
-from functools import cached_property, total_ordering, reduce
-from datetime import datetime, timedelta, timezone
-import random
 import pyparsing as pp
-from collections import defaultdict
 import pyparsing.common as ppc
-from enum import Enum, auto, Flag
 from sortedcontainers import SortedList
-from operator import neg, pos, or_
+
+# * Gid Imports ----------------------------------------------------------------------------------------->
+from gidapptools.general_helper.deprecation import deprecated_argument
 
 NANOSECONDS_IN_SECOND: int = 1_000_000_000
 

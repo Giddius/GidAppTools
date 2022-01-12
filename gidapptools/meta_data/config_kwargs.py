@@ -6,18 +6,20 @@ Soon.
 
 # region [Imports]
 
-
-from pathlib import Path
+# * Standard Library Imports ---------------------------------------------------------------------------->
 from typing import TYPE_CHECKING, Union
+from pathlib import Path
 
+# * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.utility.kwarg_dict import KwargDict
-from gidapptools.general_helper.enums import MiscEnum
+
+# * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
     from gidapptools.meta_data.meta_paths.meta_paths_item import MetaPaths
-
     meta_items_type = Union[MetaInfo, MetaPaths, object]
+
 # endregion[Imports]
 
 # region [TODO]
