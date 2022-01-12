@@ -89,8 +89,8 @@ def get_main_logger_with_file_logging(name: str,
     if os.getenv('IS_DEV', "false") != "false":
         log_folder = path.parent.joinpath('logs')
 
-    os.environ["MAX_FUNC_NAME_LEN"] = str(min([max(len(i) for i in get_all_func_names(path, True)), 20]))
-    os.environ["MAX_MODULE_NAME_LEN"] = str(min([max(len(i) for i in get_all_module_names(path)), 20]))
+    os.environ["MAX_FUNC_NAME_LEN"] = 50
+    os.environ["MAX_MODULE_NAME_LEN"] = 50
     que = queue.Queue(-1)
     que_handler = QueueHandler(que)
 
