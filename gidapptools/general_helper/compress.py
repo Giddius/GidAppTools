@@ -14,10 +14,7 @@ from zipfile import ZIP_LZMA, ZipFile
 from multiprocessing import Process
 
 # * Third Party Imports --------------------------------------------------------------------------------->
-from py7zr import pack_7zarchive, unpack_7zarchive
 
-shutil.register_archive_format('7zip', pack_7zarchive, description='7zip archive')
-shutil.register_unpack_format('7zip', ['.7z'], unpack_7zarchive)
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.types import PATH_TYPE
