@@ -42,6 +42,9 @@ class SpecAttribute(BaseGidEnum):
     CONVERTER = "converter"
     DESCRIPTION = "description"
     SHORT_DESCRIPTION = "short_description"
+    GUI_VISIBLE = "gui_visible"
+    IMPLEMENTED = "implemented"
+    VERBOSE_NAME = "verbose_name"
 
 
 # region[Main_Exec]

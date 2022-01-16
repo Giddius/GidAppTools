@@ -10,9 +10,10 @@ Soon.
 import inspect
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Mapping, TypeVar, Callable, Optional
+from typing import Any, Mapping, TypeVar, Callable, Optional, Literal, Union
 from pathlib import Path
 from datetime import datetime, timezone
+import json
 from importlib.metadata import metadata
 
 # * Third Party Imports --------------------------------------------------------------------------------->
@@ -166,6 +167,28 @@ def get_qualname_or_name(in_object: Any) -> str:
         return in_object.__qualname__
     except AttributeError:
         return in_object.__name__
+
+
+def merge_json_files(base_file: Path, file_to_merge: Path, content_type: type = dict):
+    if content_type is not dict:
+        raise TypeError(f"function not Implemented for type {content_type!r}")
+    with base_file.open("r", encoding='utf-8', errors='ignore') as f_b:
+        data_b = json.load(f_b)
+    with file_to_merge.open("r", encoding='utf-8', errors='ignore') as f_m:
+        data_m = json.load(f_m)
+
+    combined = data_b | data_m
+
+    with base_file.open("w", encoding='utf-8', errors='ignore') as f:
+        json.dump(combined, f, default=str, sort_keys=False)
+
+
+def merge_content_to_json_file(base_file: Path, content: str):
+    base_data = json.loads(base_file.read_text(encoding='utf-8', errors='ignore'))
+    merge_data = json.loads(content)
+    combined_data = base_data | merge_data
+    with base_file.open("w", encoding='utf-8', errors='ignore') as f:
+        json.dump(combined_data, f, default=str, sort_keys=False, indent=4)
 
 
 # region[Main_Exec]

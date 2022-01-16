@@ -109,7 +109,7 @@ class PixmapResourceItem(ResourceItem):
         if any([width is None, height is None]):
             _out = pixmap
         else:
-            _out = pixmap.scaled(QSize(width, height), Qt.KeepAspectRatioByExpanding)
+            _out = pixmap.scaled(QSize(width, height), Qt.KeepAspectRatioByExpanding, Qt.SmoothTransformation)
         self.store_in_cache(("pixmap", self.name, width, height), _out)
         return _out
 

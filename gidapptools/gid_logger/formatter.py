@@ -14,7 +14,7 @@ from pprint import pprint
 from typing import TYPE_CHECKING, Union, Literal, Iterable
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
-
+from collections import Counter
 # * Third Party Imports --------------------------------------------------------------------------------->
 from tzlocal import get_localzone
 
@@ -45,7 +45,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-def get_all_func_names(file: Path, recursive: True):
+def get_all_func_names(file: Path, recursive: bool = True):
     import ast
 
     def _get_names(source_file: Path) -> list[str]:
@@ -54,7 +54,9 @@ def get_all_func_names(file: Path, recursive: True):
 
     def _process_item(_item: Path):
         if _item.is_file() and _item.suffix == '.py':
+
             yield _get_names(_item)
+
         elif _item.is_dir():
             for _sub_item in _item.iterdir():
                 yield from _process_item(_sub_item)
@@ -147,7 +149,17 @@ class TimeSection(AbstractLoggingStyleSection):
         self.time_zone = time_zone
         self.time_format = time_format or self.default_time_format
         self.msec_format = msec_format or self.default_msec_format
-        self.width = width or (len(self.time_format) + len(self.msec_format.format(msec=0)) + 2)
+
+        self.width = width or (len(self.time_format) + len(self.msec_format.format(msec=0)) + self._get_time_zone_width() + 2)
+
+    def _get_time_zone_width(self) -> int:
+        time_zone_width = 1
+        if self.time_zone is not None:
+            time_zone_width += len(self.time_zone.tzname(datetime.now()))
+        else:
+            time_zone_width += len(get_localzone().tzname(datetime.now()))
+
+        return time_zone_width
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
         time_value = datetime.fromtimestamp(record.created, tz=self.local_timezone)
@@ -159,7 +171,7 @@ class TimeSection(AbstractLoggingStyleSection):
             time_value = time_value.replace(tzinfo=self.time_zone)
         if self.time_format.casefold() == "isoformat":
             return time_value.isoformat(timespec='seconds') + self.msec_format.format(msec=record.msecs)
-        return time_value.strftime(self.time_format) + self.msec_format.format(msec=record.msecs)
+        return (time_value.strftime(self.time_format) + self.msec_format.format(msec=record.msecs) + time_value.strftime(" %Z")).strip()
 
 
 class LevelSection(AbstractLoggingStyleSection):
@@ -344,5 +356,17 @@ class GidLoggingFormatter(logging.Formatter):
 
 
 if __name__ == '__main__':
-    pprint(get_all_module_names(Path(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\gidapptools\__main__.py")))
+    x = [len(i) for i in get_all_func_names(Path(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\Antistasi_Logbook\antistasi_logbook\__main__.py"))]
+    from statistics import stdev, median, mean, pvariance, variance, quantiles, multimode
+    print(f"{mean(x)=}")
+    print(f"{median(x)=}")
+    print(f"{stdev(x)=}")
+    print(f"{quantiles(x)=}")
+    print(f"{max(x)=}")
+    print(f"{min(x)=}")
+    print(f"{variance(x)=}")
+    print(f"{multimode(x)=}")
+    c = Counter(x)
+    print(f"{c.most_common()=}")
+
 # endregion[Main_Exec]

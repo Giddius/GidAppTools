@@ -11,6 +11,7 @@ from typing import Any, Union, Callable, Iterable, Optional
 from pathlib import Path
 from functools import partial
 from threading import RLock
+from pprint import pprint
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.errors import EntryMissingError, SectionMissingError, ValueValidationError, MissingTypusOrSpecError
@@ -99,6 +100,15 @@ class GidIniConfig:
 
     def get_description(self, section_name: str, entry_key: str) -> str:
         return self.spec.get(key_path=[section_name, entry_key, SpecAttribute.DESCRIPTION.value], default="")
+
+    def get_gui_visible(self, section_name: str, entry_key: str) -> bool:
+        return self.spec.get_gui_visible(section_name=section_name, entry_key=entry_key)
+
+    def get_implemented(self, section_name: str, entry_key: str) -> bool:
+        self.get_spec_attribute(section_name=section_name, entry_key=entry_key, attribute=SpecAttribute.IMPLEMENTED, default=True)
+
+    def get_spec_attribute(self, section_name: str, entry_key: str, attribute: Union[SpecAttribute, str], default=None) -> Any:
+        return self.spec.get_spec_attribute(section_name=section_name, entry_key=entry_key, attribute=attribute, default=default)
 
     def reload(self) -> None:
         with self.access_lock:
@@ -197,7 +207,7 @@ class GidIniConfig:
         with self.access_lock:
             self.converter[typus] = converter_function
 
-    def as_dict(self, raw: bool = False, with_typus: bool = False) -> dict[str, dict[str, Any]]:
+    def as_dict(self, raw: bool = False, with_typus: bool = False, only_gui_visible: bool = False) -> dict[str, dict[str, Any]]:
         with self.access_lock:
             raw_dict = self.config.as_raw_dict()
             if raw is True:
@@ -206,6 +216,8 @@ class GidIniConfig:
             for section_name, values in raw_dict.items():
                 _out[section_name] = {}
                 for entry_name in values:
+                    if only_gui_visible is True and self.get_gui_visible(section_name, entry_name) is False:
+                        continue
                     if with_typus is True:
                         _out[section_name][entry_name] = (self.get(section_name, entry_name), self.get_entry_typus(section_name, entry_name))
                     else:

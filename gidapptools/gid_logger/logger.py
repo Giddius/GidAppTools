@@ -85,12 +85,14 @@ def get_main_logger_with_file_logging(name: str,
                                       log_level: LoggingLevel = LoggingLevel.DEBUG,
                                       formatter: Union[logging.Formatter, GidLoggingFormatter] = None,
                                       log_folder: Path = None,
-                                      extra_logger: Iterable[str] = tuple()) -> Union[logging.Logger, GidLogger]:
+                                      extra_logger: Iterable[str] = tuple(),
+                                      max_func_name_length: int = None,
+                                      max_module_name_length: int = None) -> Union[logging.Logger, GidLogger]:
     if os.getenv('IS_DEV', "false") != "false":
         log_folder = path.parent.joinpath('logs')
 
-    os.environ["MAX_FUNC_NAME_LEN"] = 50
-    os.environ["MAX_MODULE_NAME_LEN"] = 50
+    os.environ["MAX_FUNC_NAME_LEN"] = str(max_func_name_length) if max_func_name_length is not None else "25"
+    os.environ["MAX_MODULE_NAME_LEN"] = str(max_module_name_length) if max_module_name_length is not None else "25"
     que = queue.Queue(-1)
     que_handler = QueueHandler(que)
 

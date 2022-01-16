@@ -15,7 +15,7 @@ from pathlib import Path
 import attr
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.utility.helper import make_pretty
+from gidapptools.utility.helper import make_pretty, merge_content_to_json_file
 from gidapptools.gid_config.interface import GidIniConfig
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaItem, AbstractMetaFactory
 
@@ -114,6 +114,8 @@ class MetaConfigFactory(AbstractMetaFactory):
             content = json.dumps(content, default=str, sort_keys=False, indent=4)
         if full_path.exists() is False:
             full_path.write_text(content, encoding='utf-8', errors='ignore')
+        else:
+            merge_content_to_json_file(full_path, content)
         return full_path
 
     def _create_config_file(self, name: str, content: str) -> Path:

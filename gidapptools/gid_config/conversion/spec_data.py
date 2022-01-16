@@ -9,7 +9,7 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import re
 import json
-from typing import Any, Union, Literal, Callable, Hashable
+from typing import Any, Union, Literal, Callable, Hashable, Optional
 from pathlib import Path
 from datetime import datetime, timedelta
 from threading import RLock
@@ -304,8 +304,17 @@ class SpecData(AdvancedDict):
             except KeyPathError:
                 raise error
 
+    def get_verbose_name(self, section_name: str, entry_key: str = None) -> Optional[str]:
+        if entry_key is None:
+            return self.get([section_name, '__verbose_name__'], default=None)
+        else:
+            return self.get_spec_attribute(section_name=section_name, entry_key=entry_key, attribute=SpecAttribute.VERBOSE_NAME, default=None)
+
     def get_description(self, section_name: str, entry_key: str) -> str:
         return self.get(key_path=[section_name, entry_key, SpecAttribute.DESCRIPTION.value], default="")
+
+    def get_gui_visible(self, section_name: str, entry_key: str) -> bool:
+        return self.get_spec_attribute(section_name, entry_key, SpecAttribute.GUI_VISIBLE, default=True)
 
     def get_spec_attribute(self, section_name: str, entry_key: str, attribute: Union[SpecAttribute, str], default=None) -> Any:
         attribute = SpecAttribute(attribute) if isinstance(attribute, str) else attribute

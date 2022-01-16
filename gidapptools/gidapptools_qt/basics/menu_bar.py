@@ -54,6 +54,8 @@ class BaseMenuBar(QMenuBar):
 
         self.help_menu = self.add_new_menu("Help")
         self.help_menu.addSeparator()
+        self.help_separator = self.help_menu.addSeparator()
+        self.add_action(self.help_menu, self.help_separator)
         self.about_action = self.add_new_action(self.help_menu, "About")
         self.about_qt_action = self.add_new_action(self.help_menu, "About Qt®")
 
