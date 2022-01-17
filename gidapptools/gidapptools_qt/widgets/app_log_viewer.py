@@ -138,36 +138,39 @@ class AppLogHighlighter(QSyntaxHighlighter):
         self.formats["message"] = message_format
 
     def highlightBlock(self, text: str) -> None:
-        backgrounds = {"debug": QColor(0, 200, 0, 50),
-                       "info": QColor(0, 0, 255, 50),
-                       "critical": QColor(255, 200, 0, 50),
-                       "error": QColor(255, 0, 0, 100)}
-        if not text.strip():
-            return
-        parts = text.split("|")
+        try:
+            backgrounds = {"debug": QColor(0, 200, 0, 50),
+                           "info": QColor(0, 0, 255, 50),
+                           "critical": QColor(255, 200, 0, 50),
+                           "error": QColor(255, 0, 0, 100)}
+            if not text.strip():
+                return
+            parts = text.split("|")
 
-        level_part = parts[2]
+            level_part = parts[2]
 
-        start = text.find(level_part)
-        background = backgrounds.get(level_part.strip().casefold(), QColor(0, 0, 0, 0))
-        format_item = QTextCharFormat()
-        format_item.setBackground(background)
-        self.setFormat(0, text.find("||-->"), format_item)
+            start = text.find(level_part)
+            background = backgrounds.get(level_part.strip().casefold(), QColor(0, 0, 0, 0))
+            format_item = QTextCharFormat()
+            format_item.setBackground(background)
+            self.setFormat(0, text.find("||-->"), format_item)
 
-        date_part = parts[0].strip()
-        start = text.find(date_part)
-        fmt = self.formats["date"]
-        fmt.setBackground(background)
-        self.setFormat(start, len(date_part), fmt)
+            date_part = parts[0].strip()
+            start = text.find(date_part)
+            fmt = self.formats["date"]
+            fmt.setBackground(background)
+            self.setFormat(start, len(date_part), fmt)
 
-        line_number_part = parts[1].strip()
-        start = text.find(line_number_part)
-        fmt = self.formats["line_number"]
-        fmt.setBackground(background)
-        self.setFormat(start, len(line_number_part), fmt)
+            line_number_part = parts[1].strip()
+            start = text.find(line_number_part)
+            fmt = self.formats["line_number"]
+            fmt.setBackground(background)
+            self.setFormat(start, len(line_number_part), fmt)
 
-        message_start = text.find("||--> ") + 6
-        self.setFormat(message_start, len(text) - message_start, self.formats["message"])
+            message_start = text.find("||--> ") + 6
+            self.setFormat(message_start, len(text) - message_start, self.formats["message"])
+        except IndexError:
+            pass
 
 
 class MetaBox(QGroupBox):

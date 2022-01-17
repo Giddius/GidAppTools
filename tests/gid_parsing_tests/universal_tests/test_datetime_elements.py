@@ -7,7 +7,7 @@ datetime_format_mapping_params_basic = [pytest.param("%Y", "2001", 2001, None, i
                                         pytest.param("%H", "21", 21, None, id="%H Hour"),
                                         pytest.param("%M", "23", 23, None, id="%M Minute"),
                                         pytest.param("%S", "59", 59, None, id="%S Second"),
-                                        pytest.param("%f", "074040", "074040", None, id="%f Microsecond"),
+                                        pytest.param("%f", "074040", 74040, None, id="%f Microsecond"),
                                         pytest.param("%Z", "UTC", "UTC", None, id="%Z Timezone")]
 
 datetime_format_mapping_params_advanced = [pytest.param("%Z", "CET", "CET", None, id="%Z CET Timezone Advanced"),

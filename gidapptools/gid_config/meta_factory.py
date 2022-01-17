@@ -112,10 +112,9 @@ class MetaConfigFactory(AbstractMetaFactory):
         full_path = self.spec_dir.joinpath(name).with_suffix('.json')
         if not isinstance(content, str):
             content = json.dumps(content, default=str, sort_keys=False, indent=4)
-        if full_path.exists() is False:
-            full_path.write_text(content, encoding='utf-8', errors='ignore')
-        else:
-            merge_content_to_json_file(full_path, content)
+
+        full_path.write_text(content, encoding='utf-8', errors='ignore')
+
         return full_path
 
     def _create_config_file(self, name: str, content: str) -> Path:
