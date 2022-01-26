@@ -73,6 +73,8 @@ from PySide6.QtWidgets import (QApplication, QBoxLayout, QCheckBox, QColorDialog
                                QStatusBar, QStyledItemDelegate, QSystemTrayIcon, QTabWidget, QTableView, QTextEdit, QTimeEdit, QToolBox, QTreeView,
                                QVBoxLayout, QWidget, QAbstractItemDelegate, QAbstractItemView, QAbstractScrollArea, QRadioButton, QFileDialog, QButtonGroup)
 
+from pyparsing.exceptions import ParseBaseException
+from gidapptools.gid_parsing.py_log_parsing import GeneralGrammar, LogLevelToken
 # endregion[Imports]
 
 # region [TODO]
@@ -95,6 +97,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
 class AppLogHighlighter(QSyntaxHighlighter):
+    grammar = GeneralGrammar()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -102,12 +105,13 @@ class AppLogHighlighter(QSyntaxHighlighter):
         self.setup_formats()
 
     def setup_formats(self):
+        self.base_format = QTextCharFormat()
+
         date_format = QTextCharFormat()
         date_format.setForeground(QColor(0, 0, 0, 255))
         date_format.setTextOutline(QColor(255, 255, 255, 50))
-        date_format.setFontUnderline(True)
         date_format.setFontWeight(1000)
-        self.formats["date"] = date_format
+        self.formats["time_stamp"] = date_format
 
         line_number_format = QTextCharFormat()
         line_number_format.setForeground(QColor(0, 0, 0, 255))
@@ -115,62 +119,88 @@ class AppLogHighlighter(QSyntaxHighlighter):
         line_number_format.setFontWeight(1000)
         self.formats["line_number"] = line_number_format
 
+        level_format = QTextCharFormat()
+        level_format.setFontWeight(1000)
+        level_format.setFontUnderline(True)
+        self.formats["level"] = level_format
+
         debug_format = QTextCharFormat()
-        debug_format.setBackground(QColor(0, 200, 0, 50))
+        debug_format.setBackground(QColor(144, 238, 144, 75))
         self.formats["debug"] = debug_format
 
         info_format = QTextCharFormat()
-        info_format.setBackground(QColor(0, 0, 255, 50))
+        info_format.setBackground(QColor(173, 216, 230, 75))
         self.formats["info"] = info_format
 
         critical_format = QTextCharFormat()
-        critical_format.setBackground(QColor(255, 200, 0, 50))
+        critical_format.setBackground(QColor(255, 165, 0, 75))
         self.formats["critical"] = critical_format
 
         error_format = QTextCharFormat()
-        error_format.setBackground(QColor(255, 0, 0, 100))
+        error_format.setBackground(QColor(220, 20, 60, 100))
         self.formats["error"] = error_format
 
         message_format = QTextCharFormat()
-        message_format.setBackground(QColor(200, 200, 0, 50))
-
         message_format.setFontWeight(1000)
         self.formats["message"] = message_format
 
+        thread_format = QTextCharFormat()
+        self.formats["thread"] = thread_format
+
+        module_format = QTextCharFormat()
+        self.formats["module"] = module_format
+
+        function_format = QTextCharFormat()
+        self.formats["function"] = function_format
+
     def highlightBlock(self, text: str) -> None:
+
         try:
-            backgrounds = {"debug": QColor(0, 200, 0, 50),
-                           "info": QColor(0, 0, 255, 50),
-                           "critical": QColor(255, 200, 0, 50),
-                           "error": QColor(255, 0, 0, 100)}
-            if not text.strip():
-                return
-            parts = text.split("|")
+            tokens = self.grammar(text)
+            background_fmt = self.formats[tokens["level"].log_level.casefold()]
+            self.setFormat(0, len(text), background_fmt)
+            for name, token in tokens.items():
+                fmt = self.formats.get(name, self.base_format)
+                fmt.setBackground(background_fmt.background())
+                self.setFormat(token.start, token.span, fmt)
 
-            level_part = parts[2]
-
-            start = text.find(level_part)
-            background = backgrounds.get(level_part.strip().casefold(), QColor(0, 0, 0, 0))
-            format_item = QTextCharFormat()
-            format_item.setBackground(background)
-            self.setFormat(0, text.find("||-->"), format_item)
-
-            date_part = parts[0].strip()
-            start = text.find(date_part)
-            fmt = self.formats["date"]
-            fmt.setBackground(background)
-            self.setFormat(start, len(date_part), fmt)
-
-            line_number_part = parts[1].strip()
-            start = text.find(line_number_part)
-            fmt = self.formats["line_number"]
-            fmt.setBackground(background)
-            self.setFormat(start, len(line_number_part), fmt)
-
-            message_start = text.find("||--> ") + 6
-            self.setFormat(message_start, len(text) - message_start, self.formats["message"])
-        except IndexError:
+        except ParseBaseException:
             pass
+
+    # def highlightBlock(self, text: str) -> None:
+    #     try:
+    #         backgrounds = {"debug": QColor(0, 200, 0, 50),
+    #                        "info": QColor(0, 0, 255, 50),
+    #                        "critical": QColor(255, 200, 0, 50),
+    #                        "error": QColor(255, 0, 0, 100)}
+    #         if not text.strip():
+    #             return
+    #         parts = text.split("|")
+
+    #         level_part = parts[2]
+
+    #         start = text.find(level_part)
+    #         background = backgrounds.get(level_part.strip().casefold(), QColor(0, 0, 0, 0))
+    #         format_item = QTextCharFormat()
+    #         format_item.setBackground(background)
+    #         self.setFormat(0, text.find("||-->"), format_item)
+
+    #         date_part = parts[0].strip()
+    #         start = text.find(date_part)
+    #         fmt = self.formats["date"]
+    #         fmt.setBackground(background)
+    #         self.setFormat(start, len(date_part), fmt)
+
+    #         line_number_part = parts[1].strip()
+    #         start = text.find(line_number_part)
+    #         fmt = self.formats["line_number"]
+    #         fmt.setBackground(background)
+    #         self.setFormat(start, len(line_number_part), fmt)
+
+    #         message_start = text.find("||--> ") + 6
+    #         self.setFormat(message_start, len(text) - message_start, self.formats["message"])
+    #     except IndexError:
+    #         pass
 
 
 class MetaBox(QGroupBox):

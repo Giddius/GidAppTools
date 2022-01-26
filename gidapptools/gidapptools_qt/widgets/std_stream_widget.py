@@ -51,10 +51,9 @@ from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 
-import PySide6
-
 
 from PySide6.QtCore import QObject, Signal
+from PySide6.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat, QColor
 
 
 from PySide6.QtWidgets import QApplication, QFrame, QGridLayout, QLabel, QTextEdit, QWidget
@@ -78,131 +77,170 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-class StreamTypus(Enum):
-    STDOUT = "stdout"
-    STDERR = "stderr"
+class StreamCaptureSignaler(QObject):
+    flushed_text = Signal(str)
+    flushed_items = Signal(tuple)
 
 
 class BaseStdStreamCapturer:
+    signaler: "StreamCaptureSignaler" = None
+    separator: str = '\n' + ("═" * 150) + '\n'
 
-    def __init__(self, stream_typus: Union["StreamTypus", str], signaler=None) -> None:
-        self._stream_typus = StreamTypus(stream_typus)
-        self._original_stream = None
-        self.installed: bool = False
-        self.signaler = signaler
+    def __init__(self, pass_through: bool = True) -> None:
+        self.pass_through = pass_through
+        if self.__class__.signaler is None:
+            self.__class__.signaler = StreamCaptureSignaler()
+        self.original_stream = None
+        self.text_cache: str = ""
         self.text_items: list[str] = []
 
     @property
-    def stream_typus(self) -> "StreamTypus":
-        return self._stream_typus
+    def flushed_text(self) -> Signal:
+        return self.signaler.flushed_text
 
     @property
-    def original_stream(self):
-        return self._original_stream
+    def flushed_items(self) -> Signal:
+        return self.signaler.flushed_items
+
+    def isatty(self) -> bool:
+        return False
 
     def write(self, text: str):
-        self.text_items.append(text)
-        if self.signaler is not None:
-            self.signaler.updated.emit(self.get_text())
+        self.text_cache += text
+        if self.original_stream and self.pass_through:
+            self.original_stream.write(text)
 
     def flush(self):
-        pass
+        self.text_items.append(self.text_cache.rstrip() + self.separator)
+
+        self.text_cache = ""
+        if self.signaler:
+            try:
+                self.signaler.flushed_items.emit(self.get_items())
+                self.signaler.flushed_text.emit(self.get_text())
+            except RuntimeError:
+                pass
+        if self.original_stream and self.pass_through:
+            self.original_stream.flush()
 
     def get_text(self) -> str:
         return ''.join(self.text_items)
 
+    def get_items(self) -> tuple[str]:
+        return tuple(self.text_items)
+
     def clear(self):
         self.text_items.clear()
 
-    def install(self):
-        if self.stream_typus is StreamTypus.STDOUT:
-            self._original_stream = sys.stdout
-            sys.stdout = self
 
-        elif self.stream_typus is StreamTypus.STDERR:
-            self._original_stream = sys.stderr
-            sys.stderr = self
+class LimitedStdStreamCapturer(BaseStdStreamCapturer):
 
-        else:
-            raise TypeError(f"Unknown stream-typus {self.stream_typus!r}")
-
-        self.installed = True
-
-    def uninstall(self):
-        if self.stream_typus is StreamTypus.STDOUT:
-            sys.stdout = self.original_stream
-            self._original_stream = None
-
-        elif self.stream_typus is StreamTypus.STDERR:
-            sys.stderr = self.original_stream
-            self._original_stream = None
-
-        else:
-            raise TypeError(f"Unknown stream-typus {self.stream_typus!r}")
-
-        self.installed = False
+    def __init__(self, max_len: int = 50) -> None:
+        super().__init__()
+        self.text_items = deque(maxlen=max_len)
 
 
-class StdoutCapturer(BaseStdStreamCapturer):
+class ErrorHighlighter(QSyntaxHighlighter):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.rules: dict[re.Pattern, QTextCharFormat] = {}
+        self.setup_rules()
 
-    def __init__(self, signaler=None) -> None:
-        super().__init__(stream_typus=StreamTypus.STDOUT, signaler=signaler)
+    def setup_rules(self):
+        sep_pattern = re.compile(r"═+")
+        sep_format = QTextCharFormat()
+        sep_format.setFontWeight(100)
+        sep_format.setBackground(QColor(150, 150, 150, 50))
+        self.rules[sep_pattern] = sep_format
 
+        string_pattern = re.compile(r'(?<=\").*(?=\")')
+        string_format = QTextCharFormat()
+        string_format.setFontItalic(True)
+        string_format.setFontUnderline(True)
+        string_format.setForeground(QColor(0, 150, 0, 255))
+        self.rules[string_pattern] = string_format
 
-class StderrCapturer(BaseStdStreamCapturer):
+        quotes_pattern = re.compile(r'\"')
+        quotes_format = QTextCharFormat()
+        quotes_format.setForeground(QColor(150, 150, 0, 255))
+        self.rules[quotes_pattern] = quotes_format
 
-    def __init__(self, signaler=None) -> None:
-        super().__init__(stream_typus=StreamTypus.STDERR, signaler=signaler)
+        self_pattern = re.compile(r"(?<=\b)self(?=\b)")
+        self_format = QTextCharFormat()
+        self_format.setForeground(QColor(255, 100, 0, 255))
+        self.rules[self_pattern] = self_format
 
+        method_pattern = re.compile(r"(?<=\.)\w+(?=\()")
+        method_format = QTextCharFormat()
+        method_format.setForeground(QColor(0, 0, 200, 255))
+        method_format.setFontItalic(True)
+        self.rules[method_pattern] = method_format
 
-class Signaler(QObject):
-    updated = Signal(str)
+        error_name_pattern = re.compile(r"\w+Error")
+        error_name_format = QTextCharFormat()
+        error_name_format.setForeground(QColor(150, 0, 0, 255))
+        error_name_format.setTextOutline(QColor(0, 0, 0, 100))
+        error_name_format.setFontWeight(1000)
+        error_name_format.setFontUnderline(True)
+        self.rules[error_name_pattern] = error_name_format
+
+        traceback_title_pattern = re.compile(re.escape(r"Traceback (most recent call last):"))
+        traceback_title_format = QTextCharFormat()
+        traceback_title_format.setFontUnderline(True)
+        traceback_title_format.setBackground(QColor(200, 200, 0, 50))
+        self.rules[traceback_title_pattern] = traceback_title_format
+
+    def highlightBlock(self, text: str) -> None:
+
+        for pattern, text_format in self.rules.items():
+            for match in pattern.finditer(text):
+
+                start, end = match.span()
+                self.setFormat(start, end - start, text_format)
 
 
 class StdStreamWidget(QWidget):
-    capturer_classes: dict[StreamTypus, type[BaseStdStreamCapturer]] = {StreamTypus.STDOUT: StdoutCapturer,
-                                                                        StreamTypus.STDERR: StderrCapturer}
 
-    def __init__(self, stream_typus: Union["StreamTypus", str], parent: Optional[PySide6.QtWidgets.QWidget] = None) -> None:
+    def __init__(self, stream_capturer: "BaseStdStreamCapturer", parent: Optional[QWidget] = None) -> None:
         super().__init__(parent=parent)
-        self.signaler = Signaler()
-        self.capturer = self.capturer_classes[StreamTypus(stream_typus)](signaler=self.signaler)
+        self.stream_capturer = stream_capturer
 
         self.setLayout(QGridLayout())
         self.text_view: QTextEdit = None
 
     def setup(self) -> "StdStreamWidget":
-        self.title_label = QLabel()
-        self.title_label.setText(self.capturer.stream_typus.value.title())
-        self.title_label.setFrameShape(QFrame.WinPanel)
-        self.layout.addWidget(self.title_label)
-
-        self.capturer.install()
-
+        self.resize(1500, 500)
+        self.highlighter = ErrorHighlighter()
         self.text_view = QTextEdit(self)
+        self.highlighter.setDocument(self.text_view.document())
         self.text_view.setReadOnly(True)
+        self.text_view.setLineWrapMode(QTextEdit.NoWrap)
+        font: QFont = self.text_view.font()
+        font.setStyleHint(QFont.Monospace)
+        font.setFamily("Consolas")
+        font.setPointSize(11)
+        self.text_view.setFont(font)
         self.layout.addWidget(self.text_view)
-        self.signaler.updated.connect(self.text_view.setPlainText)
+        self.text_view.setPlainText(self.stream_capturer.get_text())
+        self.stream_capturer.flushed_text.connect(self.set_text)
 
         return self
+
+    def set_text(self, text: str):
+        self.text_view.setPlainText(text)
+        self.text_view.verticalScrollBar().setValue(self.text_view.verticalScrollBar().maximum())
 
     @property
     def layout(self) -> QGridLayout:
         return super().layout()
 
+    def show(self) -> None:
+        self.text_view.verticalScrollBar().setValue(self.text_view.verticalScrollBar().maximum())
+        return super().show()
+
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    def print_shit():
-        for shit in ["this", "is", "stuff", "printed", "to", "stdout"]:
-            print(shit)
-            sleep(5)
-
-    app = QApplication()
-    w = StdStreamWidget(StreamTypus.STDOUT).setup()
-    w.show()
-    t = Thread(target=print_shit)
-    t.start()
-    sys.exit(app.exec())
+    pass
 
 # endregion[Main_Exec]

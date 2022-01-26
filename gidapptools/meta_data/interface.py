@@ -28,7 +28,7 @@ from gidapptools.meta_data.config_kwargs import ConfigKwargs
 from gidapptools.general_helper.dict_helper import SafeMergeDict
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
-
+from gidapptools.utility.helper import get_main_module_path
 # endregion[Imports]
 
 # region [TODO]
@@ -146,6 +146,7 @@ class AppMeta:
     def setup(self, init_path: PATH_TYPE, items_to_initialize: Iterable[str] = None, **kwargs) -> None:
         if self.is_setup is True:
             return
+        init_path = Path(init_path)
         items_to_initialize = [] if items_to_initialize is None else items_to_initialize
         items_to_initialize += self.default_to_initialize
         base_configuration = self.default_base_configuration.copy() | {'init_path': init_path, 'items_to_initialize': items_to_initialize}
@@ -174,7 +175,7 @@ app_meta = AppMeta()
 
 
 def setup_meta_data(init_path: PATH_TYPE, **kwargs) -> None:
-    app_meta.setup(init_path=Path(init_path), **kwargs)
+    app_meta.setup(init_path=init_path, **kwargs)
 
 
 def get_meta_item(item_name: str = None) -> Union[dict[str, type[META_ITEMS_TYPE]], META_ITEMS_TYPE]:
@@ -194,7 +195,6 @@ def get_meta_paths() -> MetaPaths:
 
 def get_meta_config() -> MetaConfig:
     return app_meta['meta_config']
-
 
     # region[Main_Exec]
 if __name__ == '__main__':

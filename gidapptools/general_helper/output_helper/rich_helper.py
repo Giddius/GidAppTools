@@ -112,13 +112,13 @@ def inspect_object_with_html(obj: object,
         return re.sub(r"\.\s\-\?\!\,\(\)\[\]\<\>\|\:\;\'\"\&\%\$\§\\", '_', name)
 
     def make_file_name(_obj) -> str:
-        if hasattr(_obj, 'name'):
-            text = _obj.name
+        # if hasattr(_obj, 'name'):
+        #     text = _obj.name
 
-        elif hasattr(_obj, '__name__'):
-            text = _obj.__name__
-        else:
-            text = ''.join(random.choices(ascii_letters, k=random.randint(5, 10)))
+        # elif hasattr(_obj, '__name__'):
+        #     text = _obj.__name__
+        # else:
+        text = ''.join(random.choices(ascii_letters, k=random.randint(5, 10)))
 
         return sanitize_name(text) + '.html'
 

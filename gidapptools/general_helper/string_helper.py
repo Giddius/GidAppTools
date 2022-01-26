@@ -233,6 +233,13 @@ def make_attribute_name(in_string: str) -> str:
 
     return in_string.casefold()
 
+
+def fix_multiple_quotes(_text: str) -> str:
+
+    def _replace_function(match: re.Match):
+        return match.group()[0]
+
+    return re.sub(r"""(\"+)|(\'+)""", _replace_function, _text)
 # region[Main_Exec]
 
 

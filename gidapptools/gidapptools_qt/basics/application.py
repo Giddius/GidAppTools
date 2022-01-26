@@ -46,8 +46,9 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 class GidQtApplication(QApplication):
 
     def __init__(self,
-                 argvs: list[str] = sys.argv,
+                 argvs: list[str] = None,
                  icon: Union["PixmapResourceItem", QPixmap, QImage, str, QIcon] = None):
+        argvs = argvs or sys.argv
         super().__init__(self.argv_hook(argvs))
         self.main_window: QMainWindow = None
         self.sys_tray: QSystemTrayIcon = None
@@ -56,10 +57,11 @@ class GidQtApplication(QApplication):
 
     @classmethod
     def with_pre_flags(cls,
-                       argvs: list[str] = sys.argv,
+                       argvs: list[str] = None,
                        icon: Union["PixmapResourceItem", QPixmap, QImage, str, QIcon] = None,
                        pre_flags: dict[Qt.ApplicationAttribute:bool] = None,
                        desktop_settings_aware: bool = True):
+        argvs = argvs or sys.argv
         QGuiApplication.setDesktopSettingsAware(desktop_settings_aware)
         for flag, value in pre_flags.items():
             cls.setAttribute(flag, value)

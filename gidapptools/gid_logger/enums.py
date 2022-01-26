@@ -110,6 +110,17 @@ class LoggingLevel(int, Enum):
         if not self.is_alias:
             _add_new_logging_level(self.name, self.level)
 
+    @classmethod
+    def _missing_(cls, value: object) -> Any:
+        if isinstance(value, str):
+            mod_value = value.casefold()
+            for member_name, member_value in cls.__members__.items():
+                if member_name.casefold() == mod_value or member_value == mod_value:
+                    return cls(member_value)
+                if isinstance(member_value, str) and member_value.casefold() == mod_value:
+                    return cls(member_value)
+        return super()._missing_(value)
+
     @ property
     def is_alias(self) -> bool:
         return self.name in {"WARN", "FATAL"}
@@ -126,6 +137,6 @@ _check_if_all_levels_are_in_LoggingLevel()
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    x = LoggingSectionAlignment("center")
-    print('| ' + x.align('this', 2) + ' |')
+    x = LoggingLevel("debug")
+    print(x)
 # endregion[Main_Exec]

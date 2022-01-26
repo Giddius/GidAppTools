@@ -142,6 +142,14 @@ class GidBaseRotatingFileHandler(BaseRotatingHandler):
 
     def shouldRollover(self, record: logging.LogRecord) -> bool:
         return False
+
+
+class GidBaseStreamHandler(logging.StreamHandler):
+
+    def __init__(self, stream=None):
+        super().__init__(stream=stream)
+
+
 # region[Main_Exec]
 
 

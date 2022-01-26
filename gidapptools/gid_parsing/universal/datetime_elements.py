@@ -57,7 +57,7 @@ from dateutil.tz import gettz
 import pyparsing as ppa
 import pyparsing.common as ppc
 from tzlocal import get_localzone
-
+from gidapptools.gid_parsing.tokens.base_tokens import BaseTokenWithPos
 # endregion[Imports]
 
 # region [TODO]
@@ -94,11 +94,20 @@ datetime_format_mapping: dict[str, ppa.ParserElement] = {"%Y": ppa.Regex(r"\d{4}
                                                          "%Z": ppa.Combine(ppa.Word(ppa.alphas) + ppa.Optional(ppa.one_of(["+", "-"]) + ppa.Word(ppa.nums) + ppa.Literal(":") + ppa.Word(ppa.nums)))("tzinfo")}
 
 
-class DateTimeToken:
+class DateTimeToken(BaseTokenWithPos):
 
-    def __init__(self, start: int, end: int, year: int, month: int, day: int, hour: int, minute: int, second: int, microsecond: int = 0, tzinfo: str = None) -> None:
-        self.start = start
-        self.end = end
+    def __init__(self,
+                 start: int,
+                 end: int,
+                 year: int,
+                 month: int,
+                 day: int,
+                 hour: int,
+                 minute: int,
+                 second: int,
+                 microsecond: int = 0,
+                 tzinfo: str = None) -> None:
+        super().__init__(start=start, end=end)
         self.year = year
         self.month = month
         self.day = day
@@ -109,7 +118,7 @@ class DateTimeToken:
         self.raw_tzinfo = tzinfo
 
     @classmethod
-    def from_parse_action(cls, s, l, t) -> "DateTimeToken":
+    def from_parse_action(cls, s, l, t) -> "BaseTokenWithPos":
         data_dict = t[0].as_dict()
         data_dict["start"] = data_dict.pop("locn_start")
         data_dict["end"] = data_dict.pop("locn_end")
@@ -135,9 +144,6 @@ class DateTimeToken:
     def as_datetime(self) -> datetime:
         return datetime(year=self.year, month=self.month, day=self.day, hour=self.hour, minute=self.minute, second=self.second, microsecond=self.microsecond, tzinfo=self.tzinfo)
 
-    def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(year={self.year!r}, month={self.month!r}, day={self.day!r}, hour={self.hour!r}, minute={self.minute!r}, second={self.second!r}, microsecond={self.microsecond!r}, tzinfo={self.tzinfo!r})"
-
 
 def get_grammar_from_dt_format(dt_format: str) -> ppa.ParserElement:
     parts = []
@@ -153,5 +159,6 @@ def get_grammar_from_dt_format(dt_format: str) -> ppa.ParserElement:
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    pass
+    from gidapptools.general_helper.output_helper.rich_helper import inspect_object_with_html
+    print(f'{get_grammar_from_dt_format("%Y-%m-%d %H:%M:%S %Z")=}')
 # endregion[Main_Exec]

@@ -8,13 +8,14 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import inspect
+import sys
 from abc import abstractmethod
 from enum import Enum
 from typing import Any, Mapping, TypeVar, Callable, Optional, Literal, Union
 from pathlib import Path
 from datetime import datetime, timezone
 import json
-from importlib.metadata import metadata
+from importlib.metadata import metadata, packages_distributions
 
 # * Third Party Imports --------------------------------------------------------------------------------->
 import psutil
@@ -66,7 +67,9 @@ def memory_in_use():
 
 def meta_data_from_path(in_path: Path) -> dict[str, Any]:
     _init_module = inspect.getmodule(None, in_path)
+
     _metadata = metadata(_init_module.__package__)
+
     return {k.casefold(): v for k, v in _metadata.items()}
 
 
@@ -191,8 +194,13 @@ def merge_content_to_json_file(base_file: Path, content: str):
         json.dump(combined_data, f, default=str, sort_keys=False, indent=4)
 
 
+def get_main_module_path() -> Path:
+    main_module = sys.modules["__main__"]
+
+    return Path(main_module.__file__).resolve()
+
+
 # region[Main_Exec]
 if __name__ == '__main__':
-    a = PathLibAppDirs(appauthor='giddi', appname='check_appdir')
-    print(a.as_path_dict())
+    print(get_main_module_path())
 # endregion[Main_Exec]

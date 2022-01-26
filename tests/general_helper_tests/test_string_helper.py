@@ -1,4 +1,4 @@
-from gidapptools.general_helper.string_helper import StringCaseConverter, StringCase, split_quotes_aware
+from gidapptools.general_helper.string_helper import StringCaseConverter, StringCase, split_quotes_aware, clean_whitespace, make_attribute_name
 import pytest
 from functools import reduce
 from typing import Iterable
@@ -60,3 +60,27 @@ actual_split_parameter_names = [item.name for item in split_parameters]
                          actual_split_parameters, ids=actual_split_parameter_names)
 def test_split_quotes_aware(split_chars: Iterable[str], quote_chars: Iterable[str], strip_parts: bool, in_text: str, expected_result: list[str]):
     assert split_quotes_aware(in_text, split_chars, quote_chars, strip_parts) == expected_result
+
+
+clean_whitespace_params_basic = [pytest.param("This       is a Test", "This is a Test", False),
+                                 pytest.param("This       is\na Test", "This is\na Test", False),
+                                 pytest.param("This       is\na Test", "This is a Test", True),
+                                 pytest.param("This is a Test", "This is a Test", False),
+                                 pytest.param("This is a Test", "This is a Test", True)]
+
+
+@pytest.mark.parametrize("in_string, out_string, clean_newline", clean_whitespace_params_basic)
+def test_clean_whitespace(in_string: str, out_string: str, clean_newline: bool):
+    assert clean_whitespace(in_string, clean_newline) == out_string
+
+
+make_attribute_name_params_basic = [pytest.param("attribute", "attribute"),
+                                    pytest.param("1attribute", "attribute"),
+                                    pytest.param("1_attribute", "_attribute"),
+                                    pytest.param("Attribute", "attribute"),
+                                    pytest.param("_1_attribute", "_1_attribute")]
+
+
+@pytest.mark.parametrize("in_name, out_name", make_attribute_name_params_basic)
+def test_make_attribute_name(in_name: str, out_name: str):
+    assert make_attribute_name(in_name) == out_name
