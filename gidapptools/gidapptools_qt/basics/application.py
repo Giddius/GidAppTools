@@ -8,22 +8,52 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import sys
-from typing import TYPE_CHECKING, Union, Optional
+from typing import TYPE_CHECKING, Union, Optional, Any, Sequence, IO, Literal, TypeVar
 from pathlib import Path
 from weakref import WeakSet
-
+import argparse
 # * Qt Imports --------------------------------------------------------------------------------------->
-from PySide6.QtGui import QIcon, QImage, QPixmap, QGuiApplication
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QMainWindow, QMessageBox, QApplication, QSystemTrayIcon
+import PySide6
+from PySide6 import (QtCore, QtGui, QtWidgets, Qt3DAnimation, Qt3DCore, Qt3DExtras, Qt3DInput, Qt3DLogic, Qt3DRender, QtAxContainer, QtBluetooth,
+                     QtCharts, QtConcurrent, QtDataVisualization, QtDesigner, QtHelp, QtMultimedia, QtMultimediaWidgets, QtNetwork, QtNetworkAuth,
+                     QtOpenGL, QtOpenGLWidgets, QtPositioning, QtPrintSupport, QtQml, QtQuick, QtQuickControls2, QtQuickWidgets, QtRemoteObjects,
+                     QtScxml, QtSensors, QtSerialPort, QtSql, QtStateMachine, QtSvg, QtSvgWidgets, QtTest, QtUiTools, QtWebChannel, QtWebEngineCore,
+                     QtWebEngineQuick, QtWebEngineWidgets, QtWebSockets, QtXml)
 
+from PySide6.QtCore import (QByteArray, QCoreApplication, QDate, QDateTime, QEvent, QLocale, QMetaObject, QModelIndex, QModelRoleData, QMutex,
+                            QMutexLocker, QObject, QPoint, QRect, QRecursiveMutex, QRunnable, QSettings, QSize, QThread, QThreadPool, QTime, QUrl,
+                            QWaitCondition, Qt, QAbstractItemModel, QAbstractListModel, QAbstractTableModel, Signal, Slot)
+
+from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QFontMetrics, QGradient, QIcon, QImage,
+                           QKeySequence, QLinearGradient, QPainter, QPalette, QPixmap, QRadialGradient, QTransform)
+
+from PySide6.QtWidgets import (QApplication, QBoxLayout, QCheckBox, QColorDialog, QColumnView, QComboBox, QDateTimeEdit, QDialogButtonBox,
+                               QDockWidget, QDoubleSpinBox, QFontComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
+                               QLCDNumber, QLabel, QLayout, QLineEdit, QListView, QListWidget, QMainWindow, QMenu, QMenuBar, QMessageBox,
+                               QProgressBar, QProgressDialog, QPushButton, QSizePolicy, QSpacerItem, QSpinBox, QStackedLayout, QStackedWidget,
+                               QStatusBar, QStyledItemDelegate, QSystemTrayIcon, QTabWidget, QTableView, QTextEdit, QTimeEdit, QToolBox, QTreeView,
+                               QVBoxLayout, QWidget, QAbstractItemDelegate, QSplashScreen, QAbstractItemView, QAbstractScrollArea, QRadioButton, QFileDialog, QButtonGroup)
+from rich.console import Console as RichConsole
+from rich.highlighter import RegexHighlighter, Highlighter as RichHighlighter
+from rich.text import Text as RichText
+from rich.style import Style
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gidapptools_qt.resources.placeholder import QT_PLACEHOLDER_IMAGE
-
+from gidapptools.general_helper.enums import MiscEnum
+from gidapptools.errors import ApplicationExistsError
+from gidapptools.general_helper.string_helper import StringCaseConverter, StringCase
+from gidapptools.utility.version_item import VersionItem
+from gidapptools.general_helper.class_helper import make_repr
+from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
+from yarl import URL
+from collections import defaultdict
 # * Type-Checking Imports --------------------------------------------------------------------------------->
+from gidapptools import get_meta_info
+from gidapptools.errors import MetaItemNotFoundError, NotSetupError
+from gidapptools.gidapptools_qt.basics.sys_tray import GidBaseSysTray
 if TYPE_CHECKING:
     from gidapptools.gidapptools_qt.resources.resources_helper import PixmapResourceItem
-
+import pp
 # endregion[Imports]
 
 # region [TODO]
@@ -43,46 +73,218 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
+class AppArgParserResult:
+
+    def __init__(self) -> None:
+        self.exec_file: Path = None
+        self.main_window_flags = Qt.WindowFlags()
+        self.main_window_states = Qt.WindowStates()
+        self.show_window: bool = True
+
+
+class FlagAction(argparse.Action):
+    def __init__(self,
+                 option_strings,
+                 dest,
+                 default=None,
+                 type=None,
+                 choices=None,
+                 required=False,
+                 help=None,
+                 metavar=None):
+
+        _option_strings = []
+        for option_string in option_strings:
+            _option_strings.append(option_string)
+
+        if help is not None and default is not None:
+            help += " (default: %(default)s)"
+
+        super().__init__(option_strings=_option_strings,
+                         dest=dest,
+                         nargs=0,
+                         default=default,
+                         type=type,
+                         choices=choices,
+                         required=required,
+                         help=help,
+                         metavar=metavar)
+
+    def format_usage(self):
+        return ' | '.join(self.option_strings)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        if option_string in self.option_strings:
+            setattr(namespace, self.dest, not option_string.startswith('--no-'))
+
+
+class MainWindowMaximizedAction(FlagAction):
+
+    def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace, values: str | Sequence[Any] | None, option_string: str | None = ...) -> None:
+
+        namespace.main_window_states |= Qt.WindowMaximized
+        values = Qt.WindowMaximized
+        super().__call__(parser=parser, namespace=namespace, values=values, option_string=option_string)
+
+
+class MainWindowMinimizedAction(FlagAction):
+
+    def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace, values: str | Sequence[Any] | None, option_string: str | None = ...) -> None:
+
+        namespace.main_window_states |= Qt.WindowMinimized
+        values = Qt.WindowMinimized
+        super().__call__(parser=parser, namespace=namespace, values=values, option_string=option_string)
+
+
+class MainWindowAlwaysOnTopAction(FlagAction):
+
+    def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace, values: str | Sequence[Any] | None, option_string: str | None = ...) -> None:
+        namespace.main_window_flags |= Qt.WindowStaysOnTopHint
+        values = Qt.WindowStaysOnTopHint
+        super().__call__(parser=parser, namespace=namespace, values=values, option_string=option_string)
+
+
+class ClearAppSettingsAction(FlagAction):
+
+    def __call__(self, parser: argparse.ArgumentParser, namespace: argparse.Namespace, values: str | Sequence[Any] | None, option_string: str | None = ...) -> None:
+        parser.application.clear_settings()
+        super().__call__(parser=parser, namespace=namespace, values=values, option_string=option_string)
+        parser.exit(message="Cleared Application settings.")
+
+
+class AppArgParser(argparse.ArgumentParser):
+
+    def __init__(self, application: "GidQtApplication", result_item: AppArgParserResult = None, console: RichConsole = None):
+        self.application = application
+        self.result_item = result_item or AppArgParserResult()
+        self.console = console or RichConsole(soft_wrap=True)
+        self.raw_argvs = list(self.application.arguments())
+        self.result_item.exec_file = Path(self.raw_argvs.pop(0))
+        super().__init__(prog=self.application.pretty_name)
+        self.unparsable_args: list[str] = None
+        self.setup()
+
+    def setup(self):
+        self.application.argument_parse_result = self.result_item
+        self.version = str(self.application.version)
+        self.setup_std_args()
+
+    def setup_std_args(self):
+
+        self.add_argument("-v", "--version", action="version")
+        self.add_argument("-max", "--maximized", action=MainWindowMaximizedAction)
+        self.add_argument("-min", "--minimized", action=MainWindowMinimizedAction)
+        self.add_argument("-t", "--always-on-top", action=MainWindowAlwaysOnTopAction)
+        self.add_argument("-c", "--clear-settings", action=ClearAppSettingsAction)
+
+    def parse_app_args(self):
+        _, self.unparsable_args = super().parse_known_args(self.raw_argvs, self.result_item)
+
+    def _print_message(self, message: str, file: IO[str] | None = None) -> None:
+        self.console.file = file
+
+        self.console.rule()
+        self.console.print(message)
+        self.console.rule()
+
+
 class GidQtApplication(QApplication):
+    default_icon = QT_PLACEHOLDER_IMAGE
 
     def __init__(self,
-                 argvs: list[str] = None,
-                 icon: Union["PixmapResourceItem", QPixmap, QImage, str, QIcon] = None):
-        argvs = argvs or sys.argv
-        super().__init__(self.argv_hook(argvs))
+                 argvs: list[str],
+                 meta_info: "MetaInfo"):
+        self.is_setup: bool = False
+        super().__init__(argvs)
+
+        self.meta_info = meta_info
+
         self.main_window: QMainWindow = None
         self.sys_tray: QSystemTrayIcon = None
-        self.icon = self._icon_conversion(icon)
+        self.icon = None
+        self.splash_screens: dict[str, QSplashScreen] = {"startup": None, "shutdown": None}
+        self.argument_parse_result: AppArgParserResult = None
         self.extra_windows = WeakSet()
+
+    @property
+    def name(self) -> str:
+        return self.meta_info.app_name
+
+    @property
+    def pretty_name(self) -> str:
+        if self.meta_info.pretty_app_name:
+            return self.meta_info.pretty_app_name
+        return self.name
+
+    @property
+    def organization_name(self) -> str:
+        return self.meta_info.app_author
+
+    @property
+    def version(self) -> VersionItem:
+        return self.meta_info.version
+
+    @property
+    def url(self) -> URL:
+        return self.meta_info.url
+
+    @property
+    def settings(self) -> QSettings:
+        return QSettings()
+
+    @classmethod
+    def set_pre_flags(cls, pre_flags: dict[Qt.ApplicationAttribute:bool]):
+        if cls.instance() is not None:
+            ApplicationExistsError(existing_application=cls.instance(), msg="Pre Flags can only be set, before an application is instantiated")
+
+        if pre_flags is None:
+            return
+
+        for flag, value in pre_flags.items():
+            cls.setAttribute(flag, value)
+
+    def set_icon(self, icon=Union["PixmapResourceItem", QPixmap, QImage, str, QIcon, Path]):
+        self.icon = self._icon_conversion(icon)
+        self.setWindowIcon(self.icon)
 
     @classmethod
     def with_pre_flags(cls,
                        argvs: list[str] = None,
-                       icon: Union["PixmapResourceItem", QPixmap, QImage, str, QIcon] = None,
                        pre_flags: dict[Qt.ApplicationAttribute:bool] = None,
-                       desktop_settings_aware: bool = True):
+                       meta_info: "MetaInfo" = None):
         argvs = argvs or sys.argv
-        QGuiApplication.setDesktopSettingsAware(desktop_settings_aware)
-        for flag, value in pre_flags.items():
-            cls.setAttribute(flag, value)
-        return cls(argvs=argvs, icon=icon)
+
+        cls.set_pre_flags(pre_flags)
+        return cls(argvs=argvs, meta_info=meta_info)
 
     def setup(self) -> "GidQtApplication":
-        self.setWindowIcon(self.icon)
+        if self.is_setup is False:
+            self.setup_meta_data()
+            self.is_setup = True
         return self
 
-    def argv_hook(self, argvs: list[str]) -> list[str]:
-        return argvs
+    def setup_meta_data(self):
+        self.setApplicationName(self.meta_info.app_name)
+        self.setApplicationDisplayName(self.meta_info.pretty_app_name)
+        self.setOrganizationName(self.meta_info.app_author)
+        if self.meta_info.url:
+            self.setOrganizationDomain(str(self.meta_info.url))
+        version = str(self.meta_info.version) if self.meta_info.version else "-"
+        self.setApplicationVersion(version)
 
-    @staticmethod
-    def _icon_conversion(icon: Union["PixmapResourceItem", QPixmap, QImage, str, QIcon] = None) -> Optional[QIcon]:
+    def clear_settings(self):
+        self.settings.clear()
+
+    def _icon_conversion(self, icon: Union["PixmapResourceItem", QPixmap, QImage, str, QIcon, Path] = None) -> Optional[QIcon]:
         if icon is None:
-            return QT_PLACEHOLDER_IMAGE.icon
+            icon = self.default_icon
 
         if isinstance(icon, QIcon):
             return icon
 
-        if isinstance(icon, (QPixmap, QImage, str)):
+        if isinstance(icon, (QPixmap, QImage, str, Path)):
+            if isinstance(icon, Path):
+                icon = str(icon)
             return QIcon(icon)
 
         return icon.get_as_icon()
@@ -91,11 +293,15 @@ class GidQtApplication(QApplication):
         self.aboutQt()
 
     def _get_about_text(self) -> str:
+        sort_order = ["Name", "Author", "Link", "Version"]
         text_parts = {"Name": self.applicationDisplayName(),
-                      "Author": self.organizationName(),
-                      "Link": f'<a href="{self.organizationDomain()}">{self.organizationDomain()}</a>',
                       "Version": self.applicationVersion()}
+        if self.organizationName():
+            text_parts["Author"] = self.organizationName()
+        if self.organizationDomain():
+            text_parts["Link"] = f'<a href="{self.organizationDomain()}">{self.organizationDomain()}</a>'
 
+        text_parts = dict(sorted(text_parts.items(), key=lambda x: sort_order.index(x[0])))
         return '<br>'.join(f"<b>{k:<20}:</b>{v:>50}" for k, v in text_parts.items())
 
     def show_about(self) -> None:
@@ -103,15 +309,152 @@ class GidQtApplication(QApplication):
         text = self._get_about_text()
         QMessageBox.about(self.main_window, title, text)
 
+    def start(self):
+        self.setup()
+
+        if self.splash_screens["startup"] and self.main_window:
+            self.splash_screens["startup"].show()
+            self.splash_screens["startup"].finish(self.main_window)
+
+        if self.sys_tray:
+            self.sys_tray.show()
+
+        if self.main_window:
+            self.main_window.show()
+        return self.exec()
+
+    def on_quit(self, event: QEvent):
+        print(event.spontaneous())
+
+    def event(self, event: PySide6.QtCore.QEvent) -> bool:
+        if event.type() is QEvent.Quit:
+            self.on_quit(event)
+
+        return super().event(event)
+
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(name={self.applicationDisplayName()!r})"
+        return make_repr(self, exclude_none=False, attr_names=["name", "organization_name", "version", "url", "arguments", "main_window", "sys_tray"])
+
+
+T = TypeVar("T")
+
+
+class ClassHolder:
+
+    def __init__(self, klass: T, **kwargs) -> None:
+        self.klass = klass
+        self.kwargs = kwargs
+        self.instance: T = None
+
+    def create(self):
+        self.instance = self.klass(**self.kwargs)
+        return self.instance
+
+
+class ApplicationBuilder:
+
+    def __init__(self) -> None:
+        self.application_pre_flags: dict[Qt.ApplicationAttribute:bool] = {Qt.AA_EnableHighDpiScaling: True, Qt.AA_UseHighDpiPixmaps: True}
+        self.application_class: ClassHolder = ClassHolder(GidQtApplication)
+        self.main_window_class: ClassHolder = ClassHolder(QMainWindow)
+        self.argument_parser_class: ClassHolder = ClassHolder(AppArgParser)
+        self.sys_tray_class: ClassHolder = None
+
+        self.app_icon = None
+        self.meta_info: "MetaInfo" = self._get_default_meta_info()
+
+    def set_app_icon(self, icon: Union["PixmapResourceItem", QPixmap, QImage, str, QIcon]):
+        self.app_icon = icon
+
+    def set_application_class(self, application_class: type[GidQtApplication], **kwargs):
+        self.application_class = ClassHolder(application_class, **kwargs)
+
+    def set_main_window_class(self, main_window_class: type[QMainWindow], **kwargs):
+        self.main_window_class = ClassHolder(main_window_class, **kwargs)
+
+    def set_sys_tray_class(self, sys_tray_class: Union[type[QSystemTrayIcon], Literal[MiscEnum.DEFAULT], None] = MiscEnum.DEFAULT, **kwargs):
+        if sys_tray_class is None:
+            self.sys_tray_class = None
+        elif sys_tray_class is MiscEnum.DEFAULT:
+            self.sys_tray_class = ClassHolder(GidBaseSysTray, **kwargs)
+
+        else:
+            self.sys_tray_class = ClassHolder(sys_tray_class, **kwargs)
+
+    def set_meta_info(self, meta_info: type[MetaInfo]):
+        self.meta_info = meta_info
+
+    def set_application_pre_flags(self, pre_flags: dict[Qt.ApplicationAttribute:bool]):
+        self.application_pre_flags = pre_flags
+
+    def _get_default_meta_info(self):
+        try:
+            return get_meta_info()
+        except (MetaItemNotFoundError, NotSetupError):
+            return MetaInfo(app_name=Path(sys.argv[0]).stem.title())
+
+    def _build_application(self) -> QApplication:
+        self.application_class.klass.set_pre_flags(self.application_pre_flags)
+        if "meta_info" not in self.application_class.kwargs:
+            self.application_class.kwargs["meta_info"] = self.meta_info
+        if "argvs" not in self.application_class.kwargs:
+            self.application_class.kwargs["argvs"] = sys.argv
+        application = self.application_class.create()
+        application.set_icon(self.app_icon)
+        return application
+
+    def _build_argument_parser(self) -> AppArgParser:
+        self.argument_parser_class.kwargs["application"] = self.application_class.instance
+        parser = self.argument_parser_class.create()
+        parser.parse_app_args()
+
+        return parser
+
+    def _build_main_window(self) -> QMainWindow:
+        main_window: QMainWindow = self.main_window_class.create()
+        main_window.setWindowFlags(main_window.windowFlags() | self.argument_parser_class.instance.result_item.main_window_flags)
+        main_window.setWindowState(main_window.windowState() | self.argument_parser_class.instance.result_item.main_window_states)
+        return main_window
+
+    def _build_sys_tray(self) -> QSystemTrayIcon:
+        if "icon" not in self.sys_tray_class.kwargs:
+            self.sys_tray_class.kwargs["icon"] = self.application_class.instance.icon
+        if "title" not in self.sys_tray_class.kwargs:
+            self.sys_tray_class.kwargs["title"] = self.application_class.instance.pretty_name
+        return self.sys_tray_class.create().setup()
+
+    def build(self) -> QApplication:
+        application = self._build_application()
+        parser = self._build_argument_parser()
+
+        if self.sys_tray_class:
+            sys_tray = self._build_sys_tray()
+
+            application.sys_tray = sys_tray
+        if self.main_window_class:
+
+            main_window = self._build_main_window()
+            application.main_window = main_window
+        return application
 
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    app = GidQtApplication(sys.argv)
-    m = QMainWindow()
-    m.show()
-    app.exec_()
+
+    class CheckMainWindow(QMainWindow):
+
+        def __init__(self, parent: Optional[PySide6.QtWidgets.QWidget] = None, flags: PySide6.QtCore.Qt.WindowFlags = None) -> None:
+            super().__init__(*[i for i in [parent, flags] if i is not None])
+            self.pp = QPushButton(QApplication.instance().icon, "Hi")
+            self.setCentralWidget(self.pp)
+            self.pp.pressed.connect(self.close)
+
+    builder = ApplicationBuilder()
+    builder.set_app_icon(Path(r"D:\Dropbox\hobby\Modding\Ressources\logos\Antistasi_Icon.png"))
+    builder.set_sys_tray_class()
+    builder.set_main_window_class(CheckMainWindow)
+    app = builder.build()
+    print(repr(app))
+    sys.exit(app.start())
 
 # endregion[Main_Exec]

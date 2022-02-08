@@ -225,9 +225,11 @@ class BaseVisitor:
     handle_prefix = "_handle_"
     handler_regex = re.compile(rf"^{handle_prefix}(?P<target>\w+)$")
     named_args_doc_identifier = "NAMED_VALUE_ARGUMENTS"
+    extra_handlers: dict[Hashable, Callable] = {}
 
     def __init__(self, extra_handlers: dict[Hashable, Callable] = None, default_handler: Callable = None) -> None:
-        self.extra_handlers = {} if extra_handlers is None else extra_handlers
+        if extra_handlers:
+            self.extra_handlers |= extra_handlers
         self.default_handler = default_handler
         self._handlers: dict[Hashable, Callable] = None
         self._inspect_lock = Lock()
@@ -235,14 +237,16 @@ class BaseVisitor:
     def reload(self) -> None:
         self._collect_handlers()
 
-    def _validate_new_handler(self, handle_func: Callable) -> bool:
+    @classmethod
+    def _validate_new_handler(cls, handle_func: Callable) -> bool:
         # TODO: add validation logic.
         return True
 
-    def add_handler(self, target_name: str, handler: Callable) -> None:
+    @classmethod
+    def add_handler(cls, target_name: str, handler: Callable) -> None:
         # TODO: make it possible to inject self, or decide if.
-        if self._validate_new_handler(handler) is True:
-            self.extra_handlers[target_name] = handler
+        if cls._validate_new_handler(handler) is True:
+            cls.extra_handlers[target_name] = handler
 
     def set_default_handler(self, handler: Callable):
         self.add_handler(MiscEnum.DEFAULT, handler)
@@ -293,7 +297,7 @@ class BaseVisitor:
             return
         if self._handlers is None:
             self._collect_handlers()
-        return self._handlers
+        return self._handlers | self.extra_handlers
 
     def _collect_handlers(self) -> None:
         with self._inspect_lock:
@@ -314,7 +318,6 @@ class BaseVisitor:
             if self._handlers is None:
                 self._handlers = {}
             self._handlers |= collected_handlers
-            self._handlers |= self.extra_handlers
 
     def _modify_value(self, value: Any) -> Any:
         return value
@@ -359,7 +362,7 @@ class SafeMergeDict(UserDict):
             return self.__class__(first_dict | second_dict)
         new_dict = first_dict.copy()
         for key, value in second_dict.items():
-            print(key)
+
             if key not in new_dict or new_dict[key] in self.none_values:
                 new_dict[key] = value
             elif self.raise_on_overwrite is True:

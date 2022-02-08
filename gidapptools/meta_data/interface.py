@@ -183,10 +183,9 @@ def get_meta_item(item_name: str = None) -> Union[dict[str, type[META_ITEMS_TYPE
 
 
 def get_meta_info() -> MetaInfo:
-    try:
-        return app_meta['meta_info']
-    except MetaItemNotFoundError:
-        return app_meta['frozen_meta_info']
+
+    return app_meta['meta_info']
+
 
 
 def get_meta_paths() -> MetaPaths:

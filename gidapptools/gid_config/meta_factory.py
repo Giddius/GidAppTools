@@ -10,7 +10,7 @@ Soon.
 import json
 from typing import TYPE_CHECKING, Any, Union, Literal, Callable, Optional
 from pathlib import Path
-
+from weakref import WeakSet
 # * Third Party Imports --------------------------------------------------------------------------------->
 import attr
 
@@ -18,6 +18,8 @@ import attr
 from gidapptools.utility.helper import make_pretty, merge_content_to_json_file
 from gidapptools.gid_config.interface import GidIniConfig
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaItem, AbstractMetaFactory
+from gidapptools.gid_config.conversion.spec_data import SpecVisitor, EntryTypus
+from gidapptools.gid_config.conversion.conversion_table import ConfigValueConversionTable
 
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
@@ -56,7 +58,7 @@ class MetaConfig(AbstractMetaItem):
     spec_name_suffix: str = attr.ib(default="_configspec", converter=lambda x: x.casefold())
     config_class: type = attr.ib(default=GidIniConfig)
     file_changed_parameter: str = attr.ib(default='size')
-    instances: dict[tuple[Path, Path], config_class] = {}
+    instances: WeakSet[config_class] = WeakSet()
 
     @property
     def config_spec_pairs(self) -> CONFIG_SPEC_PAIRS_TYPE:
@@ -70,17 +72,40 @@ class MetaConfig(AbstractMetaItem):
 
     def get_config(self, name: str) -> Optional[GidIniConfig]:
         config_spec_pair = self.config_spec_pairs[name.casefold()]
-        if (config_spec_pair.get("config_file"), config_spec_pair.get("spec_file")) not in self.instances:
-            config = self.config_class(**config_spec_pair, file_changed_parameter=self.file_changed_parameter)
-            config.reload()
-            self.instances[(config_spec_pair.get("config_file"), config_spec_pair.get("spec_file"))] = config
 
-        return self.instances[(config_spec_pair.get("config_file"), config_spec_pair.get("spec_file"))]
+        config = self.config_class(**config_spec_pair, file_changed_parameter=self.file_changed_parameter)
+        self.instances.add(config)
+        config.reload()
+
+        return config
+
+    def add_spec_value_handler(self, target_name: str, handler: Callable[[Any, list[Any]], EntryTypus]) -> None:
+        SpecVisitor.add_handler(target_name=target_name, handler=handler)
+        for config in self.instances:
+            config.spec.reload()
+
+    def add_converter_function(self, typus: Any, converter_function: Callable) -> None:
+        ConfigValueConversionTable.add_extra_dispatch(typus, converter_function)
 
     def to_storager(self, storager: Callable = None) -> None:
         if storager is None:
             return
         storager(self)
+
+    def reset(self, config_name: str = None):
+        paths_to_clear = set()
+        if config_name is None:
+            for name, data in self.config_spec_pairs.items():
+                paths_to_clear.add(data["config_file"])
+                paths_to_clear.add(data["spec_file"])
+
+        else:
+            data = self.config_spec_pairs[config_name.casefold()]
+            paths_to_clear.add(data["config_file"])
+            paths_to_clear.add(data["spec_file"])
+
+        for path in paths_to_clear:
+            path.unlink(missing_ok=True)
 
     def clean_up(self, **kwargs) -> None:
         pass

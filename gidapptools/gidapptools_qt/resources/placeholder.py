@@ -14,7 +14,7 @@ from PySide6.QtGui import QIcon, QPixmap
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.data.images import PLACEHOLDER_IMAGE, StoredImage
-
+from gidapptools.gidapptools_qt.resources.resources_helper import PixmapResourceItem
 # endregion[Imports]
 
 # region [TODO]
@@ -39,7 +39,7 @@ class GidQtPlaceholderImage:
     def __init__(self, stored_image: StoredImage) -> None:
         self.stored_image = stored_image
         self._pixmap: QPixmap = None
-        self._icon = QIcon = None
+        self._icon: QIcon = None
 
     @property
     def pixmap(self) -> QPixmap:
@@ -54,7 +54,7 @@ class GidQtPlaceholderImage:
         return self._icon
 
 
-QT_PLACEHOLDER_IMAGE = GidQtPlaceholderImage(PLACEHOLDER_IMAGE)
+QT_PLACEHOLDER_IMAGE = PixmapResourceItem(PLACEHOLDER_IMAGE.path)
 
 # region[Main_Exec]
 

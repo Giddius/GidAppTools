@@ -66,6 +66,25 @@ class GidConfigError(GidAppToolsBaseError):
     ...
 
 
+class GidQtError(GidAppToolsBaseError):
+    ...
+
+
+class ApplicationNotExistingError(GidQtError):
+
+    def __init__(self, msg: str) -> None:
+        self.msg = msg
+        super().__init__(self.msg)
+
+
+class ApplicationExistsError(GidQtError):
+
+    def __init__(self, existing_application, msg: str) -> None:
+        self.existing_application = existing_application
+        self.msg = f"{msg} -> application: {self.existing_application!r}"
+        super().__init__(self.msg)
+
+
 class SectionExistsError(GidConfigError):
     ...
 

@@ -21,7 +21,7 @@ from gidapptools.meta_data.config_kwargs import ConfigKwargs
 from gidapptools.general_helper.conversion import str_to_bool
 from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
-
+import pp
 print = dprint
 
 # endregion[Imports]
@@ -56,6 +56,7 @@ class MetaInfoFactory(AbstractMetaFactory):
         self.package_metadata = meta_data_from_path(self.init_path)
         self.package_metadata['app_name'] = self.package_metadata.pop('name')
         self.package_metadata['app_author'] = self.package_metadata.pop('author')
+
         self.arg_getters_map: dict[str, Callable] = None
         self.needed_arg_names: list[str] = None
 

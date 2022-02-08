@@ -57,6 +57,7 @@ class dispatch_mark:
 class BaseDispatchTable:
     DEFAULT = MiscEnum.DEFAULT
     mark = dispatch_mark
+    extra_dispatch = {}
 
     def __init__(self,
                  instance: object = None,
@@ -80,7 +81,9 @@ class BaseDispatchTable:
         """
         self.instance = instance
         self.auto_collect_prefix = auto_collect_prefix
-        self.extra_dispatch = {} if extra_dispatch is None else extra_dispatch
+        if extra_dispatch:
+            self.extra_dispatch |= extra_dispatch
+
         self._table: dict[Hashable, Callable] = None
         self.default_dispatch: Callable = default_dispatch
         self._aliases = {} if aliases is None else aliases
@@ -125,8 +128,9 @@ class BaseDispatchTable:
         key = self._aliases.get(key, key)
         return combined_table[key]
 
-    def __setitem__(self, key: Hashable, value: Callable) -> None:
-        self.extra_dispatch[key] = value
+    @classmethod
+    def add_extra_dispatch(cls, key: Hashable, value: Callable):
+        cls.extra_dispatch[key] = value
 
     def get(self, key: Hashable, default=MiscEnum.NOTHING) -> Callable:
         try:

@@ -7,7 +7,7 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
-from enum import Enum, auto, unique
+from enum import Enum, auto, unique, Flag
 from pathlib import Path
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
@@ -81,6 +81,8 @@ class FileTypus(BaseGidEnum):
     CMD = BAT
     YML = YAML
     JPG = JPEG
+
+
 
 
 # region[Main_Exec]

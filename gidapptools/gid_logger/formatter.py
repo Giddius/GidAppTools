@@ -170,8 +170,8 @@ class TimeSection(AbstractLoggingStyleSection):
         if self.time_zone is not None:
             time_value = time_value.replace(tzinfo=self.time_zone)
         if self.time_format.casefold() == "isoformat":
-            return time_value.isoformat(timespec='seconds') + self.msec_format.format(msec=record.msecs)
-        return (time_value.strftime(self.time_format) + self.msec_format.format(msec=record.msecs) + time_value.strftime(" %Z")).strip()
+            return time_value.isoformat(timespec='seconds') + self.msec_format.format(msec=msec_value)
+        return (time_value.strftime(self.time_format) + self.msec_format.format(msec=msec_value) + time_value.strftime(" %Z")).strip()
 
 
 class LevelSection(AbstractLoggingStyleSection):

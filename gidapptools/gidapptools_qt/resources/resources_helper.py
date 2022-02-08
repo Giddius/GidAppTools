@@ -61,8 +61,8 @@ class ResourceItem:
     cache_lock = RLock()
     _cache = {}
 
-    def __init__(self, file_path: str, qt_path: str) -> None:
-        self.file_path = Path(file_path)
+    def __init__(self, file_path: str = None, qt_path: str = None) -> None:
+        self.file_path = Path(file_path) if file_path is not None else None
         self.qt_path = qt_path
         self.prefixes, self.name = self._get_qt_path_parts()
 
@@ -75,16 +75,21 @@ class ResourceItem:
             self._cache[key] = value
 
     def _get_qt_path_parts(self) -> str:
-        as_path = Path(self.qt_path)
-        _, *prefixes, name = as_path.parts
-        return tuple(prefixes), name.rsplit('.')[0]
+        if self.qt_path is not None:
+            as_path = Path(self.qt_path)
+            _, *prefixes, name = as_path.parts
+            return tuple(prefixes), name.rsplit('.')[0]
+        else:
+            name = self.file_path.stem
+            prefixes = tuple()
+            return prefixes, name
 
     def get_as_file(self) -> QFile:
         from_cache = self.get_from_cache(("file", self.name))
         if from_cache is not None:
             return from_cache
 
-        _out = QFile(self.qt_path)
+        _out = QFile(self.qt_path or str(self.file_path))
         self.store_in_cache(("image", self.name), _out)
         return _out
 
@@ -105,7 +110,7 @@ class PixmapResourceItem(ResourceItem):
         if from_cache is not None:
             return from_cache
 
-        pixmap = QPixmap(self.qt_path)
+        pixmap = QPixmap(self.qt_path or str(self.file_path))
         if any([width is None, height is None]):
             _out = pixmap
         else:
@@ -117,7 +122,7 @@ class PixmapResourceItem(ResourceItem):
         from_cache = self.get_from_cache(("icon", self.name))
         if from_cache is not None:
             return from_cache
-        _out = QIcon(self.qt_path)
+        _out = QIcon(self.qt_path or str(self.file_path))
         self.store_in_cache(("icon", self.name), _out)
         return _out
 
@@ -125,7 +130,7 @@ class PixmapResourceItem(ResourceItem):
         from_cache = self.get_from_cache(("image", self.name))
         if from_cache is not None:
             return from_cache
-        _out = QImage(self.qt_path, **kwargs)
+        _out = QImage(self.qt_path or str(self.file_path), **kwargs)
         self.store_in_cache(("image", self.name), _out)
         return _out
 

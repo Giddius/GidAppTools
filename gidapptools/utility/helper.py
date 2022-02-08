@@ -15,7 +15,7 @@ from typing import Any, Mapping, TypeVar, Callable, Optional, Literal, Union
 from pathlib import Path
 from datetime import datetime, timezone
 import json
-from importlib.metadata import metadata, packages_distributions
+from importlib.metadata import metadata, packages_distributions, requires, files as metadata_files, distribution
 
 # * Third Party Imports --------------------------------------------------------------------------------->
 import psutil
@@ -26,7 +26,7 @@ from appdirs import AppDirs
 from gidapptools.types import PATH_TYPE
 from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.general_helper.date_time import DatetimeFmt
-
+import pp
 # endregion[Imports]
 
 # region [TODO]
@@ -69,7 +69,6 @@ def meta_data_from_path(in_path: Path) -> dict[str, Any]:
     _init_module = inspect.getmodule(None, in_path)
 
     _metadata = metadata(_init_module.__package__)
-
     return {k.casefold(): v for k, v in _metadata.items()}
 
 

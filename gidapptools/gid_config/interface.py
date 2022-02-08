@@ -199,14 +199,6 @@ class GidIniConfig:
         with self.access_lock:
             self.config.add_section(section=Section(section_name), existing_ok=existing_ok)
 
-    def add_spec_value_handler(self, target_name: str, handler: Callable[[Any, list[Any]], EntryTypus]) -> None:
-        with self.access_lock:
-            self.spec_visitor.add_handler(target_name=target_name, handler=handler)
-
-    def add_converter_function(self, typus: Any, converter_function: Callable) -> None:
-        with self.access_lock:
-            self.converter[typus] = converter_function
-
     def as_dict(self, raw: bool = False, with_typus: bool = False, only_gui_visible: bool = False) -> dict[str, dict[str, Any]]:
         with self.access_lock:
             raw_dict = self.config.as_raw_dict()
