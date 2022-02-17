@@ -10,8 +10,12 @@ Soon.
 import sys
 from typing import TYPE_CHECKING, Union, Optional, Any, Sequence, IO, Literal, TypeVar
 from pathlib import Path
+import json
 from weakref import WeakSet
 import argparse
+from time import sleep
+from functools import partial
+import os
 # * Qt Imports --------------------------------------------------------------------------------------->
 import PySide6
 from PySide6 import (QtCore, QtGui, QtWidgets, Qt3DAnimation, Qt3DCore, Qt3DExtras, Qt3DInput, Qt3DLogic, Qt3DRender, QtAxContainer, QtBluetooth,
@@ -47,10 +51,12 @@ from gidapptools.general_helper.class_helper import make_repr
 from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
 from yarl import URL
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, Future, ALL_COMPLETED, FIRST_EXCEPTION, FIRST_COMPLETED
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 from gidapptools import get_meta_info
 from gidapptools.errors import MetaItemNotFoundError, NotSetupError
 from gidapptools.gidapptools_qt.basics.sys_tray import GidBaseSysTray
+from gidapptools.gidapptools_qt.basics.main_window import GidBaseMainWindow
 if TYPE_CHECKING:
     from gidapptools.gidapptools_qt.resources.resources_helper import PixmapResourceItem
 import pp
@@ -188,6 +194,43 @@ class AppArgParser(argparse.ArgumentParser):
         self.console.rule()
 
 
+class WindowHolder:
+
+    def __init__(self) -> None:
+        self.windows: dict[str, QWidget] = {}
+
+    def _determine_name(self, window: QWidget):
+        if hasattr(window, "name"):
+            return window.name
+
+        object_name = window.objectName()
+        if object_name:
+            return object_name
+
+        return window.__class__.__name__
+
+    def _check_stored_windows_closed(self):
+        for window in list(self.windows.values()):
+            if window.isVisible() is False:
+                self.remove_window(window)
+
+    def add_window(self, window: QWidget):
+        self._check_stored_windows_closed()
+        name = self._determine_name(window)
+
+        self.windows[name] = window
+        try:
+            window.close_signal.connect(self.remove_window)
+        except AttributeError:
+            pass
+
+    @Slot(QWidget)
+    def remove_window(self, window: QWidget):
+        name = self._determine_name(window)
+        print(name)
+        del self.windows[name]
+
+
 class GidQtApplication(QApplication):
     default_icon = QT_PLACEHOLDER_IMAGE
 
@@ -196,15 +239,17 @@ class GidQtApplication(QApplication):
                  meta_info: "MetaInfo"):
         self.is_setup: bool = False
         super().__init__(argvs)
+        self.setObjectName("Application")
 
         self.meta_info = meta_info
 
-        self.main_window: QMainWindow = None
-        self.sys_tray: QSystemTrayIcon = None
+        self.main_window: GidBaseMainWindow = None
+        self.sys_tray: GidBaseSysTray = None
         self.icon = None
         self.splash_screens: dict[str, QSplashScreen] = {"startup": None, "shutdown": None}
         self.argument_parse_result: AppArgParserResult = None
-        self.extra_windows = WeakSet()
+        self.extra_windows = WindowHolder()
+        self._gui_thread_pool: ThreadPoolExecutor = None
 
     @property
     def name(self) -> str:
@@ -232,6 +277,13 @@ class GidQtApplication(QApplication):
     def settings(self) -> QSettings:
         return QSettings()
 
+    @property
+    def gui_thread_pool(self) -> ThreadPoolExecutor:
+        if self._gui_thread_pool is None:
+            self._gui_thread_pool = ThreadPoolExecutor(thread_name_prefix="gui_thread")
+
+        return self._gui_thread_pool
+
     @classmethod
     def set_pre_flags(cls, pre_flags: dict[Qt.ApplicationAttribute:bool]):
         if cls.instance() is not None:
@@ -246,16 +298,6 @@ class GidQtApplication(QApplication):
     def set_icon(self, icon=Union["PixmapResourceItem", QPixmap, QImage, str, QIcon, Path]):
         self.icon = self._icon_conversion(icon)
         self.setWindowIcon(self.icon)
-
-    @classmethod
-    def with_pre_flags(cls,
-                       argvs: list[str] = None,
-                       pre_flags: dict[Qt.ApplicationAttribute:bool] = None,
-                       meta_info: "MetaInfo" = None):
-        argvs = argvs or sys.argv
-
-        cls.set_pre_flags(pre_flags)
-        return cls(argvs=argvs, meta_info=meta_info)
 
     def setup(self) -> "GidQtApplication":
         if self.is_setup is False:
@@ -324,7 +366,9 @@ class GidQtApplication(QApplication):
         return self.exec()
 
     def on_quit(self, event: QEvent):
-        print(event.spontaneous())
+        self.closeAllWindows()
+        if self._gui_thread_pool is not None:
+            self._gui_thread_pool.shutdown(wait=False, cancel_futures=True)
 
     def event(self, event: PySide6.QtCore.QEvent) -> bool:
         if event.type() is QEvent.Quit:
@@ -356,12 +400,13 @@ class ApplicationBuilder:
     def __init__(self) -> None:
         self.application_pre_flags: dict[Qt.ApplicationAttribute:bool] = {Qt.AA_EnableHighDpiScaling: True, Qt.AA_UseHighDpiPixmaps: True}
         self.application_class: ClassHolder = ClassHolder(GidQtApplication)
-        self.main_window_class: ClassHolder = ClassHolder(QMainWindow)
+        self.main_window_class: ClassHolder = ClassHolder(GidBaseMainWindow)
         self.argument_parser_class: ClassHolder = ClassHolder(AppArgParser)
         self.sys_tray_class: ClassHolder = None
 
         self.app_icon = None
         self.meta_info: "MetaInfo" = self._get_default_meta_info()
+        self.style_sheet_file: Path = None
 
     def set_app_icon(self, icon: Union["PixmapResourceItem", QPixmap, QImage, str, QIcon]):
         self.app_icon = icon
@@ -386,6 +431,9 @@ class ApplicationBuilder:
 
     def set_application_pre_flags(self, pre_flags: dict[Qt.ApplicationAttribute:bool]):
         self.application_pre_flags = pre_flags
+
+    def set_style_sheet_file(self, file_path: Union[str, os.PathLike]):
+        self.style_sheet_file = Path(file_path)
 
     def _get_default_meta_info(self):
         try:
@@ -421,9 +469,11 @@ class ApplicationBuilder:
             self.sys_tray_class.kwargs["icon"] = self.application_class.instance.icon
         if "title" not in self.sys_tray_class.kwargs:
             self.sys_tray_class.kwargs["title"] = self.application_class.instance.pretty_name
+        if "tooltip" not in self.sys_tray_class.kwargs:
+            self.sys_tray_class.kwargs["tooltip"] = self.application_class.instance.pretty_name
         return self.sys_tray_class.create().setup()
 
-    def build(self) -> QApplication:
+    def build(self) -> GidQtApplication:
         application = self._build_application()
         parser = self._build_argument_parser()
 
@@ -435,26 +485,25 @@ class ApplicationBuilder:
 
             main_window = self._build_main_window()
             application.main_window = main_window
+        if self.style_sheet_file:
+            application.setStyleSheet(self.style_sheet_file.read_text(encoding='utf-8', errors='ignore'))
         return application
 
 
 # region[Main_Exec]
 if __name__ == '__main__':
-
-    class CheckMainWindow(QMainWindow):
-
-        def __init__(self, parent: Optional[PySide6.QtWidgets.QWidget] = None, flags: PySide6.QtCore.Qt.WindowFlags = None) -> None:
-            super().__init__(*[i for i in [parent, flags] if i is not None])
-            self.pp = QPushButton(QApplication.instance().icon, "Hi")
-            self.setCentralWidget(self.pp)
-            self.pp.pressed.connect(self.close)
+    def sleep_print(sleep_amount, text):
+        sleep(sleep_amount)
+        print(text)
 
     builder = ApplicationBuilder()
     builder.set_app_icon(Path(r"D:\Dropbox\hobby\Modding\Ressources\logos\Antistasi_Icon.png"))
     builder.set_sys_tray_class()
-    builder.set_main_window_class(CheckMainWindow)
+
     app = builder.build()
-    print(repr(app))
+    app.main_window.central_widget = QPushButton(app.icon, "Hi")
+    app.main_window.central_widget.pressed.connect(app.main_window.close)
+
     sys.exit(app.start())
 
 # endregion[Main_Exec]

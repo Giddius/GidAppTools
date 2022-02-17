@@ -2,3 +2,5 @@ Faker
 mock
 pytest
 pytest-html
+coverage[toml]
+pytest-cov

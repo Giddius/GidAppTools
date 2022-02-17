@@ -50,7 +50,7 @@ from urllib.parse import urlparse
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
-
+from gidapptools.general_helper.enums import MiscEnum
 
 import PySide6
 from PySide6 import (QtCore, QtGui, QtWidgets, Qt3DAnimation, Qt3DCore, Qt3DExtras, Qt3DInput, Qt3DLogic, Qt3DRender, QtAxContainer, QtBluetooth,
@@ -74,7 +74,7 @@ from PySide6.QtWidgets import (QApplication, QStyleOptionMenuItem, QWidgetAction
                                QVBoxLayout, QWidget, QAbstractItemDelegate, QAbstractItemView, QAbstractScrollArea, QRadioButton, QFileDialog, QButtonGroup)
 
 from gidapptools.errors import ApplicationNotExistingError
-
+from string import punctuation
 if TYPE_CHECKING:
     from gidapptools.gidapptools_qt.basics.application import GidQtApplication
 # endregion[Imports]
@@ -106,7 +106,6 @@ class MenuTitle(QFrame):
         self.layout.setContentsMargins(5, 5, 5, 5)
 
         self.text_label = QLabel()
-
         if text:
             self.set_text(text)
         self.text_label.setAlignment(Qt.AlignCenter)
@@ -164,6 +163,7 @@ class MenuTitle(QFrame):
 
 
 class GidBaseSysTray(QSystemTrayIcon):
+    name_normalization_regex = re.compile(rf"[{punctuation}\s]+")
 
     def __init__(self, icon: Union[QIcon, QPixmap], title: str = None, tooltip: str = None, parent: Optional[QObject] = None):
         super().__init__(icon, parent=parent)
@@ -172,6 +172,18 @@ class GidBaseSysTray(QSystemTrayIcon):
         self.setContextMenu(self.menu)
         self.menu_title = MenuTitle(title)
         self.actions: dict[str, QAction] = {}
+
+    @property
+    def app(self) -> "GidQtApplication":
+        return QApplication.instance()
+
+    @property
+    def title(self) -> Optional[str]:
+        return self.menu_title.text()
+
+    @title.setter
+    def title(self, value: str) -> None:
+        self.menu_title.set_text(value)
 
     def setup(self) -> "GidBaseSysTray":
         if self.app is None:
@@ -189,34 +201,55 @@ class GidBaseSysTray(QSystemTrayIcon):
 
     def setup_standard_actions(self):
         self.add_action("Close", self.app.quit)
-        self.add_action("Hide")
 
-    def set_title(self, title: str):
-        self.menu_title.set_text(title)
+    def _normalize_action_name(self, name: str) -> str:
+        name = name.strip().casefold()
+        name = self.name_normalization_regex.sub("_", name)
+        return name
 
-    def add_action(self, text: str, connect_to: Callable = None, icon: QIcon = None, enabled: bool = True):
+    def add_action(self, text: str, connect_to: Callable = None, icon: QIcon = None, enabled: bool = True, tooltip: str = None):
+        name = self._normalize_action_name(text)
+        if name in self.actions:
+            raise KeyError(f"An action with the name {text!r} or the normalized name {name!r} already exists.")
         action = QAction(text, self.menu)
         action.setIconText(text)
         if icon:
             action.setIcon(icon)
+        if tooltip:
+            action.setToolTip(tooltip)
         action.setEnabled(enabled)
-        self.actions[text.casefold()] = action
+
+        self.actions[name] = action
         self.menu.addAction(action)
         if connect_to:
             action.triggered.connect(connect_to)
 
-    @property
-    def app(self) -> "GidQtApplication":
-        return QApplication.instance()
+    def remove_action(self, name: str, error_on_missing: bool = False):
+        if error_on_missing is True:
+            action = self[name]
+        else:
+            action = self.get(name, MiscEnum.NOT_FOUND)
+            if action is MiscEnum.NOT_FOUND:
+                return
 
-    @property
-    def title(self) -> Optional[str]:
-        return self.menu_title.text()
+        self.menu.removeAction(action)
+        self.actions.pop(self._normalize_action_name(name))
 
+    def clear(self):
+        for action_name in list(self.actions):
+            self.remove_action(action_name)
+
+    def __getitem__(self, key: str) -> QAction:
+        try:
+            return self.actions[self._normalize_action_name(key)]
+        except KeyError as error:
+            raise KeyError(f"No action named {key!r}") from error
+
+    def get(self, key: str, default: Any = None) -> Union[QAction, Any]:
+        return self.actions.get(key, default)
 # region[Main_Exec]
 
 
 if __name__ == '__main__':
     pass
-
-# endregion[Main_Exec]
+    # endregion[Main_Exec]

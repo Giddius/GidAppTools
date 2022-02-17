@@ -71,7 +71,8 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-def make_repr(instance: object, attr_names: Union[Callable, Iterable[str]] = vars, exclude_none: bool = True) -> str:
+def make_repr(instance: object, attr_names: Union[Callable, Iterable[str]] = None, exclude_none: bool = True) -> str:
+    attr_names = attr_names or vars
     if callable(attr_names):
         attr_dict = attr_names(instance)
     else:

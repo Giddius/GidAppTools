@@ -1,5 +1,5 @@
 
-appdirs>=1.4.4
+platformdirs>=2.5.0
 
 attrs<=21.4.0
 
@@ -27,7 +27,7 @@ multivolumefile>=0.2.3
 
 orjson>=3.6.5
 
-platformdirs>=2.4.1
+
 
 pp-ez>=0.2.0
 

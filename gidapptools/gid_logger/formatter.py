@@ -9,6 +9,7 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import os
 import logging
+from importlib.metadata import metadata, MetadataPathFinder, PathDistribution, packages_distributions, distributions
 from abc import ABC, abstractmethod
 from pprint import pprint
 from typing import TYPE_CHECKING, Union, Literal, Iterable
@@ -17,11 +18,11 @@ from datetime import datetime, timezone, timedelta
 from collections import Counter
 # * Third Party Imports --------------------------------------------------------------------------------->
 from tzlocal import get_localzone
-
+from gidapptools.utility.helper import meta_data_from_path
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_logger.enums import LoggingLevel, LoggingSectionAlignment
 from gidapptools.general_helper.string_helper import StringCase, StringCaseConverter
-
+import pp
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.gid_logger.records import LOG_RECORD_TYPES
@@ -164,20 +165,21 @@ class TimeSection(AbstractLoggingStyleSection):
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
         time_value = datetime.fromtimestamp(record.created, tz=self.local_timezone)
         msec_value = record.msecs
-        if msec_value == 1000:
-            msec_value = 0
+        msec_string = self.msec_format.format(msec=msec_value).strip()
+        if msec_string == ".1000":
+            msec_string = ".000"
             time_value = time_value + timedelta(seconds=1)
         if self.time_zone is not None:
             time_value = time_value.replace(tzinfo=self.time_zone)
         if self.time_format.casefold() == "isoformat":
             return time_value.isoformat(timespec='seconds') + self.msec_format.format(msec=msec_value)
-        return (time_value.strftime(self.time_format) + self.msec_format.format(msec=msec_value) + time_value.strftime(" %Z")).strip()
+        return (time_value.strftime(self.time_format) + msec_string + time_value.strftime(" %Z")).strip()
 
 
 class LevelSection(AbstractLoggingStyleSection):
     default_case: StringCase = StringCase.UPPER
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.CENTER
-    default_width: int = max(len(i) for i in LoggingLevel._member_names_)
+    default_width: int = max(len(i) for i in LoggingLevel._member_names_) + 4
 
     def __init__(self,
                  position: int = None,
@@ -193,7 +195,13 @@ class LevelSection(AbstractLoggingStyleSection):
             self.case = case
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
-        return StringCaseConverter.convert_to(record.levelname, self.case)
+        level_name = StringCaseConverter.convert_to(record.levelname, self.case)
+        try:
+            if record.extras.get("is_qt", False) is True:
+                level_name = StringCaseConverter.convert_to("Qt", self.case) + level_name
+        except AttributeError:
+            pass
+        return level_name
 
 
 class ThreadSection(AbstractLoggingStyleSection):
@@ -215,15 +223,14 @@ class LineNumberSection(AbstractLoggingStyleSection):
 class PathSection(AbstractLoggingStyleSection):
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.LEFT
 
-    def __init__(self, position: int = None,
-                 depth: int = 2,
-                 with_extension: bool = False,
+    def __init__(self,
+                 position: int = None,
+                 with_extension: bool = True,
                  width: int = None,
                  alignment: Union[LoggingSectionAlignment, str] = None) -> None:
         super().__init__(position=position, width=self.width_from_env, alignment=alignment)
         self.with_extension = with_extension
-        self.depth = depth
-        self._width_cache: int = None
+        self._width_cache: int = width or None
 
     def width_from_env(self) -> int:
         if self._width_cache is None:
@@ -231,10 +238,32 @@ class PathSection(AbstractLoggingStyleSection):
         return self._width_cache
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
-        path = Path(record.pathname)
+        path = Path(record.pathname).resolve()
+        if os.getenv("_MAIN_DIR", None) is not None:
+            path = path.relative_to(Path(os.getenv("_MAIN_DIR")).resolve())
         if self.with_extension is False:
             path = path.with_suffix('')
-        return '.'.join(part for part in path.parts[-self.depth:])
+
+        return './' + path.as_posix()
+
+
+class LoggerNameSection(AbstractLoggingStyleSection):
+    default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.LEFT
+
+    def __init__(self,
+                 position: int = None,
+                 width: int = None,
+                 alignment: Union[LoggingSectionAlignment, str] = None) -> None:
+        super().__init__(position=position, width=self.width_from_env, alignment=alignment)
+        self._width_cache: int = width or None
+
+    def width_from_env(self) -> int:
+        if self._width_cache is None:
+            self._width_cache = int(os.getenv("MAX_MODULE_NAME_LEN", "20"))
+        return self._width_cache
+
+    def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
+        return record.name
 
 
 class FunctionNameSection(AbstractLoggingStyleSection):
@@ -255,6 +284,42 @@ class FunctionNameSection(AbstractLoggingStyleSection):
         if record.funcName == "<module>":
             return self.default_text
         return record.funcName
+
+
+class ExtrasSection(AbstractLoggingStyleSection):
+
+    def __init__(self) -> None:
+        super().__init__(width=100)
+
+    def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
+        try:
+            extras = record.extras
+        except AttributeError:
+            return ""
+
+        return ' + '.join(f"{k}={v!r}" for k, v in extras.items())
+
+
+class PackageNameSection(AbstractLoggingStyleSection):
+
+    def __init__(self,
+                 position: int = None,
+                 width: int = None,
+                 alignment: Union[LoggingSectionAlignment, str] = None) -> None:
+        super().__init__(position, width or 10, alignment)
+
+    def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
+
+        name_parts = record.name.split('.')
+
+        package_name = name_parts[0]
+
+        try:
+            if record.extras.get("is_qt", False) is True:
+                package_name = "Qt"
+        except AttributeError:
+            pass
+        return package_name
 
 
 class AbstractSectionLoggingStyle(ABC):
@@ -278,11 +343,11 @@ class AbstractSectionLoggingStyle(ABC):
     def usesTime(self) -> bool:
         return False
 
-    @abstractmethod
+    @ abstractmethod
     def validate(self) -> None:
         ...
 
-    @abstractmethod
+    @ abstractmethod
     def _format(self, record: "LOG_RECORD_TYPES") -> str:
         ...
 
@@ -304,7 +369,7 @@ class GidSectionLoggingStyle(AbstractSectionLoggingStyle):
 
 
 class GidLoggingFormatter(logging.Formatter):
-    default_fmt = (TimeSection(), LineNumberSection(), LevelSection(), ThreadSection(), PathSection(), FunctionNameSection())
+    default_fmt = (TimeSection(), LineNumberSection(), LevelSection(), ThreadSection(), PackageNameSection(), LoggerNameSection(), FunctionNameSection())
 
     def __init__(self,
                  fmt: Union[str, Iterable[Union[str, AbstractLoggingStyleSection]]] = None,

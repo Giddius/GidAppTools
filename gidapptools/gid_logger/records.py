@@ -113,7 +113,10 @@ gid_log_record_factory = GidLogRecordFactory()
 
 
 class GidBaseLogRecord(logging.LogRecord):
-    ...
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.extras = {}
 
 
 LOG_RECORD_TYPES = Union[logging.LogRecord, GidBaseLogRecord]

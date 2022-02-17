@@ -20,7 +20,7 @@ from importlib.metadata import metadata, packages_distributions, requires, files
 # * Third Party Imports --------------------------------------------------------------------------------->
 import psutil
 from yarl import URL
-from appdirs import AppDirs
+from platformdirs import PlatformDirs
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.types import PATH_TYPE
@@ -80,7 +80,7 @@ def mark_appdir_path(func: TCallable) -> TCallable:
     return func
 
 
-class PathLibAppDirs(AppDirs):
+class PathLibAppDirs:
     mark_path = mark_appdir_path
 
     def __init__(self,
@@ -89,35 +89,44 @@ class PathLibAppDirs(AppDirs):
                  version: str = None,
                  roaming: bool = True,
                  multipath: bool = False) -> None:
-        super().__init__(appname=appname, appauthor=appauthor, version=version, roaming=roaming, multipath=multipath)
+        self.platform_dirs = PlatformDirs(appname=appname, appauthor=appauthor, version=version, roaming=roaming, multipath=multipath)
+
+    @property
+    def appname(self) -> str:
+        return self.platform_dirs.appname
+
+    @property
+    def authorname(self) -> Optional[str]:
+        return self.platform_dirs.appauthor
 
     @mark_appdir_path
     def user_data_dir(self) -> Path:
-        return Path(super().user_data_dir)
+        return Path(self.platform_dirs.user_data_path)
 
     @mark_appdir_path
     def user_log_dir(self) -> Path:
-        return Path(super().user_log_dir)
+        return Path(self.platform_dirs.user_log_path)
 
     @mark_appdir_path
     def user_cache_dir(self) -> Path:
-        return Path(super().user_cache_dir)
+        return Path(self.platform_dirs.user_cache_path)
 
     @mark_appdir_path
     def user_config_dir(self) -> Path:
-        return Path(super().user_config_dir)
+        return Path(self.platform_dirs.user_config_path)
 
     @mark_appdir_path
     def user_state_dir(self) -> Path:
-        return Path(super().user_state_dir)
+        return Path(self.platform_dirs.user_state_path)
 
     @mark_appdir_path
     def site_data_dir(self) -> Path:
-        return Path(super().site_data_dir)
+        return Path(self.platform_dirs.user_data_path)
 
     @mark_appdir_path
     def site_config_dir(self) -> Path:
-        return Path(super().site_config_dir)
+
+        return Path(self.platform_dirs.site_config_path)
 
     def as_path_dict(self) -> dict[NamedMetaPath, Optional[Path]]:
         path_dict = {named_path_item: None for named_path_item in NamedMetaPath.__members__.values()}
@@ -201,5 +210,5 @@ def get_main_module_path() -> Path:
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    print(get_main_module_path())
+    print(PathLibAppDirs("woof").as_path_dict())
 # endregion[Main_Exec]

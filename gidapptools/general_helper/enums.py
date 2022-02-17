@@ -49,6 +49,24 @@ class MiscEnum(Enum):
 
 
 class StringCase(BaseGidEnum):
+    """
+    _summary_
+
+    - SNAKE: 'example_variable_name'
+    - SCREAMING_SNAKE: 'EXAMPLE_VARIABLE_NAME'
+    - CAMEL: 'exampleVariableName'
+    - PASCAL: 'ExampleVariableName'
+    - KEBAP: 'example-variable-name'
+    - SPLIT: 'example variable name'
+    - TITLE: 'Example Variable Name'
+    - UPPER: 'EXAMPLE VARIABLE NAME'
+    - BLOCK_UPPER: 'EXAMPLEVARIABLENAME'
+
+    - CLASS: see `PASCAL`
+
+    Args:
+        BaseGidEnum (_type_): _description_
+    """
     SNAKE = auto()
     SCREAMING_SNAKE = auto()
     CAMEL = auto()
@@ -57,6 +75,7 @@ class StringCase(BaseGidEnum):
     SPLIT = auto()
     TITLE = auto()
     UPPER = auto()
+    BLOCK_UPPER = auto()
     # aliases
     CLASS = PASCAL
 
@@ -83,11 +102,7 @@ class FileTypus(BaseGidEnum):
     JPG = JPEG
 
 
-
-
 # region[Main_Exec]
-
-
 if __name__ == '__main__':
     pass
 

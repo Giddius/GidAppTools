@@ -7,7 +7,7 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
-from typing import TYPE_CHECKING, Any, Union, Literal, Hashable, Optional
+from typing import TYPE_CHECKING, Any, Union, Literal, Hashable, Optional, Iterable
 from pathlib import Path
 from datetime import timezone
 
@@ -42,6 +42,23 @@ class GidAppToolsBaseError(Exception):
     """
 
 
+class FlagConflictError(GidAppToolsBaseError):
+    def __init__(self, flag_names: Iterable[str], conflicting_bool_value: bool = True):
+        self.flag_names = tuple(flag_names)
+        self.conflicting_bool_value = conflicting_bool_value
+        self.msg = self._build_msg()
+
+        super().__init__(self.msg)
+
+    def _build_msg(self) -> str:
+        text = "No more than one of "
+        flags = list(self.flag_names)
+        last_flag = flags.pop(-1)
+        text += ', '.join(flags) + ' or ' + repr(last_flag)
+        text += f" can be {self.conflicting_bool_value!r}."
+        return text
+
+
 class DispatchError(GidAppToolsBaseError):
     ...
 
@@ -72,8 +89,8 @@ class GidQtError(GidAppToolsBaseError):
 
 class ApplicationNotExistingError(GidQtError):
 
-    def __init__(self, msg: str) -> None:
-        self.msg = msg
+    def __init__(self, msg: str = None) -> None:
+        self.msg = msg or "No Application instance found."
         super().__init__(self.msg)
 
 

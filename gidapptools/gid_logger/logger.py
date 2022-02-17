@@ -9,17 +9,22 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import os
 import sys
+from contextlib import contextmanager
 import queue
 import atexit
+from weakref import WeakSet, WeakValueDictionary
 import logging
-from typing import Union, Iterable
+from typing import Union, Iterable, Mapping, TYPE_CHECKING, Any, Optional
 from pathlib import Path
 from logging.handlers import QueueHandler, QueueListener
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_logger.enums import LoggingLevel
-from gidapptools.gid_logger.handler import GidBaseRotatingFileHandler, GidBaseStreamHandler
+from gidapptools.gid_logger.handler import GidBaseRotatingFileHandler, GidBaseStreamHandler, GidStoringHandler
 from gidapptools.gid_logger.formatter import GidLoggingFormatter, get_all_func_names, get_all_module_names
+
+if TYPE_CHECKING:
+    from gidapptools.gid_logger.records import LOG_RECORD_TYPES
 
 # endregion[Imports]
 
@@ -41,7 +46,50 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
 class GidLogger(logging.Logger):
-    ...
+
+    def __init__(self, name: str, level: "logging._Level" = logging.NOTSET) -> None:
+        super().__init__(name, level)
+        self.que_listener: QueueListener = None
+        self._que_handlers = WeakSet()
+
+    @property
+    def all_handlers(self) -> dict[str, tuple[logging.Handler]]:
+        return {"handlers": tuple(self.handlers),
+                "que_handlers": tuple(self._que_handlers)}
+
+    def set_que_listener(self, que_listener: QueueListener):
+        self.que_listener = que_listener
+        for handler in que_listener.handlers:
+            self._que_handlers.add(handler)
+
+    def makeRecord(self,
+                   name: str,
+                   level: int,
+                   fn: str,
+                   lno: int,
+                   msg: object,
+                   args: "logging._ArgsType",
+                   exc_info: "logging._SysExcInfoType" = None,
+                   func: str = None,
+                   extra: Mapping[str, object] = None,
+                   sinfo: str = None) -> "LOG_RECORD_TYPES":
+        rv = super().makeRecord(name, level, fn, lno, msg, args=args, exc_info=exc_info, func=func, extra=None, sinfo=sinfo)
+        if not hasattr(rv, "extras"):
+            setattr(rv, "extras", {})
+        if extra is not None:
+            rv.extras |= extra
+
+        return rv
+
+
+@contextmanager
+def switch_logger_klass(logger_klass: type[logging.Logger]):
+    original_logger_klass = logging.getLoggerClass()
+    try:
+        logging.setLoggerClass(logger_klass)
+        yield
+    finally:
+        logging.setLoggerClass(original_logger_klass)
 
 
 def _modify_logger_name(name: str) -> str:
@@ -53,7 +101,17 @@ def _modify_logger_name(name: str) -> str:
 
 def get_logger(name: str) -> Union[logging.Logger, GidLogger]:
     name = _modify_logger_name(name)
-    return logging.getLogger(name)
+    with switch_logger_klass(GidLogger):
+        return logging.getLogger(name)
+
+
+def get_handlers(logger: Union[logging.Logger, GidLogger] = None) -> tuple[logging.Handler]:
+    logger = logger or get_main_logger()
+    handlers = logger.handlers
+    all_handlers = []
+    for handler in handlers:
+        all_handlers.append(handler)
+    return tuple(all_handlers)
 
 
 def setup_main_logger(name: str, path: Path, log_level: LoggingLevel = LoggingLevel.DEBUG, formatter: Union[logging.Formatter, GidLoggingFormatter] = None, extra_logger: Iterable[str] = tuple()) -> Union[logging.Logger, GidLogger]:
@@ -108,6 +166,9 @@ def setup_main_logger_with_file_logging(name: str,
     file_handler = GidBaseRotatingFileHandler(base_name=log_file_base_name, log_folder=log_folder)
     file_handler.setFormatter(formatter)
     endpoints.append(file_handler)
+    storing_handler = GidStoringHandler()
+    storing_handler.setFormatter(formatter)
+    endpoints.append(storing_handler)
     listener = QueueListener(que, *endpoints)
     _log = get_logger(name)
     log_level = LoggingLevel(log_level)
@@ -119,11 +180,12 @@ def setup_main_logger_with_file_logging(name: str,
         logger.setLevel(log_level)
     listener.start()
     atexit.register(listener.stop)
+    _log.set_que_listener(listener)
     return _log
 
 
 def get_main_logger():
-    return logging.getLogger("__main__")
+    return get_logger("__main__")
 # region[Main_Exec]
 
 

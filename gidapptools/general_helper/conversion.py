@@ -16,7 +16,7 @@ from sortedcontainers import SortedList
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.deprecation import deprecated_argument
-
+from gidapptools.errors import FlagConflictError
 NANOSECONDS_IN_SECOND: int = 1_000_000_000
 
 
@@ -213,8 +213,7 @@ def human2bytes(in_text: str, strict: bool = False) -> int:
         unit = FILE_SIZE_REFERENCE.get_unit_by_name(name)
         return int(number * unit.factor)
     else:
-        # TODO: custom error
-        raise RuntimeError(f"Unable to parse input string {in_text!r}.")
+        raise ValueError(f"Unable to parse input string {in_text!r}.")
 
 
 def ns_to_s(nano_seconds: int, decimal_places: int = None) -> Union[int, float]:
@@ -303,12 +302,12 @@ class TimeUnits:
         return iter(self.units)
 
 
-def seconds2human(in_seconds: Union[int, float, timedelta], as_list_result: bool = False, as_symbols: bool = False, with_year: bool = True, min_unit: str = None) -> Union[dict[TimeUnit, int], str]:
-
+def seconds2human(in_seconds: Union[int, float, timedelta], as_list_result: bool = False, as_dict_result: bool = False, as_symbols: bool = False, with_year: bool = True, min_unit: str = None) -> Union[dict[TimeUnit, int], str]:
+    if as_list_result is True and as_dict_result is True:
+        raise FlagConflictError(["as_list_result", "as_dict_result"], True)
     rest = in_seconds.total_seconds() if isinstance(in_seconds, timedelta) else in_seconds
     sign = ""
     if rest < 0:
-        print(f"it is {in_seconds=}")
         rest = abs(rest)
         sign = "-"
     result = {}
@@ -325,9 +324,12 @@ def seconds2human(in_seconds: Union[int, float, timedelta], as_list_result: bool
         amount, rest = unit.convert_with_rest(rest)
         if amount:
             result[unit] = int(amount)
-    if as_list_result is True:
-        return {k: v for k, v in result.items() if k not in sub_min_units}
+
     results = [k.value_to_string(v, as_symbols) for k, v in result.items() if k not in sub_min_units]
+    if as_list_result is True:
+        return results
+    if as_dict_result is True:
+        return{k: v for k, v in result.items() if k not in sub_min_units}
 
     if not results:
         _unit = _time_units.smallest_unit if min_unit is None else min_unit
@@ -427,5 +429,4 @@ def str_to_bool(in_string: str, strict: bool = False) -> bool:
 
 
 if __name__ == '__main__':
-    import pp
-    pp(TIMEUNITS)
+    pass

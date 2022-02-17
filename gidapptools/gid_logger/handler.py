@@ -13,7 +13,7 @@ import logging
 from typing import TYPE_CHECKING, Any, Union
 from pathlib import Path
 from logging.handlers import BaseRotatingHandler
-
+from collections import deque
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.general_helper.conversion import human2bytes
@@ -21,6 +21,7 @@ from gidapptools.general_helper.conversion import human2bytes
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.types import PATH_TYPE
+    from gidapptools.gid_logger.records import LOG_RECORD_TYPES
 
 # endregion[Imports]
 
@@ -150,6 +151,20 @@ class GidBaseStreamHandler(logging.StreamHandler):
         super().__init__(stream=stream)
 
 
+class GidStoringHandler(logging.Handler):
+
+    def __init__(self, max_storage_size: int = None) -> None:
+        super().__init__()
+        self.message_storage: deque["LOG_RECORD_TYPES"] = deque(maxlen=max_storage_size)
+
+    def set_max_storage_size(self, max_storage_size: int = None):
+        self.message_storage.maxlen = max_storage_size
+
+    def emit(self, record: "LOG_RECORD_TYPES") -> None:
+        self.message_storage.append(record)
+
+    def get_stored_messages(self) -> list["LOG_RECORD_TYPES"]:
+        return list(self.message_storage)
 # region[Main_Exec]
 
 
