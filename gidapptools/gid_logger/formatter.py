@@ -403,6 +403,7 @@ class GidLoggingFormatter(logging.Formatter):
                 record.exc_text = self.formatException(ei=record.exc_info)
         return record
 
+
     def format(self, record: "LOG_RECORD_TYPES") -> str:
         record = self.set_time(record=record)
         text = self.format_message(record=record)

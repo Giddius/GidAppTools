@@ -75,13 +75,14 @@ class StringCaseConverter:
     def split_grammar(cls):
 
         if cls._split_grammar is None:
-            underscore = ppa.Suppress('_')
-            dash = ppa.Suppress("-")
+            underscore = ppa.Literal('_').suppress()
+            dash = ppa.Literal("-").suppress()
             all_upper_word = ppa.Regex(r"[A-Z]+(?![a-z])")
             all_lower_word = ppa.Word(ascii_lowercase, ascii_lowercase)
-            title_word = ppa.Regex(r"[A-z][a-z]+")
+            title_word = ppa.Regex(r"[A-Z][a-z]+")
             number = ppa.Word(ppa.nums)
-            grammar = (title_word | all_upper_word | all_lower_word | number).set_parse_action(lambda x: x[0].casefold()) | underscore | dash
+            words = (title_word | all_upper_word | all_lower_word | number).set_parse_action(lambda x: x[0].casefold())
+            grammar = words | underscore | dash
             cls._split_grammar = ppa.OneOrMore(grammar)
         return cls._split_grammar
 
@@ -193,8 +194,6 @@ def shorten_string(in_text: str, max_length: int, shorten_side: Literal["right",
 def split_quotes_aware(text: str, split_chars: Iterable[str] = None, quote_chars: Iterable[str] = None, strip_parts: bool = True) -> list[str]:
     """
     Splits a string on but not if the separator char is inside of quotes.
-
-
 
     Args:
         text (str): The string to split.

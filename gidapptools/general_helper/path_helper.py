@@ -13,7 +13,8 @@ from typing import TYPE_CHECKING, Union, Optional, Generator
 from pathlib import Path
 from contextlib import contextmanager
 from concurrent.futures import ThreadPoolExecutor
-
+from ctypes import windll
+import string
 # * Third Party Imports --------------------------------------------------------------------------------->
 from psutil import disk_partitions
 
@@ -42,6 +43,17 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 def get_all_drives(also_non_physical: bool = False) -> tuple[Path]:
     return tuple(Path(drive.mountpoint) for drive in disk_partitions(all=also_non_physical))
+
+
+def get_all_drives_non_psutil(*args):
+    drives = []
+    bitmask = windll.kernel32.GetLogicalDrives()
+    for letter in string.ascii_uppercase:
+        if bitmask & 1:
+            drives.append(Path(f"{letter}:\\ ").resolve())
+        bitmask >>= 1
+
+    return tuple(drives)
 
 
 def find_file(file_name: str, return_first: bool = True, case_sensitive: bool = False) -> Optional[Union[Path, tuple[Path]]]:

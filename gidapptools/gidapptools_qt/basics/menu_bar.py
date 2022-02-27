@@ -58,7 +58,6 @@ class BaseMenuBar(QMenuBar):
     def __init__(self, parent: Optional[QWidget] = None, auto_connect_standard_actions: bool = True) -> None:
         super().__init__(parent=parent)
         self.auto_connect_standard_actions = auto_connect_standard_actions
-        self.about_dialog: QMessageBox = None
         self.menus: list[QMenu] = []
 
     def setup(self) -> "BaseMenuBar":
@@ -152,6 +151,9 @@ class BaseMenuBar(QMenuBar):
             setattr(menu, action.text() + '_action', action)
         menu.setEnabled(True)
         return action
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(auto_connect_standard_actions={self.auto_connect_standard_actions!r})"
 
 
 # region[Main_Exec]

@@ -1,0 +1,1397 @@
+[
+    {
+        "name": "abc",
+        "qualname": "rich.abc",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/abc.py",
+        "doc": null,
+        "module": {
+            "name": "rich.abc",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/abc.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import abc",
+        "all_members_import_string": "from rich.abc import RichRenderable",
+        "member_names": [
+            "RichRenderable"
+        ]
+    },
+    {
+        "name": "align",
+        "qualname": "rich.align",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/align.py",
+        "doc": null,
+        "module": {
+            "name": "rich.align",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/align.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import align",
+        "all_members_import_string": "from rich.align import Align, VerticalCenter",
+        "member_names": [
+            "Align",
+            "VerticalCenter"
+        ]
+    },
+    {
+        "name": "ansi",
+        "qualname": "rich.ansi",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/ansi.py",
+        "doc": null,
+        "module": {
+            "name": "rich.ansi",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/ansi.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import ansi",
+        "all_members_import_string": "from rich.ansi import AnsiDecoder",
+        "member_names": [
+            "AnsiDecoder"
+        ]
+    },
+    {
+        "name": "bar",
+        "qualname": "rich.bar",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/bar.py",
+        "doc": null,
+        "module": {
+            "name": "rich.bar",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/bar.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import bar",
+        "all_members_import_string": "from rich.bar import Bar",
+        "member_names": [
+            "Bar"
+        ]
+    },
+    {
+        "name": "box",
+        "qualname": "rich.box",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/box.py",
+        "doc": null,
+        "module": {
+            "name": "rich.box",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/box.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import box",
+        "all_members_import_string": "from rich.box import (ASCII, ASCII2, ASCII_DOUBLE_HEAD, DOUBLE, DOUBLE_EDGE, HEAVY, HEAVY_EDGE, HEAVY_HEAD, HORIZONTALS, MINIMAL, MINIMAL_DOUBLE_HEAD, MINIMAL_HEAVY_HEAD, ROUNDED, SIMPLE, SIMPLE_HEAD,\n                      SIMPLE_HEAVY, SQUARE, SQUARE_DOUBLE_HEAD, Box)",
+        "member_names": [
+            "ASCII",
+            "ASCII2",
+            "ASCII_DOUBLE_HEAD",
+            "Box",
+            "DOUBLE",
+            "DOUBLE_EDGE",
+            "HEAVY",
+            "HEAVY_EDGE",
+            "HEAVY_HEAD",
+            "HORIZONTALS",
+            "MINIMAL",
+            "MINIMAL_DOUBLE_HEAD",
+            "MINIMAL_HEAVY_HEAD",
+            "ROUNDED",
+            "SIMPLE",
+            "SIMPLE_HEAD",
+            "SIMPLE_HEAVY",
+            "SQUARE",
+            "SQUARE_DOUBLE_HEAD"
+        ]
+    },
+    {
+        "name": "cells",
+        "qualname": "rich.cells",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/cells.py",
+        "doc": null,
+        "module": {
+            "name": "rich.cells",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/cells.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import cells",
+        "all_members_import_string": "from rich.cells import cell_len, chop_cells, get_character_cell_size, set_cell_size",
+        "member_names": [
+            "cell_len",
+            "chop_cells",
+            "get_character_cell_size",
+            "set_cell_size"
+        ]
+    },
+    {
+        "name": "color",
+        "qualname": "rich.color",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/color.py",
+        "doc": null,
+        "module": {
+            "name": "rich.color",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/color.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import color",
+        "all_members_import_string": "from rich.color import Color, ColorParseError, ColorSystem, ColorType, blend_rgb, parse_rgb_hex",
+        "member_names": [
+            "blend_rgb",
+            "Color",
+            "ColorParseError",
+            "ColorSystem",
+            "ColorType",
+            "parse_rgb_hex"
+        ]
+    },
+    {
+        "name": "color_triplet",
+        "qualname": "rich.color_triplet",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/color_triplet.py",
+        "doc": null,
+        "module": {
+            "name": "rich.color_triplet",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/color_triplet.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import color_triplet",
+        "all_members_import_string": "from rich.color_triplet import ColorTriplet",
+        "member_names": [
+            "ColorTriplet"
+        ]
+    },
+    {
+        "name": "columns",
+        "qualname": "rich.columns",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/columns.py",
+        "doc": null,
+        "module": {
+            "name": "rich.columns",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/columns.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import columns",
+        "all_members_import_string": "from rich.columns import Columns",
+        "member_names": [
+            "Columns"
+        ]
+    },
+    {
+        "name": "console",
+        "qualname": "rich.console",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/console.py",
+        "doc": null,
+        "module": {
+            "name": "rich.console",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/console.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import console",
+        "all_members_import_string": "from rich.console import (NO_CHANGE, Capture, CaptureError, Console, ConsoleDimensions, ConsoleOptions, ConsoleRenderable, ConsoleThreadLocals, Group, NewLine, NoChange, PagerContext, RenderHook,\n                          RichCast, ScreenContext, ScreenUpdate, ThemeContext, detect_legacy_windows, get_windows_console_features, group)",
+        "member_names": [
+            "Capture",
+            "CaptureError",
+            "Console",
+            "ConsoleDimensions",
+            "ConsoleOptions",
+            "ConsoleRenderable",
+            "ConsoleThreadLocals",
+            "detect_legacy_windows",
+            "get_windows_console_features",
+            "Group",
+            "group",
+            "NewLine",
+            "NO_CHANGE",
+            "NoChange",
+            "PagerContext",
+            "RenderHook",
+            "RichCast",
+            "ScreenContext",
+            "ScreenUpdate",
+            "ThemeContext"
+        ]
+    },
+    {
+        "name": "constrain",
+        "qualname": "rich.constrain",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/constrain.py",
+        "doc": null,
+        "module": {
+            "name": "rich.constrain",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/constrain.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import constrain",
+        "all_members_import_string": "from rich.constrain import Constrain",
+        "member_names": [
+            "Constrain"
+        ]
+    },
+    {
+        "name": "containers",
+        "qualname": "rich.containers",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/containers.py",
+        "doc": null,
+        "module": {
+            "name": "rich.containers",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/containers.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import containers",
+        "all_members_import_string": "from rich.containers import Lines, Renderables, T",
+        "member_names": [
+            "Lines",
+            "Renderables",
+            "T"
+        ]
+    },
+    {
+        "name": "control",
+        "qualname": "rich.control",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/control.py",
+        "doc": null,
+        "module": {
+            "name": "rich.control",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/control.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import control",
+        "all_members_import_string": "from rich.control import Control, strip_control_codes",
+        "member_names": [
+            "Control",
+            "strip_control_codes"
+        ]
+    },
+    {
+        "name": "default_styles",
+        "qualname": "rich.default_styles",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/default_styles.py",
+        "doc": null,
+        "module": {
+            "name": "rich.default_styles",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/default_styles.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import default_styles",
+        "all_members_import_string": "",
+        "member_names": []
+    },
+    {
+        "name": "diagnose",
+        "qualname": "rich.diagnose",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/diagnose.py",
+        "doc": null,
+        "module": {
+            "name": "rich.diagnose",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/diagnose.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import diagnose",
+        "all_members_import_string": "",
+        "member_names": []
+    },
+    {
+        "name": "emoji",
+        "qualname": "rich.emoji",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/emoji.py",
+        "doc": null,
+        "module": {
+            "name": "rich.emoji",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/emoji.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import emoji",
+        "all_members_import_string": "from rich.emoji import Emoji, NoEmoji",
+        "member_names": [
+            "Emoji",
+            "NoEmoji"
+        ]
+    },
+    {
+        "name": "errors",
+        "qualname": "rich.errors",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/errors.py",
+        "doc": null,
+        "module": {
+            "name": "rich.errors",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/errors.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import errors",
+        "all_members_import_string": "from rich.errors import ConsoleError, LiveError, MarkupError, MissingStyle, NoAltScreen, NotRenderableError, StyleError, StyleStackError, StyleSyntaxError",
+        "member_names": [
+            "ConsoleError",
+            "LiveError",
+            "MarkupError",
+            "MissingStyle",
+            "NoAltScreen",
+            "NotRenderableError",
+            "StyleError",
+            "StyleStackError",
+            "StyleSyntaxError"
+        ]
+    },
+    {
+        "name": "file_proxy",
+        "qualname": "rich.file_proxy",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/file_proxy.py",
+        "doc": null,
+        "module": {
+            "name": "rich.file_proxy",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/file_proxy.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import file_proxy",
+        "all_members_import_string": "from rich.file_proxy import FileProxy",
+        "member_names": [
+            "FileProxy"
+        ]
+    },
+    {
+        "name": "filesize",
+        "qualname": "rich.filesize",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/filesize.py",
+        "doc": "Functions for reporting filesizes. Borrowed from https://github.com/PyFilesystem/pyfilesystem2\n\nThe functions declared in this module should cover the different\nusecases needed to generate a string representation of a file size\nusing several different units. Since there are many standards regarding\nfile size units, three different functions have been implemented.\n\nSee Also:\n    * `Wikipedia: Binary prefix <https://en.wikipedia.org/wiki/Binary_prefix>`_",
+        "module": {
+            "name": "rich.filesize",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/filesize.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import filesize",
+        "all_members_import_string": "from rich.filesize import decimal, pick_unit_and_suffix",
+        "member_names": [
+            "decimal",
+            "pick_unit_and_suffix"
+        ]
+    },
+    {
+        "name": "highlighter",
+        "qualname": "rich.highlighter",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/highlighter.py",
+        "doc": null,
+        "module": {
+            "name": "rich.highlighter",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/highlighter.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import highlighter",
+        "all_members_import_string": "from rich.highlighter import Highlighter, JSONHighlighter, NullHighlighter, RegexHighlighter, ReprHighlighter",
+        "member_names": [
+            "Highlighter",
+            "JSONHighlighter",
+            "NullHighlighter",
+            "RegexHighlighter",
+            "ReprHighlighter"
+        ]
+    },
+    {
+        "name": "json",
+        "qualname": "rich.json",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/json.py",
+        "doc": null,
+        "module": {
+            "name": "rich.json",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/json.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import json",
+        "all_members_import_string": "from rich.json import JSON",
+        "member_names": [
+            "JSON"
+        ]
+    },
+    {
+        "name": "jupyter",
+        "qualname": "rich.jupyter",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/jupyter.py",
+        "doc": null,
+        "module": {
+            "name": "rich.jupyter",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/jupyter.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import jupyter",
+        "all_members_import_string": "from rich.jupyter import JupyterMixin, JupyterRenderable, display, print",
+        "member_names": [
+            "display",
+            "JupyterMixin",
+            "JupyterRenderable",
+            "print"
+        ]
+    },
+    {
+        "name": "layout",
+        "qualname": "rich.layout",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/layout.py",
+        "doc": null,
+        "module": {
+            "name": "rich.layout",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/layout.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import layout",
+        "all_members_import_string": "from rich.layout import ColumnSplitter, Layout, LayoutError, LayoutRender, NoSplitter, RowSplitter, Splitter",
+        "member_names": [
+            "ColumnSplitter",
+            "Layout",
+            "LayoutError",
+            "LayoutRender",
+            "NoSplitter",
+            "RowSplitter",
+            "Splitter"
+        ]
+    },
+    {
+        "name": "live",
+        "qualname": "rich.live",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/live.py",
+        "doc": null,
+        "module": {
+            "name": "rich.live",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/live.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import live",
+        "all_members_import_string": "from rich.live import Live",
+        "member_names": [
+            "Live"
+        ]
+    },
+    {
+        "name": "live_render",
+        "qualname": "rich.live_render",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/live_render.py",
+        "doc": null,
+        "module": {
+            "name": "rich.live_render",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/live_render.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import live_render",
+        "all_members_import_string": "from rich.live_render import LiveRender",
+        "member_names": [
+            "LiveRender"
+        ]
+    },
+    {
+        "name": "logging",
+        "qualname": "rich.logging",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/logging.py",
+        "doc": null,
+        "module": {
+            "name": "rich.logging",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/logging.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import logging",
+        "all_members_import_string": "from rich.logging import RichHandler",
+        "member_names": [
+            "RichHandler"
+        ]
+    },
+    {
+        "name": "markdown",
+        "qualname": "rich.markdown",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/markdown.py",
+        "doc": null,
+        "module": {
+            "name": "rich.markdown",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/markdown.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import markdown",
+        "all_members_import_string": "from rich.markdown import BlockQuote, CodeBlock, Heading, HorizontalRule, ImageItem, ListElement, ListItem, Markdown, MarkdownContext, MarkdownElement, Paragraph, TextElement, UnknownElement",
+        "member_names": [
+            "BlockQuote",
+            "CodeBlock",
+            "Heading",
+            "HorizontalRule",
+            "ImageItem",
+            "ListElement",
+            "ListItem",
+            "Markdown",
+            "MarkdownContext",
+            "MarkdownElement",
+            "Paragraph",
+            "TextElement",
+            "UnknownElement"
+        ]
+    },
+    {
+        "name": "markup",
+        "qualname": "rich.markup",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/markup.py",
+        "doc": null,
+        "module": {
+            "name": "rich.markup",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/markup.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import markup",
+        "all_members_import_string": "from rich.markup import Tag, escape, render",
+        "member_names": [
+            "escape",
+            "render",
+            "Tag"
+        ]
+    },
+    {
+        "name": "measure",
+        "qualname": "rich.measure",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/measure.py",
+        "doc": null,
+        "module": {
+            "name": "rich.measure",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/measure.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import measure",
+        "all_members_import_string": "from rich.measure import Measurement, measure_renderables",
+        "member_names": [
+            "measure_renderables",
+            "Measurement"
+        ]
+    },
+    {
+        "name": "padding",
+        "qualname": "rich.padding",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/padding.py",
+        "doc": null,
+        "module": {
+            "name": "rich.padding",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/padding.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import padding",
+        "all_members_import_string": "from rich.padding import Padding",
+        "member_names": [
+            "Padding"
+        ]
+    },
+    {
+        "name": "pager",
+        "qualname": "rich.pager",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/pager.py",
+        "doc": null,
+        "module": {
+            "name": "rich.pager",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/pager.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import pager",
+        "all_members_import_string": "from rich.pager import Pager, SystemPager",
+        "member_names": [
+            "Pager",
+            "SystemPager"
+        ]
+    },
+    {
+        "name": "palette",
+        "qualname": "rich.palette",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/palette.py",
+        "doc": null,
+        "module": {
+            "name": "rich.palette",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/palette.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import palette",
+        "all_members_import_string": "from rich.palette import Palette",
+        "member_names": [
+            "Palette"
+        ]
+    },
+    {
+        "name": "panel",
+        "qualname": "rich.panel",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/panel.py",
+        "doc": null,
+        "module": {
+            "name": "rich.panel",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/panel.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import panel",
+        "all_members_import_string": "from rich.panel import Panel",
+        "member_names": [
+            "Panel"
+        ]
+    },
+    {
+        "name": "pretty",
+        "qualname": "rich.pretty",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/pretty.py",
+        "doc": null,
+        "module": {
+            "name": "rich.pretty",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/pretty.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import pretty",
+        "all_members_import_string": "from rich.pretty import Node, Pretty, install, is_expandable, pprint, pretty_repr, traverse",
+        "member_names": [
+            "install",
+            "is_expandable",
+            "Node",
+            "pprint",
+            "Pretty",
+            "pretty_repr",
+            "traverse"
+        ]
+    },
+    {
+        "name": "progress",
+        "qualname": "rich.progress",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/progress.py",
+        "doc": null,
+        "module": {
+            "name": "rich.progress",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/progress.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import progress",
+        "all_members_import_string": "from rich.progress import (BarColumn, DownloadColumn, FileSizeColumn, Progress, ProgressColumn, ProgressSample, ProgressType, RenderableColumn, SpinnerColumn, Task, TaskID, TextColumn,\n                           TimeElapsedColumn, TimeRemainingColumn, TotalFileSizeColumn, TransferSpeedColumn, track)",
+        "member_names": [
+            "BarColumn",
+            "DownloadColumn",
+            "FileSizeColumn",
+            "Progress",
+            "ProgressColumn",
+            "ProgressSample",
+            "ProgressType",
+            "RenderableColumn",
+            "SpinnerColumn",
+            "Task",
+            "TaskID",
+            "TextColumn",
+            "TimeElapsedColumn",
+            "TimeRemainingColumn",
+            "TotalFileSizeColumn",
+            "track",
+            "TransferSpeedColumn"
+        ]
+    },
+    {
+        "name": "progress_bar",
+        "qualname": "rich.progress_bar",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/progress_bar.py",
+        "doc": null,
+        "module": {
+            "name": "rich.progress_bar",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/progress_bar.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import progress_bar",
+        "all_members_import_string": "from rich.progress_bar import ProgressBar",
+        "member_names": [
+            "ProgressBar"
+        ]
+    },
+    {
+        "name": "prompt",
+        "qualname": "rich.prompt",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/prompt.py",
+        "doc": null,
+        "module": {
+            "name": "rich.prompt",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/prompt.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import prompt",
+        "all_members_import_string": "from rich.prompt import Confirm, DefaultType, FloatPrompt, IntPrompt, InvalidResponse, Prompt, PromptBase, PromptError, PromptType",
+        "member_names": [
+            "Confirm",
+            "DefaultType",
+            "FloatPrompt",
+            "IntPrompt",
+            "InvalidResponse",
+            "Prompt",
+            "PromptBase",
+            "PromptError",
+            "PromptType"
+        ]
+    },
+    {
+        "name": "protocol",
+        "qualname": "rich.protocol",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/protocol.py",
+        "doc": null,
+        "module": {
+            "name": "rich.protocol",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/protocol.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import protocol",
+        "all_members_import_string": "from rich.protocol import is_renderable, rich_cast",
+        "member_names": [
+            "is_renderable",
+            "rich_cast"
+        ]
+    },
+    {
+        "name": "region",
+        "qualname": "rich.region",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/region.py",
+        "doc": null,
+        "module": {
+            "name": "rich.region",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/region.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import region",
+        "all_members_import_string": "from rich.region import Region",
+        "member_names": [
+            "Region"
+        ]
+    },
+    {
+        "name": "repr",
+        "qualname": "rich.repr",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/repr.py",
+        "doc": null,
+        "module": {
+            "name": "rich.repr",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/repr.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import repr",
+        "all_members_import_string": "from rich.repr import ReprError, T, auto, rich_repr",
+        "member_names": [
+            "auto",
+            "ReprError",
+            "rich_repr",
+            "T"
+        ]
+    },
+    {
+        "name": "rule",
+        "qualname": "rich.rule",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/rule.py",
+        "doc": null,
+        "module": {
+            "name": "rich.rule",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/rule.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import rule",
+        "all_members_import_string": "from rich.rule import Rule",
+        "member_names": [
+            "Rule"
+        ]
+    },
+    {
+        "name": "scope",
+        "qualname": "rich.scope",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/scope.py",
+        "doc": null,
+        "module": {
+            "name": "rich.scope",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/scope.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import scope",
+        "all_members_import_string": "from rich.scope import render_scope",
+        "member_names": [
+            "render_scope"
+        ]
+    },
+    {
+        "name": "screen",
+        "qualname": "rich.screen",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/screen.py",
+        "doc": null,
+        "module": {
+            "name": "rich.screen",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/screen.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import screen",
+        "all_members_import_string": "from rich.screen import Screen",
+        "member_names": [
+            "Screen"
+        ]
+    },
+    {
+        "name": "segment",
+        "qualname": "rich.segment",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/segment.py",
+        "doc": null,
+        "module": {
+            "name": "rich.segment",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/segment.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import segment",
+        "all_members_import_string": "from rich.segment import ControlType, Segment, SegmentLines, Segments",
+        "member_names": [
+            "ControlType",
+            "Segment",
+            "SegmentLines",
+            "Segments"
+        ]
+    },
+    {
+        "name": "spinner",
+        "qualname": "rich.spinner",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/spinner.py",
+        "doc": null,
+        "module": {
+            "name": "rich.spinner",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/spinner.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import spinner",
+        "all_members_import_string": "from rich.spinner import Spinner",
+        "member_names": [
+            "Spinner"
+        ]
+    },
+    {
+        "name": "status",
+        "qualname": "rich.status",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/status.py",
+        "doc": null,
+        "module": {
+            "name": "rich.status",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/status.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import status",
+        "all_members_import_string": "from rich.status import Status",
+        "member_names": [
+            "Status"
+        ]
+    },
+    {
+        "name": "style",
+        "qualname": "rich.style",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/style.py",
+        "doc": null,
+        "module": {
+            "name": "rich.style",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/style.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import style",
+        "all_members_import_string": "from rich.style import NULL_STYLE, Style, StyleStack",
+        "member_names": [
+            "NULL_STYLE",
+            "Style",
+            "StyleStack"
+        ]
+    },
+    {
+        "name": "styled",
+        "qualname": "rich.styled",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/styled.py",
+        "doc": null,
+        "module": {
+            "name": "rich.styled",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/styled.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import styled",
+        "all_members_import_string": "from rich.styled import Styled",
+        "member_names": [
+            "Styled"
+        ]
+    },
+    {
+        "name": "syntax",
+        "qualname": "rich.syntax",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/syntax.py",
+        "doc": null,
+        "module": {
+            "name": "rich.syntax",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/syntax.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import syntax",
+        "all_members_import_string": "from rich.syntax import ANSISyntaxTheme, PygmentsSyntaxTheme, Syntax, SyntaxTheme",
+        "member_names": [
+            "ANSISyntaxTheme",
+            "PygmentsSyntaxTheme",
+            "Syntax",
+            "SyntaxTheme"
+        ]
+    },
+    {
+        "name": "table",
+        "qualname": "rich.table",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/table.py",
+        "doc": null,
+        "module": {
+            "name": "rich.table",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/table.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import table",
+        "all_members_import_string": "from rich.table import Column, Row, Table",
+        "member_names": [
+            "Column",
+            "Row",
+            "Table"
+        ]
+    },
+    {
+        "name": "tabulate",
+        "qualname": "rich.tabulate",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/tabulate.py",
+        "doc": null,
+        "module": {
+            "name": "rich.tabulate",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/tabulate.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import tabulate",
+        "all_members_import_string": "from rich.tabulate import tabulate_mapping",
+        "member_names": [
+            "tabulate_mapping"
+        ]
+    },
+    {
+        "name": "terminal_theme",
+        "qualname": "rich.terminal_theme",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/terminal_theme.py",
+        "doc": null,
+        "module": {
+            "name": "rich.terminal_theme",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/terminal_theme.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import terminal_theme",
+        "all_members_import_string": "from rich.terminal_theme import DEFAULT_TERMINAL_THEME, TerminalTheme",
+        "member_names": [
+            "DEFAULT_TERMINAL_THEME",
+            "TerminalTheme"
+        ]
+    },
+    {
+        "name": "text",
+        "qualname": "rich.text",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/text.py",
+        "doc": null,
+        "module": {
+            "name": "rich.text",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/text.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import text",
+        "all_members_import_string": "from rich.text import Span, Text",
+        "member_names": [
+            "Span",
+            "Text"
+        ]
+    },
+    {
+        "name": "theme",
+        "qualname": "rich.theme",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/theme.py",
+        "doc": null,
+        "module": {
+            "name": "rich.theme",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/theme.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import theme",
+        "all_members_import_string": "from rich.theme import Theme, ThemeStack, ThemeStackError",
+        "member_names": [
+            "Theme",
+            "ThemeStack",
+            "ThemeStackError"
+        ]
+    },
+    {
+        "name": "themes",
+        "qualname": "rich.themes",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/themes.py",
+        "doc": null,
+        "module": {
+            "name": "rich.themes",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/themes.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import themes",
+        "all_members_import_string": "",
+        "member_names": []
+    },
+    {
+        "name": "traceback",
+        "qualname": "rich.traceback",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/traceback.py",
+        "doc": null,
+        "module": {
+            "name": "rich.traceback",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/traceback.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import traceback",
+        "all_members_import_string": "from rich.traceback import Frame, PathHighlighter, Stack, Trace, Traceback, install",
+        "member_names": [
+            "Frame",
+            "install",
+            "PathHighlighter",
+            "Stack",
+            "Trace",
+            "Traceback"
+        ]
+    },
+    {
+        "name": "tree",
+        "qualname": "rich.tree",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/tree.py",
+        "doc": null,
+        "module": {
+            "name": "rich.tree",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/tree.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import tree",
+        "all_members_import_string": "from rich.tree import Tree",
+        "member_names": [
+            "Tree"
+        ]
+    },
+    {
+        "name": "__main__",
+        "qualname": "rich.__main__",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/__main__.py",
+        "doc": null,
+        "module": {
+            "name": "rich.__main__",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/__main__.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import __main__",
+        "all_members_import_string": "from rich.__main__ import ColorBox, make_test_card",
+        "member_names": [
+            "ColorBox",
+            "make_test_card"
+        ]
+    },
+    {
+        "name": "_cell_widths",
+        "qualname": "rich._cell_widths",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_cell_widths.py",
+        "doc": null,
+        "module": {
+            "name": "rich._cell_widths",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_cell_widths.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _cell_widths",
+        "all_members_import_string": "",
+        "member_names": []
+    },
+    {
+        "name": "_emoji_codes",
+        "qualname": "rich._emoji_codes",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_emoji_codes.py",
+        "doc": null,
+        "module": {
+            "name": "rich._emoji_codes",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_emoji_codes.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _emoji_codes",
+        "all_members_import_string": "",
+        "member_names": []
+    },
+    {
+        "name": "_emoji_replace",
+        "qualname": "rich._emoji_replace",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_emoji_replace.py",
+        "doc": null,
+        "module": {
+            "name": "rich._emoji_replace",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_emoji_replace.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _emoji_replace",
+        "all_members_import_string": "",
+        "member_names": []
+    },
+    {
+        "name": "_extension",
+        "qualname": "rich._extension",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_extension.py",
+        "doc": null,
+        "module": {
+            "name": "rich._extension",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_extension.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _extension",
+        "all_members_import_string": "from rich._extension import load_ipython_extension",
+        "member_names": [
+            "load_ipython_extension"
+        ]
+    },
+    {
+        "name": "_inspect",
+        "qualname": "rich._inspect",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_inspect.py",
+        "doc": null,
+        "module": {
+            "name": "rich._inspect",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_inspect.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _inspect",
+        "all_members_import_string": "from rich._inspect import Inspect",
+        "member_names": [
+            "Inspect"
+        ]
+    },
+    {
+        "name": "_log_render",
+        "qualname": "rich._log_render",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_log_render.py",
+        "doc": null,
+        "module": {
+            "name": "rich._log_render",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_log_render.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _log_render",
+        "all_members_import_string": "from rich._log_render import LogRender",
+        "member_names": [
+            "LogRender"
+        ]
+    },
+    {
+        "name": "_loop",
+        "qualname": "rich._loop",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_loop.py",
+        "doc": null,
+        "module": {
+            "name": "rich._loop",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_loop.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _loop",
+        "all_members_import_string": "from rich._loop import T, loop_first, loop_first_last, loop_last",
+        "member_names": [
+            "loop_first",
+            "loop_first_last",
+            "loop_last",
+            "T"
+        ]
+    },
+    {
+        "name": "_lru_cache",
+        "qualname": "rich._lru_cache",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_lru_cache.py",
+        "doc": null,
+        "module": {
+            "name": "rich._lru_cache",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_lru_cache.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _lru_cache",
+        "all_members_import_string": "from rich._lru_cache import CacheKey, CacheValue, LRUCache",
+        "member_names": [
+            "CacheKey",
+            "CacheValue",
+            "LRUCache"
+        ]
+    },
+    {
+        "name": "_palettes",
+        "qualname": "rich._palettes",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_palettes.py",
+        "doc": null,
+        "module": {
+            "name": "rich._palettes",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_palettes.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _palettes",
+        "all_members_import_string": "",
+        "member_names": []
+    },
+    {
+        "name": "_pick",
+        "qualname": "rich._pick",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_pick.py",
+        "doc": null,
+        "module": {
+            "name": "rich._pick",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_pick.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _pick",
+        "all_members_import_string": "from rich._pick import pick_bool",
+        "member_names": [
+            "pick_bool"
+        ]
+    },
+    {
+        "name": "_ratio",
+        "qualname": "rich._ratio",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_ratio.py",
+        "doc": null,
+        "module": {
+            "name": "rich._ratio",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_ratio.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _ratio",
+        "all_members_import_string": "from rich._ratio import Edge, ratio_distribute, ratio_reduce, ratio_resolve",
+        "member_names": [
+            "Edge",
+            "ratio_distribute",
+            "ratio_reduce",
+            "ratio_resolve"
+        ]
+    },
+    {
+        "name": "_spinners",
+        "qualname": "rich._spinners",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_spinners.py",
+        "doc": "Spinners are from:\n* cli-spinners:\n    MIT License\n    Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (sindresorhus.com)\n    Permission is hereby granted, free of charge, to any person obtaining a copy\n    of this software and associated documentation files (the \"Software\"), to deal\n    in the Software without restriction, including without limitation the rights to\n    use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of\n    the Software, and to permit persons to whom the Software is furnished to do so,\n    subject to the following conditions:\n    The above copyright notice and this permission notice shall be included\n    in all copies or substantial portions of the Software.\n    THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,\n    INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR\n    PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE\n    FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,\n    ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS\n    IN THE SOFTWARE.",
+        "module": {
+            "name": "rich._spinners",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_spinners.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _spinners",
+        "all_members_import_string": "",
+        "member_names": []
+    },
+    {
+        "name": "_stack",
+        "qualname": "rich._stack",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_stack.py",
+        "doc": null,
+        "module": {
+            "name": "rich._stack",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_stack.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _stack",
+        "all_members_import_string": "from rich._stack import Stack, T",
+        "member_names": [
+            "Stack",
+            "T"
+        ]
+    },
+    {
+        "name": "_timer",
+        "qualname": "rich._timer",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_timer.py",
+        "doc": "Timer context manager, only used in debug.",
+        "module": {
+            "name": "rich._timer",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_timer.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _timer",
+        "all_members_import_string": "from rich._timer import timer",
+        "member_names": [
+            "timer"
+        ]
+    },
+    {
+        "name": "_windows",
+        "qualname": "rich._windows",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_windows.py",
+        "doc": null,
+        "module": {
+            "name": "rich._windows",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_windows.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _windows",
+        "all_members_import_string": "from rich._windows import WindowsConsoleFeatures, get_windows_console_features",
+        "member_names": [
+            "get_windows_console_features",
+            "WindowsConsoleFeatures"
+        ]
+    },
+    {
+        "name": "_wrap",
+        "qualname": "rich._wrap",
+        "package": "rich",
+        "path": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_wrap.py",
+        "doc": null,
+        "module": {
+            "name": "rich._wrap",
+            "file": "d:/Dropbox/hobby/Modding/Programs/Github/My_Repos/GidAppTools/.venv/lib/site-packages/rich/_wrap.py",
+            "package": "rich"
+        },
+        "import_string": "from rich import _wrap",
+        "all_members_import_string": "from rich._wrap import divide_line, words",
+        "member_names": [
+            "divide_line",
+            "words"
+        ]
+    }
+]

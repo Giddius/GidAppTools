@@ -8,7 +8,7 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import sys
-from typing import TYPE_CHECKING, Union, Optional, Any, Sequence, IO, Literal, TypeVar
+from typing import TYPE_CHECKING, Union, Optional, Any, Sequence, IO, Literal, TypeVar, ValuesView, KeysView, ItemsView
 from pathlib import Path
 import json
 from weakref import WeakSet
@@ -194,10 +194,11 @@ class AppArgParser(argparse.ArgumentParser):
         self.console.rule()
 
 
-class WindowHolder:
+class WindowHolder(QObject):
+    windows: dict[str, QWidget] = {}
 
-    def __init__(self) -> None:
-        self.windows: dict[str, QWidget] = {}
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
 
     def _determine_name(self, window: QWidget):
         if hasattr(window, "name"):
@@ -214,9 +215,9 @@ class WindowHolder:
             if window.isVisible() is False:
                 self.remove_window(window)
 
-    def add_window(self, window: QWidget):
+    def add_window(self, window: QWidget, name: str = None):
         self._check_stored_windows_closed()
-        name = self._determine_name(window)
+        name = name or self._determine_name(window)
 
         self.windows[name] = window
         try:
@@ -227,8 +228,49 @@ class WindowHolder:
     @Slot(QWidget)
     def remove_window(self, window: QWidget):
         name = self._determine_name(window)
-        print(name)
         del self.windows[name]
+
+    def window_objects(self) -> list[QWidget]:
+        return list(self.windows.values())
+
+    def __getitem__(self, name: str) -> QWidget:
+        self._check_stored_windows_closed()
+        return self.windows[name]
+
+    def __setitem__(self, name: str, window: QWidget) -> None:
+        self._check_stored_windows_closed()
+        self.add_window(window=window, name=name)
+
+    def __delitem__(self, name: str) -> None:
+        self._check_stored_windows_closed()
+        del self.windows[name]
+
+    def get(self, name: str, default=None) -> Optional[QWidget]:
+        self._check_stored_windows_closed()
+        return self.windows.get(name, default)
+
+    def __len__(self) -> int:
+        self._check_stored_windows_closed()
+        return len(self.windows)
+
+    def values(self):
+        self._check_stored_windows_closed()
+        return self.windows.values()
+
+    def keys(self):
+        self._check_stored_windows_closed()
+        return self.windows.keys()
+
+    def items(self):
+        self._check_stored_windows_closed()
+        return self.windows.items()
+
+    def pop(self, name: str, default=None) -> Optional[QWidget]:
+        self._check_stored_windows_closed()
+        return self.windows.pop(name, default)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(parent={self.parent()!r})"
 
 
 class GidQtApplication(QApplication):

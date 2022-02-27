@@ -10,7 +10,7 @@ Soon.
 import os
 import re
 import logging
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Union, Literal
 from pathlib import Path
 from logging.handlers import BaseRotatingHandler
 from collections import deque
@@ -151,20 +151,57 @@ class GidBaseStreamHandler(logging.StreamHandler):
         super().__init__(stream=stream)
 
 
+LOG_DEQUE_TYPE = deque["LOG_RECORD_TYPES"]
+
+
 class GidStoringHandler(logging.Handler):
 
     def __init__(self, max_storage_size: int = None) -> None:
         super().__init__()
-        self.message_storage: deque["LOG_RECORD_TYPES"] = deque(maxlen=max_storage_size)
+        self.debug_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
+        self.info_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
+        self.warning_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
+        self.critical_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
+        self.error_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
+        self.other_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
+
+        self.table = {'CRITICAL': self.critical_messages,
+                      'FATAL': self.critical_messages,
+                      'ERROR': self.error_messages,
+                      'WARN': self.warning_messages,
+                      'WARNING': self.warning_messages,
+                      'INFO': self.info_messages,
+                      'DEBUG': self.debug_messages,
+                      "OTHER": self.other_messages}
 
     def set_max_storage_size(self, max_storage_size: int = None):
-        self.message_storage.maxlen = max_storage_size
+        for store in self.table.values():
+            store.maxlen = max_storage_size
 
     def emit(self, record: "LOG_RECORD_TYPES") -> None:
-        self.message_storage.append(record)
 
-    def get_stored_messages(self) -> list["LOG_RECORD_TYPES"]:
-        return list(self.message_storage)
+        target = self.table.get(record.levelname, self.other_messages)
+
+        target.append(record)
+
+    def get_stored_messages(self) -> dict[str, tuple["LOG_RECORD_TYPES"]]:
+        _out = {}
+        for level, store in self.table.items():
+            _out[level] = tuple(store)
+
+        return _out
+
+    def get_formated_messages(self) -> dict[str, tuple[str]]:
+        _out = {}
+        for level, store in self.table.items():
+            _out[level] = tuple(self.format(r) for r in store)
+        return _out
+
+    def __len__(self) -> int:
+        _out = 0
+        for store in self.table.values():
+            _out += len(store)
+        return _out
 # region[Main_Exec]
 
 

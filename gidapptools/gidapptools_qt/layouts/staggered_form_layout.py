@@ -36,7 +36,7 @@ from pprint import pprint, pformat
 from pathlib import Path
 from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
 from timeit import Timer
-from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, Hashable, Generator, Literal, TypeVar, TypedDict, AnyStr, Sequence
+from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, Hashable, Generator, Literal, TypeVar, TypedDict, AnyStr
 from zipfile import ZipFile, ZIP_LZMA
 from datetime import datetime, timezone, timedelta
 from tempfile import TemporaryDirectory
@@ -51,8 +51,7 @@ from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 
-import argparse
-from argparse import ArgumentParser, HelpFormatter
+
 import PySide6
 from PySide6 import (QtCore, QtGui, QtWidgets, Qt3DAnimation, Qt3DCore, Qt3DExtras, Qt3DInput, Qt3DLogic, Qt3DRender, QtAxContainer, QtBluetooth,
                      QtCharts, QtConcurrent, QtDataVisualization, QtDesigner, QtHelp, QtMultimedia, QtMultimediaWidgets, QtNetwork, QtNetworkAuth,
@@ -73,8 +72,7 @@ from PySide6.QtWidgets import (QApplication, QBoxLayout, QCheckBox, QColorDialog
                                QProgressBar, QProgressDialog, QPushButton, QSizePolicy, QSpacerItem, QSpinBox, QStackedLayout, QStackedWidget,
                                QStatusBar, QStyledItemDelegate, QSystemTrayIcon, QTabWidget, QTableView, QTextEdit, QTimeEdit, QToolBox, QTreeView,
                                QVBoxLayout, QWidget, QAbstractItemDelegate, QAbstractItemView, QAbstractScrollArea, QRadioButton, QFileDialog, QButtonGroup)
-if TYPE_CHECKING:
-    from argparse import _FormatterClass
+
 
 # endregion[Imports]
 
@@ -95,23 +93,10 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-class GidBaseCommandLineParser(argparse.ArgumentParser):
+class StaggeredFormLayout(QFormLayout):
 
-    def __init__(self,
-                 prog: str = None,
-                 fromfile_prefix_chars: str = None,
-                 argument_default: Any = None,
-                 conflict_handler: str = 'error',
-                 add_help: bool = True,
-                 allow_abbrev: bool = True,
-                 exit_on_error: bool = True) -> None:
-        super().__init__(prog=prog,
-                         fromfile_prefix_chars=fromfile_prefix_chars,
-                         argument_default=argument_default,
-                         conflict_handler=conflict_handler,
-                         add_help=add_help,
-                         allow_abbrev=allow_abbrev,
-                         exit_on_error=exit_on_error)
+    def __init__(self, parent: Optional[QWidget] = None) -> None:
+        super().__init__(parent)
 
 
 # region[Main_Exec]

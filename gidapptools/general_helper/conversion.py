@@ -17,25 +17,7 @@ from sortedcontainers import SortedList
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.deprecation import deprecated_argument
 from gidapptools.errors import FlagConflictError
-NANOSECONDS_IN_SECOND: int = 1_000_000_000
-
-
-RAW_STRING_TRUE_VALUES = {'yes',
-                          'y',
-                          '1',
-                          'true',
-                          '+'}
-
-RAW_STRING_FALSE_VALUES = {'no',
-                           'n',
-                           '0',
-                           'false',
-                           '-'}
-
-
-STRING_TRUE_VALUES = {str(value).casefold() for value in RAW_STRING_TRUE_VALUES}
-
-STRING_FALSE_VALUES = {str(value).casefold() for value in RAW_STRING_FALSE_VALUES}
+from gidapptools.data.conversion_data import STRING_FALSE_VALUES, STRING_TRUE_VALUES, NANOSECONDS_IN_SECOND, FILE_SIZE_SYMBOL_DATA, RAW_TIMEUNITS
 
 
 @total_ordering
@@ -136,15 +118,8 @@ class FileSizeReference:
 
     def _make_units(self) -> None:
         self.units = []
-        symbol_data = [('K', 'Kilo'),
-                       ('M', 'Mega'),
-                       ('G', 'Giga'),
-                       ('T', 'Tera'),
-                       ('P', 'Peta'),
-                       ('E', 'Exa'),
-                       ('Z', 'Zetta'),
-                       ('Y', 'Yotta')]
-        temp_unit_info = {s: 1 << (i + 1) * 10 for i, s in enumerate(symbol_data)}
+
+        temp_unit_info = {s: 1 << (i + 1) * 10 for i, s in enumerate(FILE_SIZE_SYMBOL_DATA)}
         for key, value in temp_unit_info.items():
             self.units.append(FileSizeUnit(short_name=key[0], long_name=key[1], factor=value))
         self.units = tuple(sorted(self.units))
@@ -223,17 +198,20 @@ def ns_to_s(nano_seconds: int, decimal_places: int = None) -> Union[int, float]:
     return round(seconds, decimal_places)
 
 
-@attr.s(auto_attribs=True, auto_detect=True, frozen=True)
+inflect_engine = inflect.engine()
+
+
+@attr.s(auto_attribs=True, auto_detect=True, frozen=True, slots=True, weakref_slot=True)
 class TimeUnit:
-    inflect_engine: ClassVar[inflect.engine] = inflect.engine()
     name: str = attr.ib()
     symbol: str = attr.ib()
     factor: int = attr.ib()
-    aliases: tuple[str] = attr.ib(default=tuple(), converter=tuple)
+    aliases: tuple[str] = attr.ib(converter=tuple)
+    plural: str = attr.ib()
 
-    @property
-    def plural(self):
-        return self.inflect_engine.plural_noun(self.name)
+    @plural.default
+    def default_plural(self):
+        return inflect_engine.plural_noun(self.name)
 
     def convert_seconds(self, in_seconds: int) -> int:
         return in_seconds / self.factor
@@ -251,40 +229,36 @@ class TimeUnit:
         return f"{in_value} {self.plural}"
 
 
-TIMEUNITS = [TimeUnit(*item) for item in [('nanosecond', 'ns', 1 / NANOSECONDS_IN_SECOND), ("microsecond", "us", (1 / 1000) / 1000, ["mi", "mis", "mü", "müs", "μs"]), ('millisecond', 'ms', 1 / 1000), ('second', 's', 1, ["sec"]),
-                                          ('minute', 'm', 60, ["min", "mins"]), ('hour', 'h', 60 * 60), ('day', 'd', 60 * 60 * 24), ('week', 'w', 60 * 60 * 24 * 7), ("year", "y", (60 * 60 * 24 * 7 * 52) + (60 * 60 * 24))]]
-TIMEUNITS = sorted(TIMEUNITS, key=lambda x: x.factor, reverse=True)
+TIMEUNITS = sorted([TimeUnit(*item) for item in RAW_TIMEUNITS], key=lambda x: x.factor, reverse=True)
 
 
 class TimeUnits:
 
     def __init__(self, with_year: bool = True) -> None:
         self._units = SortedList(TIMEUNITS.copy(), key=lambda x: -x.factor)
-        self.with_year = with_year
+        self._with_year = with_year
+        self.units = self._get_units()
+        self.name_dict: dict[str, TimeUnit] = {item.name.casefold(): item for item in self.units} | {item.plural.casefold(): item for item in self.units}
+        self.symbol_dict: dict[str, TimeUnit] = {item.symbol.casefold(): item for item in self.units}
+        self.alias_dict: dict[str, TimeUnit] = self._get_alias_dict()
+        self.full_dict: dict[str, TimeUnit] = self.name_dict | self.symbol_dict | self.alias_dict
 
     @cached_property
     def smallest_unit(self) -> TimeUnit:
         return self.units[-1]
 
-    @cached_property
-    def name_dict(self) -> dict[str, TimeUnit]:
-        return {item.name.casefold(): item for item in self.units} | {item.plural.casefold(): item for item in self.units}
+    def _get_units(self):
+        if self._with_year is False:
+            return [u for u in self._units.copy() if u.name != 'year']
+        return self._units.copy()
 
-    @cached_property
-    def symbol_dict(self) -> dict[str, TimeUnit]:
-        return {item.symbol.casefold(): item for item in self.units}
-
-    @cached_property
-    def alias_dict(self) -> dict[str, TimeUnit]:
+    def _get_alias_dict(self) -> dict[str, TimeUnit]:
         _out = {}
         for item in self.units:
             for alias in item.aliases:
+                _out[alias] = item
                 _out[alias.casefold()] = item
         return _out
-
-    @cached_property
-    def full_dict(self) -> dict[str, TimeUnit]:
-        return self.name_dict | self.symbol_dict | self.alias_dict
 
     def __getitem__(self, key: Union[int, str]) -> TimeUnit:
         if isinstance(key, int):
@@ -292,14 +266,12 @@ class TimeUnits:
 
         return self.full_dict[key]
 
-    @property
-    def units(self):
-        if self.with_year is False:
-            return [u for u in self._units.copy() if u.name != 'year']
-        return self._units.copy()
-
     def __iter__(self):
         return iter(self.units)
+
+
+_time_units_without_year = TimeUnits(False)
+_time_units_with_year = TimeUnits(True)
 
 
 def seconds2human(in_seconds: Union[int, float, timedelta], as_list_result: bool = False, as_dict_result: bool = False, as_symbols: bool = False, with_year: bool = True, min_unit: str = None) -> Union[dict[TimeUnit, int], str]:
@@ -312,7 +284,7 @@ def seconds2human(in_seconds: Union[int, float, timedelta], as_list_result: bool
         sign = "-"
     result = {}
 
-    _time_units = TimeUnits(with_year=with_year)
+    _time_units = _time_units_without_year if with_year is False else _time_units_with_year
 
     if min_unit is None:
         sub_min_units = set()

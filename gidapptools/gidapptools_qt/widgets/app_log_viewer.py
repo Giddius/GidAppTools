@@ -75,6 +75,7 @@ from PySide6.QtWidgets import (QApplication, QBoxLayout, QCheckBox, QColorDialog
 
 from pyparsing.exceptions import ParseBaseException
 from gidapptools.gid_parsing.py_log_parsing import GeneralGrammar, LogLevelToken
+from gidapptools.gid_logger.logger import get_main_logger
 # endregion[Imports]
 
 # region [TODO]
@@ -209,7 +210,6 @@ class MetaBox(QGroupBox):
         super().__init__(parent=parent)
         self.log_file = log_file
         self.setLayout(QFormLayout())
-        qWarning("something")
 
         self.setTitle("Meta Data")
         self.widgets = {}
@@ -246,7 +246,7 @@ class MetaBox(QGroupBox):
         line_amount_widget.repaint()
 
 
-class AppLogViewer(QWidget):
+class FileAppLogViewer(QWidget):
 
     def __init__(self, log_file: Path, parent=None) -> None:
         super().__init__(parent=parent)
@@ -254,7 +254,7 @@ class AppLogViewer(QWidget):
         self.file_size = None
         self.timer_id = None
 
-    def setup(self) -> "AppLogViewer":
+    def setup(self) -> "FileAppLogViewer":
         self.setLayout(QGridLayout())
         self.setWindowTitle("Application Log")
 
@@ -309,6 +309,67 @@ class AppLogViewer(QWidget):
     @property
     def layout(self) -> QGridLayout:
         return super().layout()
+
+    def closeEvent(self, event: PySide6.QtGui.QCloseEvent) -> None:
+        if self.timer_id is not None:
+            self.killTimer(self.timer_id)
+        event.accept()
+
+
+class StoredAppLogViewer(QWidget):
+
+    def __init__(self, parent: Optional[PySide6.QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+        self.storage_handler = get_main_logger().all_handlers["que_handlers"]["GidStoringHandler"]
+        self.last_len = 0
+        self.timer_id = None
+
+    def setup(self) -> "StoredAppLogViewer":
+        self.setLayout(QGridLayout())
+        self.setWindowTitle("Application Log")
+
+        self.setup_widgets()
+        self.gather_content()
+
+        self.timer_id = self.startTimer(500, Qt.CoarseTimer)
+
+        return self
+
+    def setup_widgets(self):
+        self.text_widget = QTextEdit(self)
+        self.text_widget.setReadOnly(True)
+        self.text_widget.setLineWrapMode(QTextEdit.NoWrap)
+        font: QFont = self.text_widget.font()
+        font.setStyleHint(QFont.Monospace)
+        font.setFamily("Consolas")
+        self.text_widget.setFont(font)
+
+        self.layout.addWidget(self.text_widget)
+
+    @property
+    def layout(self) -> QGridLayout:
+        return super().layout()
+
+    def gather_content(self):
+        if len(self.storage_handler) != self.last_len:
+            all_messages = []
+            for message_tuple in self.storage_handler.get_stored_messages().values():
+                for raw_message in message_tuple:
+                    all_messages.append(raw_message)
+            all_messages = sorted(all_messages, key=lambda x: (x.created, x.msecs))
+            text = ""
+            for msg in all_messages:
+                text += self.storage_handler.format(msg) + '\n'
+            h_scroll_value = self.text_widget.horizontalScrollBar().value()
+            self.text_widget.setPlainText(text)
+            self.text_widget.verticalScrollBar().setValue(self.text_widget.verticalScrollBar().maximum())
+            self.text_widget.horizontalScrollBar().setValue(h_scroll_value)
+
+            self.last_len = len(self.storage_handler)
+
+    def timerEvent(self, event: PySide6.QtCore.QTimerEvent) -> None:
+        self.gather_content()
+        return super().timerEvent(event)
 
     def closeEvent(self, event: PySide6.QtGui.QCloseEvent) -> None:
         if self.timer_id is not None:

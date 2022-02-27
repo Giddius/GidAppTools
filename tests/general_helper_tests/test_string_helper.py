@@ -34,6 +34,7 @@ case_convert_2_results = {StringCase.CAMEL: 'thisIsATest',
 
 case_convert_2_parameters = [Param((case_convert_2_input, k, v), k.name + '_with_spaces') for k, v in case_convert_2_results.items()]
 
+
 case_convert_parameters = case_convert_1_parameters + case_convert_2_parameters
 
 actual_case_convert_parameters = [item.param for item in case_convert_parameters]
@@ -49,7 +50,9 @@ params_convert_to_advanced = [param("QtWARNING", StringCase.BLOCK_UPPER, "QTWARN
                               param("They were dropping losing altitude in a canyon of rainbow foliage a lurid communal mural that completely covered the hull of the room where Case waited That was Wintermute manipulating the lock the way it had manipulated the drone micro and the corners hed cut in Night City",
                               StringCase.SNAKE,
                               "they_were_dropping_losing_altitude_in_a_canyon_of_rainbow_foliage_a_lurid_communal_mural_that_completely_covered_the_hull_of_the_room_where_case_waited_that_was_wintermute_manipulating_the_lock_the_way_it_had_manipulated_the_drone_micro_and_the_corners_hed_cut_in_night_city",
-                                    id="long_to_snake")]
+                                    id="long_to_snake"),
+                              param("iAmALittleCamelCase", StringCase.CLASS, "IAmALittleCamelCase", id="camel_to_class"),
+                              param("antistasi_logbook", StringCase.TITLE, "Antistasi Logbook", id="antistasi_logbook")]
 
 
 @pytest.mark.parametrize("string_input, target_case, expected", params_convert_to_advanced)
