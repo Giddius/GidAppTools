@@ -400,5 +400,9 @@ def str_to_bool(in_string: str, strict: bool = False) -> bool:
     raise TypeError(f'Unable to convert string {in_string!r} to a Boolean value.')
 
 
+def number_to_pretty(in_num: Union[int, float]) -> str:
+    return f"{in_num:,}"
+
+
 if __name__ == '__main__':
     pass

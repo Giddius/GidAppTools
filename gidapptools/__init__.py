@@ -10,4 +10,7 @@ __version__ = "0.2.0"
 
 
 from pathlib import Path
+import logging
+
 THIS_FILE_DIR = Path(__file__).resolve().parent
+log = logging.getLogger(THIS_FILE_DIR.parent.name)

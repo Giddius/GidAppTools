@@ -16,13 +16,13 @@ from functools import partial
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.utility.helper import meta_data_from_path
-from gidapptools.utility._debug_tools import dprint
+
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
 from gidapptools.general_helper.conversion import str_to_bool
 from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
 import pp
-print = dprint
+
 
 # endregion[Imports]
 

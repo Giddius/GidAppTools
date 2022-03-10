@@ -302,6 +302,11 @@ def multi_line_dedent(in_text: str, strip_pre_lines: bool = True, strip_post_lin
     if strip_post_lines is True:
         text = text.rstrip()
     return text
+
+
+def strip_only_wrapping_empty_lines(in_text: str) -> str:
+    empty_line_pattern = re.compile(r"(^\s*)|(\s*$)")
+    return empty_line_pattern.sub("", in_text)
 # region[Main_Exec]
 
 

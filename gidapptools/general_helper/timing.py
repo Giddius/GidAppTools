@@ -114,7 +114,7 @@ def profile(func):
 
 def get_dummy_profile_decorator_in_globals():
 
-    if os.getenv("LINE_PROFILE_RUNNING", "0") == "1":
+    if os.getenv("LINE_PROFILE_RUNNING", "0") == "1" or __debug__ is not True:
         return
     stk = inspect.stack()[1]
     mod = inspect.getmodule(stk[0])

@@ -93,7 +93,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-class StaggeredFormLayout(QFormLayout):
+class VerticalFormLayout(QLayout):
 
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)

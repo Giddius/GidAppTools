@@ -17,10 +17,10 @@ from contextlib import contextmanager
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.utility.helper import make_pretty
-from gidapptools.utility._debug_tools import dprint
+
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 
-print = dprint
+import logging
 
 # endregion[Imports]
 
@@ -35,7 +35,7 @@ print = dprint
 # endregion[Logging]
 
 # region [Constants]
-
+log = logging.getLogger(__name__)
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion[Constants]
@@ -132,8 +132,9 @@ class MetaPaths(AbstractMetaItem):
             for path in self._created_normal_paths:
                 if path.exists():
                     if kwargs.get('dry_run', False) is True:
-                        print(f"Simulating deleting of path {path.as_posix()!r}, with 'shutil.rmtree'.")
+                        log.debug("Simulating deleting of temp-folder %r and its contents.", path.as_posix())
                     else:
+                        log.info("Deleting temp-folder %r and its contents.", path.as_posix())
                         shutil.rmtree(path)
         # TODO: find a way to clean shit up, but completely, also add optional kwarg that also removes the author folder
 

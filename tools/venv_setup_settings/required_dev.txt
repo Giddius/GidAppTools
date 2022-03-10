@@ -14,3 +14,4 @@ pylint
 rich
 tomlkit
 pip-tools
+pipreqs

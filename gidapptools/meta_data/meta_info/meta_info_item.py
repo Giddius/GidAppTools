@@ -23,7 +23,7 @@ from tzlocal import get_localzone, reload_localzone
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.utility.enums import OperatingSystem
 from gidapptools.utility.helper import utc_now, make_pretty, memory_in_use
-from gidapptools.utility._debug_tools import dprint
+
 from gidapptools.general_helper.general import is_frozen
 from gidapptools.general_helper.date_time import DatetimeFmt
 from gidapptools.general_helper.conversion import bytes2human
@@ -31,7 +31,7 @@ from gidapptools.general_helper.string_helper import StringCase, StringCaseConve
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 from gidapptools.utility.version_item import VersionItem
 reload_localzone()
-print = dprint
+
 
 # endregion[Imports]
 

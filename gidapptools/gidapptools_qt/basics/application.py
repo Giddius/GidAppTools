@@ -534,18 +534,6 @@ class ApplicationBuilder:
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    def sleep_print(sleep_amount, text):
-        sleep(sleep_amount)
-        print(text)
-
-    builder = ApplicationBuilder()
-    builder.set_app_icon(Path(r"D:\Dropbox\hobby\Modding\Ressources\logos\Antistasi_Icon.png"))
-    builder.set_sys_tray_class()
-
-    app = builder.build()
-    app.main_window.central_widget = QPushButton(app.icon, "Hi")
-    app.main_window.central_widget.pressed.connect(app.main_window.close)
-
-    sys.exit(app.start())
+    pass
 
 # endregion[Main_Exec]

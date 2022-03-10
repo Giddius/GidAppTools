@@ -49,9 +49,11 @@ from collections import Counter, ChainMap, deque, namedtuple, defaultdict
 from urllib.parse import urlparse
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from importlib.metadata import metadata
+from pkg_resources import DistributionNotFound
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader, ModuleSpec, FileFinder
 from types import ModuleType
+import typing
 import pp
 import attrs
 import pkgutil
@@ -255,17 +257,22 @@ def get_all_sub_modules(in_module: ModuleType) -> dict[str, SubModule]:
     return {k: v for k, v in sorted(_out.items(), key=lambda x: (x[0].startswith("_"), x[1].qualname, len(x[1].qualname)))}
 
 
-import rich
-import PySide6
-x = []
-_module = rich
-for k, v in get_all_sub_modules(_module).items():
-    if not k.startswith("_"):
-        imp_string = v.all_members_import_string
-        if imp_string:
-            print(imp_string)
-    x.append(v.to_dict(True))
+import github
+import regex
+import threading
 
+x = []
+_module = threading
+for k, v in get_all_sub_modules(_module).items():
+    try:
+        if not k.startswith("_"):
+
+            imp_string = v.all_members_import_string
+            if imp_string:
+                print(imp_string)
+        x.append(v.to_dict(True))
+    except (ModuleNotFoundError, ImportError, DistributionNotFound, SyntaxError):
+        continue
 
 with open(f"{_module.__package__}.json", "w", encoding='utf-8', errors='ignore') as f:
     json.dump(x, f, indent=4, sort_keys=False)
