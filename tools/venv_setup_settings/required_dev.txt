@@ -8,7 +8,7 @@ memory-profiler
 numpy
 objbrowser
 pipdeptree
-pp-ez==0.2.0
+pp-ez
 pyenchant
 pylint
 rich
