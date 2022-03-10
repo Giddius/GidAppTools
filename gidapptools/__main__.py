@@ -65,5 +65,6 @@ def base_settings():
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    pass
+    from playhouse.sqlite_ext import CYTHON_SQLITE_EXTENSIONS
+    print(CYTHON_SQLITE_EXTENSIONS)
 # endregion[Main_Exec]
