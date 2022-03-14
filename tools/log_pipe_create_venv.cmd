@@ -49,7 +49,7 @@ rem &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 rem ++++++++++++++++++++++++++++++++++++++++++++++++
 
 create_venv.cmd %PROJECT_NAME% %PROJECT_AUTHOR% 2> "%LOG_FOLDER%\create_venv.errors" | TEE "%LOG_FOLDER%\create_venv.log"
-
+rem create_venv.cmd %PROJECT_NAME% %PROJECT_AUTHOR% > "%LOG_FOLDER%\create_venv_overall.log" 2>&1
 if %ERRORLEVEL% == 0 (
     @echo off
     echo ErrorLevel is zero

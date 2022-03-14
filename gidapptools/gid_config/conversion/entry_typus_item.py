@@ -35,7 +35,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-@attr.s(auto_attribs=True, auto_detect=True, slots=True)
+@attr.s(auto_attribs=True, auto_detect=True, slots=True, weakref_slot=True)
 class EntryTypus:
     original_value: str = attr.ib(on_setattr=attr.setters.NO_OP, default=None)
     base_typus: type = attr.ib(on_setattr=attr.setters.NO_OP, default=SpecialTypus.DELAYED)

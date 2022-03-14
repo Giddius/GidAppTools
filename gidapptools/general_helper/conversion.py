@@ -269,6 +269,9 @@ class TimeUnits:
     def __iter__(self):
         return iter(self.units)
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(with_year={self._with_year!r})'
+
 
 _time_units_without_year = TimeUnits(False)
 _time_units_with_year = TimeUnits(True)

@@ -29,7 +29,7 @@ from gidapptools.general_helper.date_time import DatetimeFmt
 from gidapptools.general_helper.conversion import bytes2human
 from gidapptools.general_helper.string_helper import StringCase, StringCaseConverter
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
-from gidapptools.utility.version_item import VersionItem
+from gidapptools.utility_classes import VersionItem
 reload_localzone()
 
 

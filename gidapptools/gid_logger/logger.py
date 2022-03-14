@@ -17,7 +17,7 @@ import warnings
 import inspect
 from weakref import WeakSet, WeakValueDictionary
 import logging
-from typing import Union, Iterable, Mapping, TYPE_CHECKING, Any, Optional
+from typing import Union, Iterable, Mapping, TYPE_CHECKING, Any, Optional, Callable
 from pathlib import Path
 from logging.handlers import QueueHandler, QueueListener
 
@@ -131,35 +131,50 @@ def get_handlers(logger: Union[logging.Logger, GidLogger] = None) -> tuple[loggi
 func_pattern = re.compile(r"(^| )def (?P<func_name>[^\(\)\n\"\'\]\[]+)")
 
 
-def _show_warnings(message, category, filename, lineno, file=None, line=None):
-    try:
-        path = Path(filename).resolve()
-        sending_module = None
-        for module in reversed(sys.modules.values()):
-            try:
-                if Path(module.__file__).resolve() == path:
-                    sending_module = module
+class WarningHandler:
+    __slots__ = ("old_show_warnings_func",)
+
+    def __init__(self, old_show_warnings_func: Callable = None):
+        self.old_show_warnings_func = old_show_warnings_func
+
+    def _error_fallback(self, error, message, category, filename, lineno, file=None, line=None) -> None:
+        print(f"error with '_show_warnings', error: {error!r}, message: {message!r}, category: {category!r}, filename: {filename!r}, lineno: {lineno!r}, file: {file!r}, line: {line!r}")
+
+    def _show_warnings(self, message, category, filename, lineno, file=None, line=None):
+        try:
+            path = Path(filename).resolve()
+            sending_module = None
+            for module in reversed(sys.modules.values()):
+                try:
+                    if Path(module.__file__).resolve() == path:
+                        sending_module = module
+                        break
+                except (AttributeError, TypeError):
+                    continue
+            logger = get_logger(sending_module.__name__)
+            import linecache
+
+            temp_lineno = lineno
+            while True:
+                line = linecache.getline(filename, temp_lineno)
+                if match := func_pattern.search(line):
+                    func = match.group("func_name").strip()
                     break
-            except (AttributeError, TypeError):
-                continue
-        logger = get_logger(sending_module.__name__)
-        import linecache
+                temp_lineno -= 1
+                if temp_lineno < 0:
+                    func = "module"
+                    break
 
-        temp_lineno = lineno
-        while True:
-            line = linecache.getline(filename, temp_lineno)
-            if match := func_pattern.search(line):
-                func = match.group("func_name").strip()
-                break
-            temp_lineno -= 1
-            if temp_lineno < 0:
-                func = "module"
-                break
+            record = logger.makeRecord(logger.name, level=logging.WARNING, fn=func, lno=lineno, msg=message, args=[], exc_info=None, func=func)
+            logger.handle(record)
+        except Exception as e:
+            if self.old_show_warnings_func:
+                self.old_show_warnings_func(message, category, filename, lineno, file, line)
+            else:
+                self._error_fallback(e, message, category, filename, lineno, file, line)
 
-        record = logger.makeRecord(logger.name, level=logging.WARNING, fn=func, lno=lineno, msg=message, args=[], exc_info=None, func=func)
-        logger.handle(record)
-    except Exception as e:
-        print(e)
+    def __call__(self, message, category, filename, lineno, file=None, line=None) -> Any:
+        self._show_warnings(message, category, filename, lineno, file, line)
 
 
 def setup_main_logger(name: str, path: Path, log_level: LoggingLevel = LoggingLevel.DEBUG, formatter: Union[logging.Formatter, GidLoggingFormatter] = None, extra_logger: Iterable[str] = tuple()) -> Union[logging.Logger, GidLogger]:
@@ -222,7 +237,8 @@ def setup_main_logger_with_file_logging(name: str,
     log_level = LoggingLevel(log_level)
     if "py.warnings" in extra_logger:
         logging.captureWarnings(True)
-        warnings.showwarning = _show_warnings
+        warning_handler = WarningHandler(warnings.showwarning)
+        warnings.showwarning = warning_handler
     for logger in [_log] + [logging.getLogger(l) for l in extra_logger]:
         logger.addHandler(que_handler)
 

@@ -170,6 +170,13 @@ class AppMeta:
             except AttributeError:
                 warn(f"Meta-Item {item.name!r} has no Method named 'clean_up'.")
 
+    def __repr__(self) -> str:
+        """
+        Basic Repr
+        !REPLACE!
+        """
+        return f'{self.__class__.__name__}'
+
 
 app_meta = AppMeta()
 
@@ -185,7 +192,6 @@ def get_meta_item(item_name: str = None) -> Union[dict[str, type[META_ITEMS_TYPE
 def get_meta_info() -> MetaInfo:
 
     return app_meta['meta_info']
-
 
 
 def get_meta_paths() -> MetaPaths:

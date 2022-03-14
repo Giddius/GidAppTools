@@ -231,12 +231,16 @@ ECHO.
 
 ECHO -------------------------------------------- POST-SETUP SCRIPTS --------------------------------------------
 ECHO.
-FOR /F "tokens=1 delims=," %%A in (.\venv_setup_settings\post_setup_scripts.txt) do (
+PUSHD %TOOLS_FOLDER%
+FOR /F "tokens=1,2 delims=," %%A in (.\venv_setup_settings\post_setup_scripts.txt) do (
 ECHO.
 ECHO -------------------------- Calling %%A --------------^>
-CALL %%A
+CALL %%A %%B
 ECHO.
 )
+ECHO.
+
+
 
 call pip list --format json | installed_packages_to_json.py
 

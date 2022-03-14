@@ -1,25 +1,19 @@
 from pathlib import Path
 import re
 
-import pp
+THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-a = """
-peewee-erd==0.1.3
-pep517
-pipdeptree~=0.1.0.post0
-pipreqs<=0.1.2
-pp-ez>=0.2.0
-tzdata==2021.5
-"""
+in_file = THIS_FILE_DIR.parent.joinpath("compiled_dependencies.txt")
 
+text = in_file.read_text(encoding='utf-8', errors='ignore')
 
-p = re.compile(r"(?P<name>.*)?(?P<specifier>[\=\~\>\<]\=)(?P<version>.*)")
-
-for line in a.splitlines():
+lines = []
+for line in text.splitlines():
     if not line:
         continue
-    match = p.match(line)
-    if not match:
-        pp(line)
-    else:
-        pp(match.groupdict())
+    if line.startswith("#"):
+        continue
+    lines.append(f'"{line.strip()}",')
+
+
+in_file.write_text('\n'.join(lines))

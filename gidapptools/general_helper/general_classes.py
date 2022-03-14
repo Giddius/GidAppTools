@@ -128,6 +128,9 @@ class AbstractThreadsafePool(ABC):
         self._queue.put_nowait(obj)
         self._queue.task_done()
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(max_size={self.max_size!r}, prefill={self._prefill!r})'
+
 
 class GenericThreadsafePool(AbstractThreadsafePool):
     __slots__ = ("_lock", "_max_size", "_prefill", "_objects", "_queue", "_obj_creator")
@@ -139,6 +142,9 @@ class GenericThreadsafePool(AbstractThreadsafePool):
     def _create_new_object(self) -> object:
 
         return self._obj_creator()
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(obj_creator={self._obj_creator!r}, max_size={self.max_size!r}, prefill={self._prefill!r})'
 
 # region[Main_Exec]
 

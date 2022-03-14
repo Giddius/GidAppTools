@@ -72,6 +72,9 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
+__all__ = ["VersionItem"]
+
+
 def try_convert_int(data: Union[str, int, None]) -> Union[str, int, None]:
     if data is None:
         return None
@@ -90,7 +93,7 @@ class VersionItem:
     minor: int = attr.ib(converter=int)
     patch: int = attr.ib(default=None, converter=try_convert_int)
     extra: Union[str, int] = attr.ib(default=None, converter=try_convert_int)
-    version_regex: ClassVar = re.compile(r"(?P<major>\d+)\.(?P<minor>\d+)\.(?P<patch>\d+|MISSING)\-?(?P<extra>.*)?")
+    version_regex: ClassVar = re.compile(r"(?P<major>\d+)\.(?P<minor>\d+)\.?(?P<patch>\d+|MISSING)?\-?(?P<extra>.*)?")
 
     def __str__(self) -> str:
         _out = f"{self.major}.{self.minor}"

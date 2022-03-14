@@ -46,7 +46,7 @@ from gidapptools.gidapptools_qt.resources.placeholder import QT_PLACEHOLDER_IMAG
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.errors import ApplicationExistsError
 from gidapptools.general_helper.string_helper import StringCaseConverter, StringCase
-from gidapptools.utility.version_item import VersionItem
+from gidapptools.utility_classes.version_item import VersionItem
 from gidapptools.general_helper.class_helper import make_repr
 from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
 from yarl import URL

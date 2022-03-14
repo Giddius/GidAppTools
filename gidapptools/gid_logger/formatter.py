@@ -19,6 +19,7 @@ from collections import Counter
 # * Third Party Imports --------------------------------------------------------------------------------->
 from tzlocal import get_localzone
 from gidapptools.utility.helper import meta_data_from_path
+import inspect
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_logger.enums import LoggingLevel, LoggingSectionAlignment
 from gidapptools.general_helper.string_helper import StringCase, StringCaseConverter
@@ -327,11 +328,21 @@ class AbstractSectionLoggingStyle(ABC):
     default_message_start_indicator: str = ' ||--> '
 
     def __init__(self, sections: Iterable[Union[str, AbstractLoggingStyleSection]], separator: str = None, message_start_indicator: str = None, message_section: AbstractLoggingStyleSection = None):
-        self.sections = sections
+        self.sections = self._handle_sections(sections)
         self.sorted_sections: tuple[AbstractLoggingStyleSection] = self.sort_sections()
         self.separator = separator or self.default_separator
         self.message_start_indicator = message_start_indicator or self.default_message_start_indicator
         self.message_section = message_section
+
+    def _handle_sections(self, sections: Iterable[Union[str, AbstractLoggingStyleSection]]) -> tuple[AbstractLoggingStyleSection]:
+        _out = []
+        for section in sections:
+            if isinstance(section, str):
+                section = self.all_section_classes[section]()
+            if inspect.isclass(section):
+                section = section()
+            _out.append(section)
+        return tuple(_out)
 
     def sort_sections(self) -> tuple[AbstractLoggingStyleSection]:
         temp_sorted = [i[0] for i in sorted([(v, idx) for idx, v in enumerate(self.sections)], key=lambda x: (x[0].position, x[1]))]
@@ -353,6 +364,13 @@ class AbstractSectionLoggingStyle(ABC):
 
     def format(self, record: "LOG_RECORD_TYPES"):
         return self._format(record)
+
+    @classmethod
+    def all_section_classes(cls) -> dict[str, type[AbstractLoggingStyleSection]]:
+        _out = {}
+        for klass in AbstractLoggingStyleSection.__subclasses__():
+            _out[klass.___section_name___] = klass
+        return _out
 
 
 class GidSectionLoggingStyle(AbstractSectionLoggingStyle):
@@ -402,7 +420,6 @@ class GidLoggingFormatter(logging.Formatter):
             if not record.exc_text:
                 record.exc_text = self.formatException(ei=record.exc_info)
         return record
-
 
     def format(self, record: "LOG_RECORD_TYPES") -> str:
         record = self.set_time(record=record)

@@ -274,6 +274,13 @@ class SpecVisitor(BaseVisitor):
         """
         return EntryTypus(original_value=value, base_typus=timedelta)
 
+    def __repr__(self) -> str:
+        """
+        Basic Repr
+        !REPLACE!
+        """
+        return f'{self.__class__.__name__}'
+
 
 class SpecData(AdvancedDict):
     default_visitor_class = SpecVisitor
@@ -333,6 +340,13 @@ class SpecData(AdvancedDict):
             self.visitor.reload()
             self._resolve_values()
 
+    def __repr__(self) -> str:
+        """
+        Basic Repr
+        !REPLACE!
+        """
+        return f'{self.__class__.__name__}'
+
 
 class SpecFile(FileMixin, SpecData):
     def __init__(self, file_path: PATH_TYPE, visitor: SpecVisitor, changed_parameter: Union[Literal['size'], Literal['file_hash']] = 'size', **kwargs) -> None:
@@ -362,6 +376,13 @@ class SpecFile(FileMixin, SpecData):
     def set_typus_value(self, section_name: str, entry_key: str, typus_value: str) -> None:
         super().set_typus_value(section_name=section_name, entry_key=entry_key, typus_value=typus_value)
         self.save()
+
+    def __repr__(self) -> str:
+        """
+        Basic Repr
+        !REPLACE!
+        """
+        return f'{self.__class__.__name__}'
 
 # class SpecDataFile(SpecData):
 

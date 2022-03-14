@@ -21,10 +21,10 @@ if SETTINGS_FOLDER.exists() is False:
 for req_file in REQUIRED_FILES:
     req_file = SETTINGS_FOLDER.joinpath(req_file)
     if req_file.is_file() is False:
-        with req_file.open(mode='w') as f:
+        with req_file.open(mode='w', encoding='utf-8', errors='ignore') as f:
             f.write('')
             print(f"required file '{req_file}' was missing and was created")
-    with req_file.open('r') as f:
+    with req_file.open('r', encoding='utf-8', errors='ignore') as f:
         lines = filter(lambda x: x != '', f.read().splitlines())
         cleaned_lines = []
         for line in lines:
@@ -36,5 +36,5 @@ for req_file in REQUIRED_FILES:
             mod_line = mod_line.strip()
             if all(exist_item.casefold() != mod_line.casefold() for exist_item in cleaned_lines):
                 cleaned_lines.append(line)
-    with req_file.open('w') as f:
+    with req_file.open('w', encoding='utf-8', errors='ignore') as f:
         f.write('\n'.join(sorted(cleaned_lines, key=lambda x: x.casefold())))

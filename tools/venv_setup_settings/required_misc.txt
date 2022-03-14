@@ -4,8 +4,8 @@ inflect==5.3.0
 isort==5.10.1
 mdformat==0.7.13
 platformdirs==2.4.1
-pp==1.6.5
 pp_ez==0.2.0
+pprintpp
 psutil==5.9.0
 PyGithub==1.55
 pyparsing==3.0.6

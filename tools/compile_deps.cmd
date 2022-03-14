@@ -31,6 +31,9 @@ call ..\.venv\Scripts\activate
 
 pushd ..
 
-call pip-compile --max-rounds 10000 --no-annotate -U -r -o compiled_dependencies.txt pyproject.toml
+call pip-compile --max-rounds 10000000 --no-annotate -U --no-header -r -o compiled_dependencies.txt pyproject.toml
 
-call %OLDHOME_FOLDER%\convert_compiled_deps.py
+
+rem call pip-compile --max-rounds 10000000 -U --build-isolation -r -o compiled_dependencies.txt pyproject.toml
+
+rem call %OLDHOME_FOLDER%\convert_compiled_deps.py

@@ -14,10 +14,6 @@ from gidapptools.general_helper.conversion import seconds2human
 TIME_NS_FUNC_TYPE = Union[perf_counter_ns, process_time_ns, time_ns, thread_time_ns]
 
 
-def _check_env_var_condition(second_var_name: str) -> bool:
-    return any(os.getenv(env_name, '0').casefold() in {'1', "true"} for env_name in ["GIDAPPTOOLS_TIMING_ENABLED", "IS_DEV", second_var_name])
-
-
 time_execution_path_locks: dict[Path, RLock] = {}
 
 
@@ -33,16 +29,17 @@ def get_time_execution_path_lock(path: Path) -> RLock:
 def time_execution(identifier: str = None,
                    time_ns_func: TIME_NS_FUNC_TYPE = perf_counter_ns,
                    output: Union[Callable, Path] = print,
-                   condition: bool = None,
+                   condition: Union[bool, Callable[[], bool]] = True,
                    as_seconds: bool = True,
                    decimal_places: Union[int, None] = None,
                    also_pretty: bool = False) -> None:
-    if condition is None:
-        condition = _check_env_var_condition("TIME_EXECUTION_ENABLED")
-    if condition:
+    if callable(condition):
+        condition = condition()
+    if condition is True:
         start_time = time_ns_func()
         yield
-        full_time = time_ns_func() - start_time
+        end_time = time_ns_func()
+        full_time = end_time - start_time
         if as_seconds is True:
             from gidapptools.general_helper.conversion import ns_to_s
             full_time = ns_to_s(full_time, decimal_places=decimal_places)
@@ -51,7 +48,7 @@ def time_execution(identifier: str = None,
         else:
             unit = 'ns'
             pretty = "" if also_pretty is False else f" ({seconds2human(ns_to_s(full_time))})"
-        identifier = '' if identifier is None else identifier
+        identifier = 'time_execution' if identifier is None else identifier
 
         if isinstance(output, Path):
             with get_time_execution_path_lock(output):
@@ -66,14 +63,17 @@ def time_execution(identifier: str = None,
 def time_func(time_ns_func: TIME_NS_FUNC_TYPE = perf_counter_ns,
               output: Callable = print,
               use_qualname: bool = True,
-              condition: bool = None,
+              condition: Union[bool, Callable[[], bool]] = True,
               as_seconds: bool = True,
               decimal_places: int = None,
               also_pretty: bool = False):
 
     def _decorator(func):
         func_name = func.__name__ if use_qualname is False else func.__qualname__
-        _actual_condition = _check_env_var_condition("TIME_FUNC_ENABLED") if condition is None else condition
+        if callable(condition):
+            _actual_condition = condition()
+        else:
+            _actual_condition = condition
 
         @wraps(func)
         def _wrapped(*args, **kwargs):

@@ -74,8 +74,14 @@ class ConfigKwargs(KwargDict):
                 return self._path_overwrites
             raise
 
-
+    def __repr__(self) -> str:
+        """
+        Basic Repr
+        !REPLACE!
+        """
+        return f'{self.__class__.__name__}'
 # region[Main_Exec]
+
 
 if __name__ == '__main__':
     pass

@@ -13,6 +13,7 @@ from typing import Union, Literal, Mapping, Callable, Iterable
 from pathlib import Path
 from string import ascii_uppercase, ascii_lowercase, ascii_letters
 from textwrap import dedent
+from operator import methodcaller
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import StringCase
 import pyparsing as ppa
@@ -307,6 +308,11 @@ def multi_line_dedent(in_text: str, strip_pre_lines: bool = True, strip_post_lin
 def strip_only_wrapping_empty_lines(in_text: str) -> str:
     empty_line_pattern = re.compile(r"(^\s*)|(\s*$)")
     return empty_line_pattern.sub("", in_text)
+
+
+def string_strip(in_string: str, chars: str = None) -> str:
+    return in_string.strip(chars)
+
 # region[Main_Exec]
 
 

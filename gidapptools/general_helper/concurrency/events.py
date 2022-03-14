@@ -42,6 +42,9 @@ class BlockingEvent(Event):
     def __exit__(self, exception_type: type = None, exception_value: BaseException = None, traceback: Any = None) -> None:
         self.set()
 
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(state={self.is_set()!r})'
+
 
 # region[Main_Exec]
 if __name__ == '__main__':

@@ -10,7 +10,7 @@ Soon.
 import os
 from typing import Union
 from pathlib import Path
-
+from threading import RLock, Lock
 # endregion[Imports]
 
 # region [TODO]
@@ -32,6 +32,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 PATH_TYPE = Union[str, os.PathLike, Path]
 
+LOCK_TYPE = Union[type[Lock], type[RLock]]
 
 # region[Main_Exec]
 

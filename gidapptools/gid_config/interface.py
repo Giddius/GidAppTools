@@ -220,6 +220,13 @@ class GidIniConfig:
     def get_entry_typus(self, section_name: str, entry_key: str):
         return self.spec.get_entry_typus(section_name=section_name, entry_key=entry_key)
 
+    def __repr__(self) -> str:
+        """
+        Basic Repr
+        !REPLACE!
+        """
+        return f'{self.__class__.__name__}'
+
 
 # region[Main_Exec]
 if __name__ == '__main__':

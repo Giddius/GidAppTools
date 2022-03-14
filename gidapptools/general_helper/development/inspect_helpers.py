@@ -257,26 +257,6 @@ def get_all_sub_modules(in_module: ModuleType) -> dict[str, SubModule]:
     return {k: v for k, v in sorted(_out.items(), key=lambda x: (x[0].startswith("_"), x[1].qualname, len(x[1].qualname)))}
 
 
-import github
-import regex
-import threading
-
-x = []
-_module = threading
-for k, v in get_all_sub_modules(_module).items():
-    try:
-        if not k.startswith("_"):
-
-            imp_string = v.all_members_import_string
-            if imp_string:
-                print(imp_string)
-        x.append(v.to_dict(True))
-    except (ModuleNotFoundError, ImportError, DistributionNotFound, SyntaxError):
-        continue
-
-with open(f"{_module.__package__}.json", "w", encoding='utf-8', errors='ignore') as f:
-    json.dump(x, f, indent=4, sort_keys=False)
-
 # region[Main_Exec]
 if __name__ == '__main__':
     pass

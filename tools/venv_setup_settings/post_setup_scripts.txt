@@ -1,4 +1,3 @@
 create_venv_extra_envvars.py
-pipdeptree,-a>dep_tree.json
 pyside6-genpyi.exe,--check all
 python -m compileall,-j 20 -r 100 %WORKSPACE_FOLDER%
