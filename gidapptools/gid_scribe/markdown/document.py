@@ -25,7 +25,7 @@ import platform
 import importlib
 import subprocess
 import inspect
-
+from textwrap import dedent
 from time import sleep, process_time, process_time_ns, perf_counter, perf_counter_ns
 from io import BytesIO, StringIO
 from abc import ABC, ABCMeta, abstractmethod
@@ -130,8 +130,9 @@ class MarkdownContainablePart(MarkdownPart):
 
 class MarkdownHeadline(MarkdownContainablePart):
 
-    def __init__(self, text: str) -> None:
+    def __init__(self, text: str, center: bool = False) -> None:
         super().__init__()
+        self.center = center
         self._text = text
         self.level: int = None
 
@@ -149,7 +150,14 @@ class MarkdownHeadline(MarkdownContainablePart):
     @property
     def text(self) -> str:
         self._determine_level()
-        return f"{'#'*self.level} {self._text}\n"
+        if self.center is False:
+            return f"{'#'*self.level} {self._text}\n"
+        elif self.center is True:
+            return dedent(f"""
+                    <center>
+                        <h{self.level}>{self._text}</h{self.level}>
+                    </center>
+                    """).strip() + '\n'
 
 
 class MarkdownRawText(MarkdownPart):
@@ -177,8 +185,9 @@ class MarkdownCodeBlock(MarkdownPart):
 
 class MarkdownImage(MarkdownPart):
 
-    def __init__(self, file_path: os.PathLike, alt_text: str = None, title_text: str = None) -> None:
+    def __init__(self, file_path: os.PathLike, alt_text: str = None, title_text: str = None, center: bool = False) -> None:
         super().__init__()
+        self.center = center
         self.raw_file_path = Path(file_path)
         self.alt_text = alt_text or "image"
         self._title_text = title_text or ""
@@ -198,7 +207,14 @@ class MarkdownImage(MarkdownPart):
 
     @property
     def text(self) -> str:
-        return f"![{self.alt_text}]({self.file_path.as_posix()} {self.title_text})"
+        if self.center is False:
+            return f"![{self.alt_text}]({self.file_path.as_posix()} {self.title_text})"
+        elif self.center is True:
+            return dedent(f"""
+                    <center>
+                        <img src="{self.file_path.as_posix()}" title="{self.title_text.strip('"')}" alt="{self.alt_text}">
+                    </center>
+                    """).strip()
 
 
 class MarkdownSimpleList(MarkdownPart):
@@ -240,9 +256,13 @@ class MarkdownDocument:
     def render(self) -> str:
         text = ""
         if self.top_headline is not None:
-            text += f"# {self.top_headline}\n\n"
+            text += dedent(f"""
+                    <center>
+                        <h1>{self.top_headline}</h1>
+                    </center>
+                    """).strip() + '\n'
         if self._top_image is not None:
-            part = MarkdownImage(self._top_image)
+            part = MarkdownImage(self._top_image, center=True, title_text=self.top_headline or "")
             part.set_document(self)
             text += part.text + "\n\n"
 

@@ -85,8 +85,6 @@ class AbstractThreadsafePool(ABC):
                 created = self._create_if_possible()
                 if created is False:
                     break
-        if __debug__:
-            atexit.register(self._on_exit)
 
     @property
     def max_size(self) -> int:
@@ -115,9 +113,6 @@ class AbstractThreadsafePool(ABC):
             except queue.Empty:
                 self._create_if_possible()
                 return self._queue.get(block=True)
-
-    def _on_exit(self):
-        print(f"{len(self._objects)=}")
 
     @contextmanager
     def __call__(self) -> Any:
