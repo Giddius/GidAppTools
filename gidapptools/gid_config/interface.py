@@ -146,6 +146,9 @@ class GidIniConfig:
                     return self.get(fallback_entry[0], fallback_entry[1], default=default)
                 if default is not MiscEnum.NOTHING:
                     return default
+                by_spec_default = self.get_from_spec_default(section_name=section_name, entry_key=entry_key)
+                if by_spec_default is not MiscEnum.NOT_FOUND:
+                    return by_spec_default
                 raise
 
             if not entry.value:
@@ -170,6 +173,13 @@ class GidIniConfig:
                 if default is not MiscEnum.NOTHING:
                     return default
                 raise
+
+    def get_from_spec_default(self, section_name: str, entry_key: str) -> Any:
+        spec_default = self.spec._get_entry_default(section_name=section_name, entry_key=entry_key)
+        if spec_default not in {MiscEnum.NOTHING, None}:
+            typus = self.spec.get_entry_typus(section_name=section_name, entry_key=entry_key)
+            return self.converter(entry=spec_default, typus=typus)
+        return MiscEnum.NOT_FOUND
 
     def set(self,
             section_name: str,
