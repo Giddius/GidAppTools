@@ -161,8 +161,8 @@ class MetaConfigFactory(AbstractMetaFactory):
 
         for config_to_create in self.config_kwargs.get("configs_to_create", []):
             self.config_paths.append(self.create_files(config_to_create, "config"))
-        for spec_to_create in self.config_kwargs.get("spec_to_create", []):
-            self.spec_paths.append(self.create_files(spec_to_create, "spec"))
+        for spec_file in self.config_kwargs.get("spec_files", []):
+            self.spec_paths.append(spec_file)
 
     def _build(self) -> AbstractMetaItem:
         if self.is_setup is False:
