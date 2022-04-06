@@ -51,7 +51,7 @@ from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 import logging
-import pp
+
 from gidapptools.gid_logger.logger import get_logger
 if TYPE_CHECKING:
     from gidapptools.gid_logger.records import LOG_RECORD_TYPES

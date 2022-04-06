@@ -10,7 +10,7 @@ Soon.
 from typing import TYPE_CHECKING, Any, Union, Literal, Hashable, Optional, Iterable
 from pathlib import Path
 from datetime import timezone
-
+from contextlib import contextmanager, suppress
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.general_helper.date_time import DateTimeFrame
@@ -40,6 +40,30 @@ class GidAppToolsBaseError(Exception):
     """
     Base Exception For GidAppTools.
     """
+
+
+class MissingOptionalDependencyError(GidAppToolsBaseError):
+
+    def __init__(self, dependency_name: str, package_name: str = None) -> None:
+        self.dependency_name = dependency_name
+        self.package_name = package_name
+        self.msg = f"Missing optional dependency {self.dependency_name!r}"
+        if self.package_name is not None:
+            self.msg += f" try installing '{self.package_name!s}[{self.dependency_name!s}]'"
+        self.msg += "."
+        super().__init__(self.msg)
+
+    @classmethod
+    @contextmanager
+    def try_import(cls, package_name: str = None):
+        try:
+            yield
+        except ImportError as e:
+            if e.path is None:
+                dependency_name = e.name
+                raise cls(dependency_name=dependency_name, package_name=package_name) from e
+
+            raise e
 
 
 class FlagConflictError(GidAppToolsBaseError):

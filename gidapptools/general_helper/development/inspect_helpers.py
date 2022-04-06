@@ -58,11 +58,12 @@ import pp
 import attrs
 import pkgutil
 import ast
-import isort
 import gidapptools
-from importlib import import_module, __import__
-from importlib._common import get_package
-import gidapptools
+from importlib import import_module
+from gidapptools.errors import MissingOptionalDependencyError
+
+with MissingOptionalDependencyError.try_import("gidapptools"):
+    import isort
 # endregion[Imports]
 
 # region [TODO]
@@ -145,6 +146,7 @@ class SubModule:
     @property
     def all_members_import_string(self) -> str:
         text = f"from {self.qualname} import ({', '.join(self.member_names)})"
+
         return isort.code(text, line_length=200).strip()
 
     @property

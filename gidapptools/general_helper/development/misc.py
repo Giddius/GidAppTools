@@ -9,10 +9,12 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 from typing import Any, Literal, Callable, Optional
 from pathlib import Path
+from gidapptools.errors import MissingOptionalDependencyError
 
 # * Third Party Imports --------------------------------------------------------------------------------->
-from rich import inspect as rinspect
-from rich.console import Console as RichConsole
+with MissingOptionalDependencyError.try_import("gidapptools"):
+    from rich import inspect as rinspect
+    from rich.console import Console as RichConsole
 
 # endregion[Imports]
 

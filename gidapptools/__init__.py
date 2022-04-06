@@ -14,3 +14,8 @@ import logging
 
 THIS_FILE_DIR = Path(__file__).resolve().parent
 log = logging.getLogger(THIS_FILE_DIR.parent.name)
+
+
+from tzlocal import reload_localzone
+
+reload_localzone()

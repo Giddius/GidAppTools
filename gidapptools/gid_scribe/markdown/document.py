@@ -51,7 +51,7 @@ from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 import mdformat
-
+from tabulate import tabulate
 # endregion[Imports]
 
 # region [TODO]
@@ -243,6 +243,35 @@ class MarkdownSimpleList(MarkdownPart):
         return text
 
 
+class MarkdownTable(MarkdownPart):
+
+    def __init__(self, table_data: dict[str, Union[Iterable[str], str]] = None, table_format: str = "pipe") -> None:
+        super().__init__()
+        self.table_format = table_format
+        self.table_data = defaultdict(list)
+        if table_data is not None:
+            self.table_data.update(table_data)
+
+    def add_table_data(self, table_data: dict[str, Union[Iterable[str], str]]) -> None:
+        for k, v in table_data.items():
+            if isinstance(v, str):
+                self.table_data[k].append(v)
+            elif isinstance(v, Iterable):
+                self.table_data[k].extend(v)
+
+    def append_row(self, row: dict[str, Any]) -> None:
+        for k, v in row.items():
+            self.table_data[k].append(v)
+
+    def _modify_header(self, header: str) -> str:
+        return f"**{header.strip('*').title()}**"
+
+    @property
+    def text(self) -> str:
+        table_data = {self._modify_header(k): v for k, v in self.table_data.items()}
+        return tabulate(table_data, headers="keys", tablefmt=self.table_format, numalign="decimal", stralign="center")
+
+
 class MarkdownDocument:
     default_config: dict[str, Any] = {}
 
@@ -291,7 +320,11 @@ if __name__ == '__main__':
     t.add_part(i)
     cc = MarkdownCodeBlock("a ='alpha'", "python")
     t.add_part(cc)
-
+    tt = MarkdownTable()
+    tt.append_row({"first col": 1, "second col": "dog", "third col": 3.9})
+    tt.append_row({"first col": 2, "second col": "cat", "third col": 9.9})
+    tt.append_row({"first col": 3, "second col": "bunny", "third col": 63.63})
+    t.add_part(tt)
     ll = MarkdownSimpleList(ordered=False)
     _ = [ll.add_entry(e) for e in ["first", "second", "third"]]
     t.add_part(ll)

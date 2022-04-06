@@ -20,12 +20,12 @@ import logging
 from typing import Union, Iterable, Mapping, TYPE_CHECKING, Any, Optional, Callable
 from pathlib import Path
 from logging.handlers import QueueHandler, QueueListener
-
+import pp
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_logger.enums import LoggingLevel
 from gidapptools.gid_logger.handler import GidBaseRotatingFileHandler, GidBaseStreamHandler, GidStoringHandler
 from gidapptools.gid_logger.formatter import GidLoggingFormatter, get_all_func_names, get_all_module_names
-import pp
+
 if TYPE_CHECKING:
     from gidapptools.gid_logger.records import LOG_RECORD_TYPES
 
@@ -227,6 +227,7 @@ def setup_main_logger_with_file_logging(name: str,
         endpoints.append(handler)
 
     file_handler = GidBaseRotatingFileHandler(base_name=log_file_base_name, log_folder=log_folder)
+
     file_handler.setFormatter(formatter)
     endpoints.append(file_handler)
     # storing_handler = GidStoringHandler(50)

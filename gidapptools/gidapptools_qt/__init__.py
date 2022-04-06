@@ -1,4 +1,5 @@
-from importlib.util import find_spec
+from gidapptools.errors import MissingOptionalDependencyError
 
-if find_spec("PySide6") is None:
-    raise ImportError("Module can only be used if PySide6 is installed as a dependency.")
+
+with MissingOptionalDependencyError.try_import("PySide6"):
+    import PySide6

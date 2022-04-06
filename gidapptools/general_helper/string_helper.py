@@ -13,12 +13,12 @@ from typing import Union, Literal, Mapping, Callable, Iterable
 from pathlib import Path
 from string import ascii_uppercase, ascii_lowercase, ascii_letters
 from textwrap import dedent
-from operator import methodcaller
+
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import StringCase
 import pyparsing as ppa
 import pyparsing.common as ppc
-import pp
+
 # endregion[Imports]
 
 # region [TODO]
@@ -186,6 +186,8 @@ def shorten_string(in_text: str, max_length: int, shorten_side: Literal["right",
     max_length = max_length - len(placeholder)
 
     new_text = in_text[:max_length] if shorten_side == 'right' else in_text[-max_length:]
+    if split_on == "any":
+        split_on = r"."
     find_regex = re.compile(split_on)
     last_space_position = list(find_regex.finditer(new_text))
 

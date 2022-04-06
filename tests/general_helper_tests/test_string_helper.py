@@ -143,7 +143,8 @@ shorten_string_params_basic = [param("a simple test to check the shortening on s
 
 shorten_string_params_advanced = [param("a simple test to check the shortening on spaces", 20, "not_existing_side", default_placeholder, default_clean_before, default_ensure_space_around_placeholder, default_split_on, "a simple test to...", ValueError, id="error_wrong_shorten_side"),
                                   param("a simple test to check the shortening on spaces", 20000, default_shorten_side, default_placeholder, default_clean_before, default_ensure_space_around_placeholder, default_split_on, "a simple test to check the shortening on spaces", None, id="max_length_greater_than_text_length"),
-                                  param("a simple test to check the shortening on spaces", 13, default_shorten_side, default_placeholder, default_clean_before, True, default_split_on, "a simple ...", None, id="ensure_space_around_placeholder_true")]
+                                  param("a simple test to check the shortening on spaces", 13, default_shorten_side, default_placeholder, default_clean_before, True, default_split_on, "a simple ...", None, id="ensure_space_around_placeholder_true"),
+                                  param("AClassRepr(amount=1, path=WindowsPath('D:/hobby/Modding/Programs/Github/My_Repos/GidAppTools/gidapptools'))", 20, default_shorten_side, default_placeholder, default_clean_before, default_ensure_space_around_placeholder, "any", "AClassRepr(amoun...", None, id="repr_split_on_any")]
 
 
 @pytest.mark.parametrize("in_text, max_length, shorten_side, placeholder, clean_before, ensure_space_around_placeholder, split_on, expected, error", shorten_string_params_basic + shorten_string_params_advanced)

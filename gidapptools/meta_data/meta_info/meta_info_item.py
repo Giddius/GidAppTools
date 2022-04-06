@@ -29,8 +29,7 @@ from gidapptools.general_helper.date_time import DatetimeFmt
 from gidapptools.general_helper.conversion import bytes2human
 from gidapptools.general_helper.string_helper import StringCase, StringCaseConverter
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
-from gidapptools.utility_classes import VersionItem
-reload_localzone()
+from gidapptools.gid_utility import VersionItem
 
 
 # endregion[Imports]
@@ -82,13 +81,17 @@ class MetaInfo(AbstractMetaItem):
     local_tz: timezone = attr.ib(default=get_localzone())
 
     @cached_property
-    def is_frozen(self) -> bool:
+    def is_frozen_app(self) -> bool:
         return is_frozen()
 
     @cached_property
     def frozen_folder_path(self) -> Optional[Path]:
-        if self.is_frozen is True:
+        if self.is_frozen_app is True:
             return Path(sys._MEIPASS)
+
+    @cached_property
+    def cli_name(self) -> str:
+        return self.app_name.replace(" ", "-").replace("_", '-')
 
     @classmethod
     @property
@@ -131,6 +134,7 @@ class MetaInfo(AbstractMetaItem):
 
     def clean_up(self, **kwargs) -> None:
         pass
+
 
     # region[Main_Exec]
 if __name__ == '__main__':

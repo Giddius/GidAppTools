@@ -17,3 +17,4 @@ sortedcontainers==2.4.0
 tzlocal==4.1
 yarl==1.7.2
 frozendict==2.3.0
+docutils>=0.18.1

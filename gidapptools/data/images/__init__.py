@@ -1,9 +1,11 @@
 from pathlib import Path
 import os
+from functools import cache
 IMAGES_DIR = Path(__file__).parent.absolute()
 
 
 class StoredImage:
+    allowed_extensions: frozenset[str] = frozenset(["png", "jpg", "jpeg"])
 
     def __init__(self, path: Path):
         self.path = path.resolve()
@@ -18,18 +20,17 @@ class StoredImage:
         return self._bytes
 
 
-_IMAGE_CACHE: dict[str, StoredImage] = {}
-
 PLACEHOLDER_IMAGE = StoredImage(IMAGES_DIR.joinpath("placeholder.png"))
 
 
+@cache
 def get_image(name: str) -> StoredImage:
-    if name in _IMAGE_CACHE:
-        return _IMAGE_CACHE[name]
+    cleaned_name = name.rsplit(".", 1)
     for dirname, folderlist, filelist in os.walk(IMAGES_DIR):
         for file in filelist:
-            if file.casefold() == name:
+            if file.rsplit(".", 1)[-1] in StoredImage.allowed_extensions and file.casefold().rsplit(".", 1)[0] == cleaned_name:
                 path = Path(dirname, file)
                 image = StoredImage(path)
-                _IMAGE_CACHE[image.name] = image
+
                 return image
+    raise FileNotFoundError(f"No gif with name {name!r} found.")

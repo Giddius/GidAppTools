@@ -26,7 +26,7 @@ from platformdirs import PlatformDirs
 from gidapptools.types import PATH_TYPE
 from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.general_helper.date_time import DatetimeFmt
-import pp
+
 # endregion[Imports]
 
 # region [TODO]

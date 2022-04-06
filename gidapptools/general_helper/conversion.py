@@ -1,3 +1,11 @@
+"""
+WiP.
+
+Soon.
+"""
+
+# region [Imports]
+
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import re
 from enum import Flag, auto
@@ -6,7 +14,7 @@ from datetime import timedelta
 from operator import neg, or_, pos
 from functools import reduce, total_ordering, cached_property
 from collections import defaultdict
-
+from pathlib import Path
 # * Third Party Imports --------------------------------------------------------------------------------->
 import attr
 import inflect
@@ -15,9 +23,28 @@ import pyparsing.common as ppc
 from sortedcontainers import SortedList
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.general_helper.deprecation import deprecated_argument
+from gidapptools.gid_warning.deprecation import deprecated_argument
 from gidapptools.errors import FlagConflictError
 from gidapptools.data.conversion_data import STRING_FALSE_VALUES, STRING_TRUE_VALUES, NANOSECONDS_IN_SECOND, FILE_SIZE_SYMBOL_DATA, RAW_TIMEUNITS
+
+
+# endregion[Imports]
+
+# region [TODO]
+
+
+# endregion [TODO]
+
+# region [Logging]
+
+
+# endregion[Logging]
+
+# region [Constants]
+
+THIS_FILE_DIR = Path(__file__).parent.absolute()
+
+# endregion[Constants]
 
 
 @total_ordering
@@ -407,5 +434,9 @@ def number_to_pretty(in_num: Union[int, float]) -> str:
     return f"{in_num:,}"
 
 
+# region[Main_Exec]
+
 if __name__ == '__main__':
     pass
+
+# endregion[Main_Exec]

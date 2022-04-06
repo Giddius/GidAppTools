@@ -73,7 +73,7 @@ from PySide6.QtWidgets import (QApplication, QBoxLayout, QCheckBox, QColorDialog
                                QStatusBar, QStyledItemDelegate, QSystemTrayIcon, QTabWidget, QTableView, QTextEdit, QTimeEdit, QToolBox, QTreeView,
                                QVBoxLayout, QWidget, QAbstractItemDelegate, QAbstractItemView, QAbstractScrollArea, QRadioButton, QFileDialog, QButtonGroup)
 
-from gidapptools.data.gifs import get_gif
+from gidapptools.data.gifs import get_gif, StoredGif
 
 # endregion[Imports]
 
@@ -98,27 +98,37 @@ class BusySpinnerWidget(QLabel):
     default_gif_name: str = "busy_spinner_4.gif"
     default_spinner_size: tuple[int, int] = (75, 75)
 
-    def __init__(self, parent: QWidget = None, spinner_gif: Union[QMovie, str] = None, spinner_size: QSize = None):
+    def __init__(self, parent: QWidget = None, spinner_gif: Union[QMovie, str, Path, StoredGif] = None, spinner_size: QSize = None):
         super().__init__(parent)
         self.spinner_size = spinner_size or QSize(*self.default_spinner_size)
-        self.spinner_gif = self.setup_spinner_gif(spinner_gif=spinner_gif)
+        self.spinner_gif_item, self.spinner_gif = self.setup_spinner_gif(spinner_gif=spinner_gif)
         self.setAlignment(Qt.AlignCenter)
 
         self.running: bool = False
+
+    @property
+    def app(self) -> QApplication:
+        return QApplication.instance()
 
     def set_spinner_size(self, size: QSize) -> None:
         self.spinner_size = size
         self.spinner_gif.setScaledSize(self.spinner_size)
 
-    def setup_spinner_gif(self, spinner_gif: Union[QMovie, str]) -> QMovie:
+    def setup_spinner_gif(self, spinner_gif: Union[QMovie, str, Path, StoredGif]) -> tuple[StoredGif, QMovie]:
         if isinstance(spinner_gif, str):
-            spinner_gif = get_gif(spinner_gif)
+            if Path(spinner_gif).is_file() is True:
+                spinner_gif = StoredGif(spinner_gif)
+            else:
+                spinner_gif = get_gif(spinner_gif)
+        elif isinstance(spinner_gif, Path):
+            spinner_gif = StoredGif(spinner_gif)
 
-        spinner_gif = spinner_gif or get_gif(self.default_gif_name)
+        spinner_gif_item = spinner_gif or get_gif(self.default_gif_name)
+        spinner_gif = QMovie(str(spinner_gif_item.path))
         spinner_gif.setScaledSize(self.spinner_size)
         spinner_gif.setCacheMode(QMovie.CacheAll)
         self.setMovie(spinner_gif)
-        return spinner_gif
+        return spinner_gif_item, spinner_gif
 
     def start(self):
         self.spinner_gif.start()

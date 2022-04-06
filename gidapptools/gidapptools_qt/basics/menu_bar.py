@@ -54,16 +54,26 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
 class BaseMenuBar(QMenuBar):
+    general_disabled_action_names: frozenset[str] = frozenset()
 
     def __init__(self, parent: Optional[QWidget] = None, auto_connect_standard_actions: bool = True) -> None:
         super().__init__(parent=parent)
         self.auto_connect_standard_actions = auto_connect_standard_actions
         self.menus: list[QMenu] = []
+        self.all_actions: dict[str, QAction] = {}
 
     def setup(self) -> "BaseMenuBar":
         self.setContextMenuPolicy(Qt.NoContextMenu)
         self.setup_default_menus()
         self.setup_extra_menus()
+
+        self.handle_temp_disabled()
+
+    def handle_temp_disabled(self) -> None:
+        for action_name in self.general_disabled_action_names:
+            action = self.all_actions.get(action_name)
+            if action is not None:
+                action.setEnabled(False)
 
     def setup_extra_menus(self):
         pass
@@ -136,6 +146,7 @@ class BaseMenuBar(QMenuBar):
         if not hasattr(menu, action_name + '_action'):
             setattr(menu, action_name + '_action', action)
         menu.setEnabled(True)
+        self.all_actions[action_name] = action
         return action
 
     def add_action(self, menu: QMenu, action: QAction, add_before=None):

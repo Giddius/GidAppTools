@@ -14,10 +14,13 @@ from typing import TYPE_CHECKING, Any, Union, Literal
 from pathlib import Path
 from logging.handlers import BaseRotatingHandler
 from collections import deque
+from datetime import datetime, timezone, timedelta
+from tzlocal import get_localzone
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.general_helper.conversion import human2bytes
-
+from abc import ABC, abstractmethod
+from gidapptools.general_helper.regex.datetime_regex import datetime_format_to_regex
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.types import PATH_TYPE
@@ -45,20 +48,67 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 DEFAULT_MAX_BYTES = human2bytes("5 mb")
 
 
-class _DefaultFileNameTemplate:
+class BaseFileNameTemplate(ABC):
 
-    def __init__(self, base_name: str) -> None:
+    def __init__(self, base_name: str, suffix: str = ".log") -> None:
         self.base_name = base_name
-        self.backup_file_name_regex = re.compile(rf"{self.base_name}.log\_\d+", re.IGNORECASE)
+        self.suffix = suffix
 
-    def format(self, **kwargs) -> str:
-        return "{base_name}.log".format(base_name=self.base_name, **kwargs)
+    @abstractmethod
+    def format(self) -> str:
+        ...
+
+    @abstractmethod
+    def make_backup_file_path(self, in_name: str, backup_folder: Path) -> Path:
+        ...
+
+    @abstractmethod
+    def is_same_kind_log_file(self, other_file: Path) -> bool:
+        ...
+
+    @abstractmethod
+    def is_backup_log_file(self, other_file: Path) -> bool:
+        ...
+
+
+class TimestampFileNameTemplate(BaseFileNameTemplate):
+    format_template: str = "{base_name}_{timestamp}{suffix}"
+
+    def __init__(self, base_name: str, suffix: str = ".log", time_zone: timezone = None, timestamp_format: str = None) -> None:
+        super().__init__(base_name=base_name, suffix=suffix)
+        self.time_zone = time_zone
+        self.timestamp_format = timestamp_format or self._get_default_timestamp_format()
+        self.timestamp_regex = datetime_format_to_regex(self.timestamp_format, re.IGNORECASE)
+
+    def _get_default_timestamp_format(self) -> str:
+        return "%Y-%m-%d_%H-%M-%S_%Z" if self.time_zone is not None else "%Y-%m-%d_%H-%M-%S"
+
+    def get_timestamp(self) -> str:
+        now = datetime.now(tz=self.time_zone)
+        return now.strftime(self.timestamp_format)
+
+    def format(self) -> str:
+        return self.format_template.format(base_name=self.base_name, timestamp=self.get_timestamp(), suffix=self.suffix)
+
+    def make_backup_file_path(self, in_name: str, backup_folder: Path) -> Path:
+        return backup_folder.joinpath(in_name)
 
     def is_same_kind_log_file(self, other_file: Path) -> bool:
-        return other_file.name.casefold() == "{base_name}.log".format(base_name=self.base_name).casefold()
+        if other_file.suffix != self.suffix:
+            return False
+
+        date_time_match = self.timestamp_regex.search(other_file.stem)
+        if not date_time_match:
+            return False
+        base_name = other_file.stem[:date_time_match.start()].rstrip("_")
+
+        if base_name == self.base_name:
+            return True
+
+        return False
 
     def is_backup_log_file(self, other_file: Path) -> bool:
-        return self.backup_file_name_regex.match(other_file.name) is not None
+        return self.is_same_kind_log_file(other_file=other_file)
 
 
 class GidBaseRotatingFileHandler(BaseRotatingHandler):
@@ -71,7 +121,7 @@ class GidBaseRotatingFileHandler(BaseRotatingHandler):
                  rotate_on_start: bool = True,
                  backup_amount_limit: int = 3) -> None:
         self.base_name = base_name
-        self.file_name_template = _DefaultFileNameTemplate(self.base_name) if file_name_template is None else file_name_template
+        self.file_name_template = TimestampFileNameTemplate(self.base_name) if file_name_template is None else file_name_template
         self.log_folder = Path(log_folder)
         self.backup_folder = self.log_folder.joinpath("old_logs") if backup_folder is MiscEnum.AUTO else Path(backup_folder)
         self.rotate_on_start = rotate_on_start
@@ -89,7 +139,7 @@ class GidBaseRotatingFileHandler(BaseRotatingHandler):
         return super().emit(record)
 
     def _construct_full_file_path(self) -> Path:
-        name = self.file_name_template.format(number=0)
+        name = self.file_name_template.format()
         full_path = self.log_folder.joinpath(name)
 
         return full_path
@@ -133,11 +183,11 @@ class GidBaseRotatingFileHandler(BaseRotatingHandler):
     def move_file_to_backup_folder(self, file: Path) -> None:
         self.backup_folder.mkdir(parents=True, exist_ok=True)
         number = 0
-        target_path = self.backup_folder.joinpath(file.name)
+        target_path = self.file_name_template.make_backup_file_path(file.name, self.backup_folder)
 
         while target_path.exists() is True:
             number += 1
-            name = f"{file.name}_{number}"
+            name = f"{file.stem}_{number}{file.suffix}"
             target_path = self.backup_folder.joinpath(name)
         os.rename(src=file, dst=target_path)
 

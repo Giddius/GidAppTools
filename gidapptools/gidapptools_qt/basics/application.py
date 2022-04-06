@@ -46,7 +46,7 @@ from gidapptools.gidapptools_qt.resources.placeholder import QT_PLACEHOLDER_IMAG
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.errors import ApplicationExistsError
 from gidapptools.general_helper.string_helper import StringCaseConverter, StringCase
-from gidapptools.utility_classes.version_item import VersionItem
+from gidapptools.gid_utility.version_item import VersionItem
 from gidapptools.general_helper.class_helper import make_repr
 from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
 from yarl import URL
@@ -215,9 +215,9 @@ class WindowHolder(QObject):
             if window.isVisible() is False:
                 self.remove_window(window)
 
-    def add_window(self, window: QWidget, name: str = None):
+    def add_window(self, window: QWidget):
         self._check_stored_windows_closed()
-        name = name or self._determine_name(window)
+        name = self._determine_name(window)
 
         self.windows[name] = window
         try:
@@ -228,7 +228,10 @@ class WindowHolder(QObject):
     @Slot(QWidget)
     def remove_window(self, window: QWidget):
         name = self._determine_name(window)
-        del self.windows[name]
+        try:
+            del self.windows[name]
+        except KeyError:
+            pass
 
     def window_objects(self) -> list[QWidget]:
         return list(self.windows.values())
@@ -268,6 +271,9 @@ class WindowHolder(QObject):
     def pop(self, name: str, default=None) -> Optional[QWidget]:
         self._check_stored_windows_closed()
         return self.windows.pop(name, default)
+
+    def clear(self) -> None:
+        self.windows.clear()
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(parent={self.parent()!r})"
@@ -408,6 +414,7 @@ class GidQtApplication(QApplication):
         return self.exec()
 
     def on_quit(self, event: QEvent):
+        self.extra_windows.clear()
         self.closeAllWindows()
         if self._gui_thread_pool is not None:
             self._gui_thread_pool.shutdown(wait=False, cancel_futures=True)

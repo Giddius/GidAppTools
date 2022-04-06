@@ -1,3 +1,12 @@
+"""
+WiP.
+
+Soon.
+"""
+
+# region [Imports]
+
+
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import os
 import inspect
@@ -10,6 +19,24 @@ from contextlib import contextmanager
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.conversion import seconds2human
+# endregion[Imports]
+
+# region [TODO]
+
+
+# endregion [TODO]
+
+# region [Logging]
+
+
+# endregion[Logging]
+
+# region [Constants]
+
+THIS_FILE_DIR = Path(__file__).parent.absolute()
+
+# endregion[Constants]
+
 
 TIME_NS_FUNC_TYPE = Union[perf_counter_ns, process_time_ns, time_ns, thread_time_ns]
 
@@ -122,5 +149,8 @@ def get_dummy_profile_decorator_in_globals():
         setattr(mod, "profile", profile)
 
 
+# region[Main_Exec]
 if __name__ == '__main__':
     pass
+
+# endregion[Main_Exec]

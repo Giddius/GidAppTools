@@ -18,13 +18,17 @@ from string import ascii_letters
 from typing import Any
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from gidapptools.errors import MissingOptionalDependencyError
 
 # * Third Party Imports --------------------------------------------------------------------------------->
-from rich import inspect as rinspect
-from rich.tree import Tree
-from rich.panel import Panel
-from rich.console import Console as RichConsole
-from rich.terminal_theme import TerminalTheme
+
+
+with MissingOptionalDependencyError.try_import("gidapptools"):
+    from rich import inspect as rinspect
+    from rich.tree import Tree
+    from rich.panel import Panel
+    from rich.console import Console as RichConsole
+    from rich.terminal_theme import TerminalTheme
 
 # endregion[Imports]
 
@@ -153,6 +157,6 @@ def inspect_object_with_html(obj: object,
 # region[Main_Exec]
 
 if __name__ == '__main__':
-    # inspect_object_with_html(, show_all=True, show_help=True),
+
     pass
 # endregion[Main_Exec]

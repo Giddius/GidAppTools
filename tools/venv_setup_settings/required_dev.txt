@@ -26,3 +26,5 @@ pympler
 rich
 tabulate
 tomlkit
+tinyaes
+code2flow
