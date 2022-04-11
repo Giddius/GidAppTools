@@ -1,3 +1,3 @@
-<center>
-    <h1>GidAppTools</h1>
-</center>
+# GidAppTools
+
+![Broca Progs](docs/images/broca_progs_logo.png)
