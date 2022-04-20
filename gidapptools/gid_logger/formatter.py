@@ -439,17 +439,6 @@ class GidLoggingFormatter(logging.Formatter):
 
 
 if __name__ == '__main__':
-    x = [len(i) for i in get_all_func_names(Path(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\Antistasi_Logbook\antistasi_logbook\__main__.py"))]
-    from statistics import stdev, median, mean, pvariance, variance, quantiles, multimode
-    print(f"{mean(x)=}")
-    print(f"{median(x)=}")
-    print(f"{stdev(x)=}")
-    print(f"{quantiles(x)=}")
-    print(f"{max(x)=}")
-    print(f"{min(x)=}")
-    print(f"{variance(x)=}")
-    print(f"{multimode(x)=}")
-    c = Counter(x)
-    print(f"{c.most_common()=}")
+    pass
 
 # endregion[Main_Exec]

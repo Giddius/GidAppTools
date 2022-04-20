@@ -15,9 +15,11 @@ from contextlib import contextmanager
 from concurrent.futures import ThreadPoolExecutor
 from ctypes import windll
 import string
+import subprocess
+import platform
 # * Third Party Imports --------------------------------------------------------------------------------->
 from psutil import disk_partitions
-
+from gidapptools.utility.enums import OperatingSystem
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.types import PATH_TYPE
@@ -102,6 +104,30 @@ def change_cwd(target_cwd: "PATH_TYPE"):
     os.chdir(new_cwd)
     yield
     os.chdir(old_cwd)
+
+
+def open_folder_in_explorer(in_folder: Union[str, os.PathLike]) -> None:
+    in_folder = Path(in_folder)
+    if not in_folder.exists():
+        raise FileNotFoundError(f"No such file or directory: {in_folder.as_posix()!r}.")
+    if not in_folder.is_dir():
+        raise TypeError(f"Path {in_folder.as_posix()!r} needs to be a folder.")
+
+    operating_system = OperatingSystem.determine_operating_system()
+
+    match operating_system:
+
+        case OperatingSystem.WINDOWS:
+            subprocess.run(["explorer", in_folder], check=False, start_new_session=True)
+
+        case OperatingSystem.LINUX:
+            subprocess.run(['xdg-open', in_folder], check=False)
+
+        case OperatingSystem.MAC_OS:
+            subprocess.run(['open', in_folder], check=False)
+
+        case _:
+            raise RuntimeError(f"Not able to open folder {in_folder.as_posix()!r}, because no known procedure for Operating System {operating_system!s}.")
 
 
 # region[Main_Exec]

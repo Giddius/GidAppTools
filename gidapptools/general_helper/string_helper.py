@@ -315,6 +315,9 @@ def strip_only_wrapping_empty_lines(in_text: str) -> str:
 def string_strip(in_string: str, chars: str = None) -> str:
     return in_string.strip(chars)
 
+
+def remove_chars(in_string: str, *chars) -> str:
+    return ''.join(char for char in in_string if char not in set(chars))
 # region[Main_Exec]
 
 

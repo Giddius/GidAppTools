@@ -1,3 +1,3 @@
 # GidAppTools
 
-![Broca Progs](docs/images/broca_progs_logo.png)
+![Broca Progs](https://github.com/Giddius/GidAppTools/blob/master/docs/images/gid_app_tools_logo.png)

@@ -177,9 +177,18 @@ class WarningHandler:
         self._show_warnings(message, category, filename, lineno, file, line)
 
 
-def setup_main_logger(name: str, path: Path, log_level: LoggingLevel = LoggingLevel.DEBUG, formatter: Union[logging.Formatter, GidLoggingFormatter] = None, extra_logger: Iterable[str] = tuple()) -> Union[logging.Logger, GidLogger]:
-    os.environ["MAX_FUNC_NAME_LEN"] = str(min([max(len(i) for i in get_all_func_names(path, True)), 20]))
-    os.environ["MAX_MODULE_NAME_LEN"] = str(min([max(len(i) for i in get_all_module_names(path)), 20]))
+def setup_main_logger(name: str,
+                      path: Path,
+                      log_level: LoggingLevel = LoggingLevel.DEBUG,
+                      formatter: Union[logging.Formatter, GidLoggingFormatter] = None,
+                      extra_logger: Iterable[str] = tuple(),
+                      *,
+                      determine_max_module_len: bool = False,
+                      determine_max_func_name_len: bool = False) -> Union[logging.Logger, GidLogger]:
+    if determine_max_func_name_len:
+        os.environ["MAX_FUNC_NAME_LEN"] = str(min([max(len(i) for i in get_all_func_names(path, True)), 20]))
+    if determine_max_module_len:
+        os.environ["MAX_MODULE_NAME_LEN"] = str(min([max(len(i) for i in get_all_module_names(path)), 20]))
 
     handler = GidBaseStreamHandler(stream=sys.stdout)
 
@@ -209,27 +218,29 @@ def setup_main_logger_with_file_logging(name: str,
                                         extra_logger: Iterable[str] = tuple(),
                                         max_func_name_length: int = None,
                                         max_module_name_length: int = None,
-                                        stream=sys.stdout) -> Union[logging.Logger, GidLogger]:
+                                        *,
+                                        log_to_file: bool = True,
+                                        log_to_stdout: bool = True) -> Union[logging.Logger, GidLogger]:
     if os.getenv('IS_DEV', "false") != "false":
         log_folder = path.parent.joinpath('logs')
 
-    os.environ["MAX_FUNC_NAME_LEN"] = str(max_func_name_length) if max_func_name_length is not None else "25"
-    os.environ["MAX_MODULE_NAME_LEN"] = str(max_module_name_length) if max_module_name_length is not None else "25"
+    os.environ["MAX_FUNC_NAME_LEN"] = str(max_func_name_length) if max_func_name_length is not None else str(min([max(len(i) for i in get_all_func_names(path, True)), 25]))
+    os.environ["MAX_MODULE_NAME_LEN"] = str(max_module_name_length) if max_module_name_length is not None else str(min([max(len(i) for i in get_all_module_names(path)), 25]))
 
     que = queue.Queue()
     que_handler = QueueHandler(que)
 
     formatter = GidLoggingFormatter() if formatter is None else formatter
     endpoints = []
-    if stream is not None:
-        handler = GidBaseStreamHandler(stream=stream)
+    if log_to_stdout is True:
+        handler = GidBaseStreamHandler()
         handler.setFormatter(formatter)
         endpoints.append(handler)
+    if log_to_file is True:
+        file_handler = GidBaseRotatingFileHandler(base_name=log_file_base_name, log_folder=log_folder)
 
-    file_handler = GidBaseRotatingFileHandler(base_name=log_file_base_name, log_folder=log_folder)
-
-    file_handler.setFormatter(formatter)
-    endpoints.append(file_handler)
+        file_handler.setFormatter(formatter)
+        endpoints.append(file_handler)
     # storing_handler = GidStoringHandler(50)
     # storing_handler.setFormatter(formatter)
     # endpoints.append(storing_handler)

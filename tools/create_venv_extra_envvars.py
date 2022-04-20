@@ -43,7 +43,7 @@ def create_pth(in_data: dict[str, str]) -> str:
 def write_pth(in_pth: str, in_name: str) -> None:
     pth_path = SITE_PACKAGES_FOLDER.joinpath(f'_{in_name.casefold()}.pth')
     pth_path.parent.mkdir(exist_ok=True, parents=True)
-    pth_path.write_text(in_pth)
+    pth_path.write_text(in_pth, encoding='utf-8', errors='ignore')
 
 
 def main():

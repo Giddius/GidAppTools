@@ -13,6 +13,7 @@ from pathlib import Path
 import json
 from weakref import WeakSet
 import argparse
+from collections.abc import Iterable, Mapping
 from time import sleep
 from functools import partial
 import os
@@ -41,6 +42,7 @@ from rich.console import Console as RichConsole
 from rich.highlighter import RegexHighlighter, Highlighter as RichHighlighter
 from rich.text import Text as RichText
 from rich.style import Style
+from jinja2 import Environment, BaseLoader, Template
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gidapptools_qt.resources.placeholder import QT_PLACEHOLDER_IMAGE
 from gidapptools.general_helper.enums import MiscEnum
@@ -76,7 +78,7 @@ import pp
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion[Constants]-uz1
 
 
 class AppArgParserResult:
@@ -88,7 +90,222 @@ class AppArgParserResult:
         self.show_window: bool = True
 
 
-class FlagAction(argparse.Action):
+ARG_DOC_MARKDOWN_TEMPLATE = """
+
+# {name}
+
+---
+
+## Description
+
+
+> {help_text}
+
+---
+
+## Arguments
+
+{argument_strings}
+
+---
+
+## Default
+
+{default_value}
+
+---
+
+## Required
+
+{is_required}
+
+---
+
+## Flag
+
+{is_flag}
+
+
+""".strip()
+
+
+_ARG_DOC_HTML_TEMPLATE: str = """
+
+
+
+<a id="{{name}}"><b><u>{{name}}</b></u></a>
+
+<dl>
+<dt>Description</dt>
+<dd>
+<blockquote>
+<div class="description">
+{{help_text}}
+</div>
+</blockquote>
+
+</dd>
+
+<dt>Arguments</dt>
+<dd>
+<ul>
+{%for arg in argument_strings%}
+<li> <pre><code>{{arg}}</code></pre>
+{% endfor %}
+</ul>
+</dd>
+{% if default_value is not none %}
+<dt>Default</dt>
+<dd>{{default_value}}</dd>
+{% endif %}
+<dt>Required</dt>
+<dd>{{is_required}}</dd>
+
+<dt>Flag</dt>
+<dd>{{is_flag}}</dd>
+</dl>
+
+"""
+
+
+class CommandLineArgDoc:
+
+    suppress_indicators: set[str] = {"==SUPPRESS=="}
+    single_line_text_template: str = "{name} - {help_text} - {argument_strings} - default: {default_value} - required: {is_required} - is flag:{is_flag}"
+    text_template: str = "{name}\n{help_text}\n{argument_strings}\ndefault: {default_value}\nrequired: {is_required}\nis flag:{is_flag}"
+    markdown_template: str = ARG_DOC_MARKDOWN_TEMPLATE
+    html_template: Template = Environment(loader=BaseLoader).from_string(_ARG_DOC_HTML_TEMPLATE)
+
+    def __init__(self, argument: Union["BaseAppArgParseAction", argparse.Action], app_meta_info: "MetaInfo") -> None:
+        self.argument = argument
+        self.app_meta_info = app_meta_info
+
+    @property
+    def name(self) -> str:
+        name = self.argument.metavar or self.argument.dest
+        return StringCaseConverter.convert_to(name, StringCase.TITLE)
+
+    @property
+    def help_text(self) -> str:
+        help_text = self.argument.help.replace("%(prog)r", "{prog}").replace("%(prog)s", "{prog}")
+        return help_text
+
+    @property
+    def default_value(self) -> Optional[Any]:
+        default_value = self.argument.default
+        if str(default_value) in self.suppress_indicators:
+            return None
+
+        return default_value
+
+    @property
+    def is_required(self) -> bool:
+        return self.argument.required
+
+    @property
+    def is_flag(self) -> bool:
+        try:
+            return self.argument.is_flag
+        except AttributeError:
+            return isinstance(self.argument, argparse._StoreAction)
+
+    @property
+    def choices(self) -> Optional[Iterable]:
+        return self.argument.choices
+
+    @property
+    def argument_strings(self) -> tuple[str]:
+        return tuple(self.argument.option_strings)
+
+    def get_text(self, single_line: bool = False) -> str:
+        bool_values = {True: "Yes", False: "No"}
+        help_text = self.help_text.format(prog=self.app_meta_info.pretty_app_name)
+        is_required = bool_values[self.is_required]
+        is_flag = bool_values[self.is_flag]
+        default_value = bool_values.get(self.default_value, self.default_value)
+
+        argument_strings = self.argument_strings
+        template = self.single_line_text_template if single_line is True else self.text_template
+        return template.format(name=self.name,
+                               help_text=help_text,
+                               is_required=is_required,
+                               is_flag=is_flag,
+                               default_value=default_value,
+                               argument_strings=argument_strings,
+                               prog=self.app_meta_info.pretty_app_name)
+
+    def get_markdown(self) -> str:
+        bool_values = {True: "✅", False: "❎"}
+        help_text = self.help_text.format(prog="`" + self.app_meta_info.pretty_app_name + "`")
+        is_required = bool_values[self.is_required]
+        is_flag = bool_values[self.is_flag]
+        default_value = bool_values.get(self.default_value, self.default_value)
+
+        argument_strings = '\n'.join(f"- {arg}" for arg in self.argument_strings)
+
+        return self.markdown_template.format(name=self.name,
+                                             help_text=help_text,
+                                             is_required=is_required,
+                                             is_flag=is_flag,
+                                             default_value=default_value,
+                                             argument_strings=argument_strings,
+                                             prog=self.app_meta_info.pretty_app_name)
+
+    def get_html(self) -> str:
+        bool_values = {True: '✔️', False: '❌'}
+        help_text = self.help_text.format(prog=f'<div class="app_name">{self.app_meta_info.pretty_app_name}</div>')
+        is_required = bool_values[self.is_required]
+        is_flag = bool_values[self.is_flag]
+        default_value = bool_values.get(self.default_value, self.default_value)
+
+        return self.html_template.render(name=self.name,
+                                         help_text=help_text,
+                                         is_required=is_required,
+                                         is_flag=is_flag,
+                                         default_value=default_value,
+                                         argument_strings=self.argument_strings,
+                                         prog=self.app_meta_info.pretty_app_name)
+
+    def __str__(self) -> str:
+        return self.get_text(single_line=True)
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(action={self.action!r})"
+
+
+class BaseAppArgParseAction(argparse.Action):
+
+    def __init__(self,
+                 option_strings,
+                 dest,
+                 nargs=None,
+                 const=None,
+                 default=None,
+                 type=None,
+                 choices=None,
+                 required=False,
+                 help=None,
+                 metavar=None):
+        self.option_strings = option_strings
+        self.dest = dest
+        self.nargs = nargs
+        self.const = const
+        self.default = default
+        self.type = type
+        self.choices = choices
+        self.required = required
+        self.help = help
+        self.metavar = metavar
+
+    def get_doc_item(self, app_meta_info: MetaInfo) -> CommandLineArgDoc:
+        return CommandLineArgDoc(self, app_meta_info)
+
+    @property
+    def is_flag(self) -> bool:
+        return False
+
+
+class FlagAction(BaseAppArgParseAction):
     def __init__(self,
                  option_strings,
                  dest,
@@ -115,6 +332,10 @@ class FlagAction(argparse.Action):
                          required=required,
                          help=help,
                          metavar=metavar)
+
+    @property
+    def is_flag(self) -> bool:
+        return True
 
     def format_usage(self):
         return ' | '.join(self.option_strings)
@@ -158,6 +379,32 @@ class ClearAppSettingsAction(FlagAction):
         parser.exit(message="Cleared Application settings.")
 
 
+class VersionFlagAction(FlagAction):
+
+    def __init__(self,
+                 option_strings,
+                 version=None,
+                 dest=argparse.SUPPRESS,
+                 default=argparse.SUPPRESS,
+                 help="show program's version number and exit"):
+        super().__init__(
+            option_strings=option_strings,
+            dest=dest,
+            default=default,
+            nargs=0,
+            help=help)
+        self.version = version
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        version = self.version
+        if version is None:
+            version = parser.version
+        formatter = parser._get_formatter()
+        formatter.add_text(version)
+        parser._print_message(formatter.format_help(), sys.stdout)
+        parser.exit()
+
+
 class AppArgParser(argparse.ArgumentParser):
 
     def __init__(self, application: "GidQtApplication", result_item: AppArgParserResult = None, console: RichConsole = None):
@@ -175,9 +422,13 @@ class AppArgParser(argparse.ArgumentParser):
         self.version = str(self.application.version)
         self.setup_std_args()
 
+    @property
+    def actions(self):
+        return self._actions
+
     def setup_std_args(self):
 
-        self.add_argument("-v", "--version", action="version")
+        self.add_argument("-v", "--version", action=VersionFlagAction, version=self.version)
         self.add_argument("-max", "--maximized", action=MainWindowMaximizedAction)
         self.add_argument("-min", "--minimized", action=MainWindowMinimizedAction)
         self.add_argument("-t", "--always-on-top", action=MainWindowAlwaysOnTopAction)

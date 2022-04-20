@@ -143,10 +143,13 @@ def get_dummy_profile_decorator_in_globals():
 
     if os.getenv("LINE_PROFILE_RUNNING", "0") == "1" or __debug__ is not True:
         return
-    stk = inspect.stack()[1]
-    mod = inspect.getmodule(stk[0])
-    if mod is not None:
-        setattr(mod, "profile", profile)
+
+    if not isinstance(__builtins__, dict) or 'profile' not in __builtins__:
+        __builtins__["profile"] = profile
+    # stk = inspect.stack()[1]
+    # mod = inspect.getmodule(stk[0])
+    # if mod is not None:
+    #     setattr(mod, "profile", profile)
 
 
 # region[Main_Exec]

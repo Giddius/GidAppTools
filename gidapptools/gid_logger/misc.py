@@ -92,7 +92,6 @@ class QtMessageHandler(metaclass=ProhibitiveSingletonMeta):
 
     def install(self) -> "QtMessageHandler":
         from PySide6.QtCore import qInstallMessageHandler
-        import atexit
         qInstallMessageHandler(self)
         return self
 
