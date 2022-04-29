@@ -53,7 +53,7 @@ from importlib.machinery import SourceFileLoader
 from threading import RLock, Lock, Semaphore, Event, Condition, Barrier, Thread, Timer
 import gc
 
-from gidapptools.types import PATH_TYPE, LOCK_TYPE
+from gidapptools.custom_types import PATH_TYPE, LOCK_TYPE
 # endregion[Imports]
 
 # region [TODO]

@@ -22,7 +22,7 @@ from psutil import disk_partitions
 from gidapptools.utility.enums import OperatingSystem
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
-    from gidapptools.types import PATH_TYPE
+    from gidapptools.custom_types import PATH_TYPE
 
 # endregion[Imports]
 

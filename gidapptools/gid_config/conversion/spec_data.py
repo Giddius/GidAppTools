@@ -18,7 +18,7 @@ from threading import RLock
 from yarl import URL
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.types import PATH_TYPE
+from gidapptools.custom_types import PATH_TYPE
 from gidapptools.gid_config.enums import SpecAttribute
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.general_helper.dict_helper import BaseVisitor, AdvancedDict, KeyPathError, set_by_key_path

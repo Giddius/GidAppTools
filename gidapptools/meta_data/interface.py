@@ -18,7 +18,7 @@ from importlib.metadata import entry_points
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.data import ENTRY_POINT_SELECT_ARGS
-from gidapptools.types import PATH_TYPE
+from gidapptools.custom_types import PATH_TYPE
 from gidapptools.errors import NotSetupError, NoFactoryFoundError, MetaItemNotFoundError, RegisterAfterSetupError
 from gidapptools.meta_data.meta_info import MetaInfo, MetaInfoFactory
 from gidapptools.general_helper.enums import MiscEnum

@@ -23,7 +23,7 @@ from abc import ABC, abstractmethod
 from gidapptools.general_helper.regex.datetime_regex import datetime_format_to_regex
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
-    from gidapptools.types import PATH_TYPE
+    from gidapptools.custom_types import PATH_TYPE
     from gidapptools.gid_logger.records import LOG_RECORD_TYPES
 
 # endregion[Imports]

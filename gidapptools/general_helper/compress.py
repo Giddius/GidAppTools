@@ -17,7 +17,7 @@ from multiprocessing import Process
 
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
-    from gidapptools.types import PATH_TYPE
+    from gidapptools.custom_types import PATH_TYPE
 
 # endregion[Imports]
 
