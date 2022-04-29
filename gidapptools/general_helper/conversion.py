@@ -17,7 +17,7 @@ from collections import defaultdict
 from pathlib import Path
 # * Third Party Imports --------------------------------------------------------------------------------->
 import attr
-import inflect
+
 import pyparsing as pp
 import pyparsing.common as ppc
 from sortedcontainers import SortedList
@@ -225,9 +225,6 @@ def ns_to_s(nano_seconds: int, decimal_places: int = None) -> Union[int, float]:
     return round(seconds, decimal_places)
 
 
-inflect_engine = inflect.engine()
-
-
 @attr.s(auto_attribs=True, auto_detect=True, frozen=True, slots=True, weakref_slot=True)
 class TimeUnit:
     name: str = attr.ib()
@@ -238,7 +235,7 @@ class TimeUnit:
 
     @plural.default
     def default_plural(self):
-        return inflect_engine.plural_noun(self.name)
+        return self.name + "s"
 
     def convert_seconds(self, in_seconds: int) -> int:
         return in_seconds / self.factor
@@ -437,6 +434,7 @@ def number_to_pretty(in_num: Union[int, float]) -> str:
 # region[Main_Exec]
 
 if __name__ == '__main__':
-    pass
+    for i in TIMEUNITS:
+        print(i)
 
 # endregion[Main_Exec]

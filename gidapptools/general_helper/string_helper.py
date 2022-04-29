@@ -255,12 +255,24 @@ def make_attribute_name(in_string: str) -> str:
     return in_string.casefold()
 
 
-def fix_multiple_quotes(_text: str) -> str:
+def fix_multiple_quotes(_text: str, max_consecutive_quotes: int = None) -> str:
 
     def _replace_function(match: re.Match):
         return match.group()[0]
+    if max_consecutive_quotes is None:
+        pattern = r"""(\"+)|(\'+)"""
+    elif max_consecutive_quotes <= 1:
+        raise ValueError("'max_consecutive_quotes' cannot be less than 2.")
+    else:
+        pattern = rf"""(\"{{2,{max_consecutive_quotes}}})|(\'{{2,{max_consecutive_quotes}}})"""
+    return re.sub(pattern, _replace_function, _text)
 
-    return re.sub(r"""(\"+)|(\'+)""", _replace_function, _text)
+
+def escape_doubled_quotes(text: str) -> str:
+    def _replace_function(match: re.Match):
+        return r"\ ".strip() + match.group()[0]
+
+    return re.sub(r"""(\"{2})|(\'{2})""", _replace_function, text)
 
 
 def deindent(in_text: str, ignore_first_line: bool = False) -> str:

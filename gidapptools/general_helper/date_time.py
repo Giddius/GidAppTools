@@ -57,19 +57,6 @@ class DatetimeFmt(str, Enum):
         return date_time.strftime(tz_fmt)
 
 
-# class NamedTimezone:
-#     LOCAL = get_localzone()
-#     UTC = timezone.utc
-#     GMT = timezone(offset=timedelta(hours=0), name='GMT')
-#     CET = pytz.timezone('CET')
-#     CST = pytz.timezone('America/Winnipeg')
-
-#     @classmethod
-#     def get(cls, name: str, default: Any = None) -> Optional[tzinfo]:
-#         mod_name = name.upper().strip()
-#         return getattr(cls, mod_name, default)
-
-
 def get_aware_now(tz: timezone) -> datetime:
     return datetime.now(tz=tz)
 
