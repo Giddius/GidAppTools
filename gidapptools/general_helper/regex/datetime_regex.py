@@ -90,12 +90,6 @@ def datetime_format_to_regex(in_format: str, flags: re.RegexFlag) -> re.Pattern:
 
 
 if __name__ == '__main__':
-    r = datetime_format_to_regex("%Y-%m-%d_%H-%M-%S", re.IGNORECASE)
-    s = "antistasi_logbook_2022-03-27_23-02-59"
-    m = r.search(s)
-    print(f"{m=}")
-    print(f"{m.start()=}")
-    n = s[:m.start()].rstrip("_")
-    print(f"{n=}")
+    pass
 
 # endregion[Main_Exec]

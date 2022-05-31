@@ -169,15 +169,15 @@ ECHO.
 ECHO.
 ECHO.
 
-Echo +++++++++++++++++++++++++++++ Experimental Packages +++++++++++++++++++++++++++++
-ECHO.
+rem Echo +++++++++++++++++++++++++++++ Experimental Packages +++++++++++++++++++++++++++++
+rem ECHO.
 
-ECHO.
-CALL pip install --upgrade --no-cache-dir -r .\venv_setup_settings\required_experimental.txt
-ECHO.
+rem ECHO.
+rem CALL pip install --upgrade --no-cache-dir -r .\venv_setup_settings\required_experimental.txt
+rem ECHO.
 
-ECHO.
-ECHO.
+rem ECHO.
+rem ECHO.
 
 
 

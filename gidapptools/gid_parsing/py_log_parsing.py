@@ -56,7 +56,7 @@ from gidapptools.gid_parsing.universal.datetime_elements import get_grammar_from
 from gidapptools.gid_parsing.tokens.base_tokens import BaseTokenWithPos
 import pyparsing as ppa
 import pyparsing.common as ppc
-import pp
+
 # endregion[Imports]
 
 # region [TODO]
@@ -154,9 +154,6 @@ class GeneralGrammar:
 
 
 if __name__ == '__main__':
-    x = """2022-01-16 00:34:48.328 CET |  108  |  DEBUG   |      MainThread      | gui.status_bar                      | _refresh_text_helper                ||--> refreshing LastUpdatedLabel(interval='30 seconds', last_triggered='2022-01-15 23:34:48 UTC') text"""
-    g = GeneralGrammar()
-    r = g.___grammar___.parse_string(x, parse_all=True)
-    pp(r.as_dict())
+    pass
 
 # endregion[Main_Exec]

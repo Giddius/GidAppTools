@@ -20,7 +20,7 @@ import logging
 from typing import Union, Iterable, Mapping, TYPE_CHECKING, Any, Optional, Callable
 from pathlib import Path
 from logging.handlers import QueueHandler, QueueListener
-import pp
+
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_logger.enums import LoggingLevel
 from gidapptools.gid_logger.handler import GidBaseRotatingFileHandler, GidBaseStreamHandler, GidStoringHandler
@@ -165,7 +165,7 @@ class WarningHandler:
                     func = "module"
                     break
 
-            record = logger.makeRecord(logger.name, level=logging.WARNING, fn=func, lno=lineno, msg=message, args=[], exc_info=None, func=func)
+            record = logger.makeRecord(logger.name, level=logging.WARNING, fn=func, lno=lineno, msg=message.rstrip('\n'), args=[], exc_info=None, func=func)
             logger.handle(record)
         except Exception as e:
             if self.old_show_warnings_func:

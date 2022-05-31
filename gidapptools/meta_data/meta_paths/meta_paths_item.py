@@ -13,7 +13,7 @@ from typing import Any, Union, Callable, Optional
 from pathlib import Path
 from tempfile import mkdtemp
 from contextlib import contextmanager
-
+import atexit
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.utility.helper import make_pretty
@@ -63,6 +63,10 @@ class MetaPaths(AbstractMetaItem):
             path.mkdir(parents=True, exist_ok=True)
             self._created_normal_paths.add(path)
         return path
+
+    @property
+    def running_pid_storage_file(self) -> Path:
+        return self.get_path(NamedMetaPath.DATA).joinpath(".running_instance")
 
     @property
     def data_dir(self) -> Path:
@@ -136,6 +140,8 @@ class MetaPaths(AbstractMetaItem):
                     else:
                         log.info("Deleting temp-folder %r and its contents.", path.as_posix())
                         shutil.rmtree(path)
+
+        self.running_pid_storage_file.unlink(missing_ok=True)
         # TODO: find a way to clean shit up, but completely, also add optional kwarg that also removes the author folder
 
 

@@ -52,12 +52,12 @@ class AppInfoDialog(QDialog):
         label = QLabel(self)
         label.setText(label_text)
         label.setFont(self.label_font)
-        label.setAlignment(Qt.AlignCenter)
+        label.setAlignment(Qt.AlignLeft)
 
         data = QLineEdit(self)
         data.setReadOnly(True)
         data.setText(data_text)
-        data.setAlignment(Qt.AlignCenter)
+        data.setAlignment(Qt.AlignRight)
 
         self.parts.append((label, data))
 

@@ -51,6 +51,11 @@ from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader
 
+
+from PySide6.QtGui import QScreen
+from PySide6.QtCore import QRect, QPoint, QSize
+from PySide6.QtWidgets import QWidget, QApplication
+
 # endregion[Imports]
 
 # region [TODO]
@@ -70,29 +75,23 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-def amount_lines_in_file(in_file: os.PathLike):
-    in_file = Path(in_file)
-    with in_file.open("r", encoding='utf-8', errors='ignore') as f:
+def center_window(window: QWidget, allow_window_resize: bool = True) -> QWidget:
+    app = QApplication.instance()
+    if allow_window_resize is True:
+        window.resize(window.sizeHint())
 
-        count = sum(1 for _ in f)
+    screen = app.primaryScreen()
+    screen_geo = QScreen.availableGeometry(screen)
+    screen_center = screen_geo.center()
 
-    return count
-
-
-def get_last_line(path: os.PathLike, decode: bool = True, encoding: str = "utf-8", errors: str = "ignore") -> str:
-    with open(path, 'rb') as f:
-        f.seek(-2, os.SEEK_END)
-        while f.read(1) != b'\n':
-            f.seek(-2, os.SEEK_CUR)
-        last_line = f.readline()
-        if last_line == b"\r\n":
-            last_line = b""
-        if decode is True:
-            last_line = last_line.decode(encoding=encoding, errors=errors)
-        return last_line
-
+    window_geo = window.frameGeometry()
+    window_geo.moveCenter(screen_center)
+    window.move(window_geo.topLeft())
+    return window
 
 # region[Main_Exec]
+
+
 if __name__ == '__main__':
     pass
 

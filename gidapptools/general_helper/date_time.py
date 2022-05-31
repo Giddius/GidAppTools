@@ -110,7 +110,7 @@ class DateTimeFrame:
         return NotImplemented
 
     def __str__(self) -> str:
-        return f"{self.start.isoformat()} until {self.end.isoformat()}"
+        return f"{self.start.isoformat(sep=' ')} until {self.end.isoformat(sep=' ')}"
 
     def __hash__(self) -> int:
         return hash(self.start) + hash(self.end) + hash(self.delta)

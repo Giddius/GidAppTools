@@ -55,6 +55,6 @@ def file_hash(in_file: "PATH_TYPE", hash_algo: Callable = blake2b) -> str:
 # region[Main_Exec]
 
 if __name__ == '__main__':
-    print(file_hash(Path(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\Antistasi_Logbook\antistasi_logbook\storage\storage.db")))
+    pass
 
 # endregion[Main_Exec]

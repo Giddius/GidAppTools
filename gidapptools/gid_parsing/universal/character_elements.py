@@ -80,9 +80,23 @@ class BaseElements:
     semi_colon = pp.Literal(";").suppress()
     period = pp.Literal(".").suppress()
     pipe = pp.Literal("|").suppress()
+    at = pp.Literal("@").suppress()
+    hyhphen = pp.Literal("-").suppress()
+
+    octothorp = pp.Literal("#").suppress()
+    tilde = pp.Literal("~").suppress()
+
+    plus = pp.Literal("+").suppress()
+    minus = pp.Literal("-").suppress()
+    asterisk = pp.Literal("*").suppress()
+    equals = pp.Literal("=").suppress()
+
+    forward_slash = pp.Literal("/").suppress()
+    back_slash = pp.Literal("/").suppress()
 
     single_quote = pp.Literal("'").suppress()
     double_quote = pp.Literal('"').suppress()
+    any_quote = single_quote | double_quote
 
     parentheses_open = pp.Literal("(").suppress()
     parentheses_close = pp.Literal(")").suppress()
@@ -104,6 +118,9 @@ class Ligatures:
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    pass
+    x = "-"
+    y = "\u2212"
+    print(y)
+    print(x == y)
 
 # endregion[Main_Exec]

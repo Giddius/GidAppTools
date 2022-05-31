@@ -8,9 +8,9 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import os
-from typing import Union
+from typing import Union, TypeAlias
 from pathlib import Path
-from threading import RLock, Lock
+import threading
 # endregion[Imports]
 
 # region [TODO]
@@ -30,9 +30,9 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-PATH_TYPE = Union[str, os.PathLike, Path]
+PATH_TYPE: TypeAlias = Union[str, os.PathLike[str], Path]
 
-LOCK_TYPE = Union[type[Lock], type[RLock]]
+LOCK_TYPE: TypeAlias = Union[type[threading.Lock], type[threading.RLock]]
 
 # region[Main_Exec]
 

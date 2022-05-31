@@ -36,7 +36,7 @@ from pprint import pprint, pformat
 from pathlib import Path
 from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
 from timeit import Timer
-from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, Hashable, Generator, Literal, TypeVar, TypedDict, AnyStr
+from typing import TYPE_CHECKING, Union, TypeVar, ParamSpec, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, Hashable, Generator, Literal, TypeVar, TypedDict, AnyStr
 from zipfile import ZipFile, ZIP_LZMA
 from datetime import datetime, timezone, timedelta
 from tempfile import TemporaryDirectory
@@ -128,7 +128,7 @@ class AbstractThreadsafePool(ABC):
 
 
 class GenericThreadsafePool(AbstractThreadsafePool):
-    __slots__ = ("_lock", "_max_size", "_prefill", "_objects", "_queue", "_obj_creator")
+    __slots__ = ("_obj_creator",)
 
     def __init__(self, obj_creator: Callable, max_size: int = 0, prefill: bool = False) -> None:
         self._obj_creator = obj_creator
@@ -140,6 +140,16 @@ class GenericThreadsafePool(AbstractThreadsafePool):
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(obj_creator={self._obj_creator!r}, max_size={self.max_size!r}, prefill={self._prefill!r})'
+
+
+T = TypeVar('T')
+
+
+class DecorateAbleList(list):
+
+    def decorate_append(self, item: T) -> T:
+        self.append(item)
+        return item
 
 # region[Main_Exec]
 

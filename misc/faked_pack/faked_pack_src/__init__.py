@@ -7,6 +7,7 @@ __version__ = '1.2.3'
 from pathlib import Path
 from pprint import pprint
 THIS_FILE_DIR = Path(__file__).resolve().parent
+FAKE_PACKAGE_DIR = THIS_FILE_DIR
 
 
 def call_and_return(to_call, what='__file__', **kwargs):

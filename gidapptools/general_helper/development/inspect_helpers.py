@@ -54,7 +54,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader, ModuleSpec, FileFinder
 from types import ModuleType
 import typing
-import pp
+
 import attrs
 import pkgutil
 import ast

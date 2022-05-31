@@ -156,7 +156,7 @@ class BusyPushButton(QPushButton):
         self.text_widget.setScaledContents(True)
         self.text_widget.setAlignment(Qt.AlignCenter)
         self.layout.addWidget(self.text_widget)
-        self.busy_spinner_widget = BusySpinnerWidget(self, spinner_gif=spinner_gif, spinner_size=spinner_size or QSize(self.size().height(), self.size().height()))
+        self.busy_spinner_widget = BusySpinnerWidget(self, spinner_gif=spinner_gif, spinner_size=spinner_size or QSize(self.sizeHint().height(), self.sizeHint().height()))
         self.layout.addWidget(self.busy_spinner_widget)
         self.set_text(text)
         self.busy_spinner_widget.setVisible(False)

@@ -97,8 +97,8 @@ def set_std_object_name(obj: QObject):
     name = obj.__class__.__name__
     obj.setObjectName(name)
 
-# region[Main_Exec]
 
+# region[Main_Exec]
 
 if __name__ == '__main__':
     pass

@@ -49,6 +49,7 @@ this is the last line
 
 file_helper_file_content_2 = file_helper_file_content_1.strip()
 
+
 file_helper_file_content_3 = """
 
 asdasd
@@ -57,6 +58,8 @@ asdasd
 
 asd
 \n"""
+
+print(f"'{file_helper_file_content_3}'")
 
 file_helper_file_content_4 = """
 

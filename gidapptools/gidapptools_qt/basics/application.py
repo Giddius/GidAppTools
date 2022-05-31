@@ -61,7 +61,7 @@ from gidapptools.gidapptools_qt.basics.sys_tray import GidBaseSysTray
 from gidapptools.gidapptools_qt.basics.main_window import GidBaseMainWindow
 if TYPE_CHECKING:
     from gidapptools.gidapptools_qt.resources.resources_helper import PixmapResourceItem
-import pp
+
 # endregion[Imports]
 
 # region [TODO]

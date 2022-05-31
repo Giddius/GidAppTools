@@ -75,7 +75,7 @@ from PySide6.QtWidgets import (QApplication, QBoxLayout, QCheckBox, QColorDialog
 from gidapptools.errors import ApplicationNotExistingError
 from gidapptools.gidapptools_qt.basics.menu_bar import BaseMenuBar
 from gidapptools.gidapptools_qt.basics.status_bar import GidBaseStatusBar
-import pp
+
 if TYPE_CHECKING:
     from gidapptools.gidapptools_qt.basics.application import GidQtApplication
 # endregion[Imports]

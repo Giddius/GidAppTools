@@ -7,6 +7,7 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
+import os
 from typing import TYPE_CHECKING, Any, Union, Literal, Hashable, Optional, Iterable
 from pathlib import Path
 from datetime import timezone
@@ -40,6 +41,18 @@ class GidAppToolsBaseError(Exception):
     """
     Base Exception For GidAppTools.
     """
+
+
+class GidAppToolsFatalError(RuntimeError):
+    ...
+
+
+class ApplicationInstanceAlreadyRunningError(GidAppToolsFatalError):
+    def __init__(self, app_name: str, running_pid: int) -> None:
+        self.app_name = app_name
+        self.running_pid = running_pid
+        os.environ["FATAL_ERROR_RAISED"] = "1"
+        super().__init__(f"There is already an instance of {self.app_name!r} running with the pid of {self.running_pid!r}.")
 
 
 class MissingOptionalDependencyError(GidAppToolsBaseError):
@@ -280,5 +293,6 @@ class AppNameMissingError(BaseMetaPathsError):
 # region[Main_Exec]
 if __name__ == '__main__':
     pass
+
 
 # endregion[Main_Exec]

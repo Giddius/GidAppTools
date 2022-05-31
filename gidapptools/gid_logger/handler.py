@@ -169,6 +169,7 @@ class GidBaseRotatingFileHandler(BaseRotatingHandler):
             for file in self._get_old_logs():
                 self.move_file_to_backup_folder(file)
             self.remove_excess_backup_files()
+
         finally:
             self.release()
 
