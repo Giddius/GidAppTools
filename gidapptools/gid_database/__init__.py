@@ -7,8 +7,12 @@ with MissingOptionalDependencyError.try_import("peewee"):
 
 
 try:
-    from ._compiled_apsw import apsw
+    import apsw
     os.environ["_APSW_AVAILABLE"] = "1"
-    sys.modules["apsw"] = apsw
 except ImportError:
-    os.environ["_APSW_AVAILABLE"] = "0"
+    try:
+        from ._compiled_apsw import apsw
+        sys.modules["apsw"] = apsw
+        os.environ["_APSW_AVAILABLE"] = "1"
+    except ImportError:
+        os.environ["_APSW_AVAILABLE"] = "0"

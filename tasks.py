@@ -83,7 +83,7 @@ def activator_run(c: Context, command, echo=True, **kwargs) -> Result:
         return result
 
 
-def _compile_reqs(c):
+def compile_reqs(c):
     old_cwd = Path.cwd()
     try:
         os.chdir(PYPROJECT_TOML_FILE_PATH.parent)
@@ -103,11 +103,6 @@ def _compile_reqs(c):
         output_file.unlink(missing_ok=True)
     finally:
         os.chdir(old_cwd)
-
-
-@task
-def compile_reqs(c):
-    _compile_reqs(c)
 
 
 def increment_version(increment_part="patch"):
@@ -136,8 +131,16 @@ def increment_version(increment_part="patch"):
     match = version_regex.search(file_text)
     parts = {k: int(v) for k, v in match.groupdict().items()}
     increment_part = increment_part.casefold()
+    new_parts = {}
+    if increment_part == "patch":
+        new_parts = {"major": parts["major"], "minor": parts["minor"], "patch": parts["patch"] + 1}
 
-    new_parts = parts.copy() | {increment_part: (parts[increment_part] + 1)}
+    elif increment_part == "minor":
+        new_parts = {"major": parts["major"], "minor": parts["minor"] + 1, "patch": 0}
+
+    elif increment_part == "major":
+        new_parts = {"major": parts["major"] + 1, "minor": 0, "patch": 0}
+
     new_version_string = '.'.join(str(i) for i in new_parts.values())
     new_text = version_regex.sub('__version__ = ' + '"' + new_version_string + '"', file_text, count=1)
     version_file.write_text(new_text, encoding='utf-8', errors='ignore')
@@ -165,7 +168,7 @@ def publish(c, typus="patch"):
     old_cwd = Path.cwd().resolve()
     try:
         os.chdir(PYPROJECT_TOML_FILE_PATH.parent)
-        _compile_reqs(c)
+        compile_reqs(c)
         version_string = increment_version(increment_part=typus)
 
         message_table = {"patch": "{version} Small Update and Bugfixes",
@@ -179,3 +182,20 @@ def publish(c, typus="patch"):
         print("-" * 20)
     finally:
         os.chdir(old_cwd)
+
+
+from gid_tasks.hackler.imports_cleaner import import_clean_project
+from gid_tasks.hackler.dependencies_handling.finder import find_project_dependencies
+from gid_tasks import set_project
+
+project = set_project()
+
+
+@task
+def clean_imports(c):
+    list(import_clean_project(project=project))
+
+
+@task
+def find_dependencies(c):
+    find_project_dependencies(project=project, output_file_path=THIS_FILE_DIR.joinpath("all_dependencies.json"))

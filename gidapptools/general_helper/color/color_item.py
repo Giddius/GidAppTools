@@ -8,10 +8,11 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 from abc import ABC, abstractmethod
-from typing import Any, Union, Iterable, Optional
+from typing import Any, Union, Iterable, Optional, Literal
 from pathlib import Path
 from colorsys import hls_to_rgb, hsv_to_rgb, rgb_to_hls, rgb_to_hsv
 from functools import cached_property
+from enum import Enum, unique, auto
 
 # * Third Party Imports --------------------------------------------------------------------------------->
 import attr
@@ -62,6 +63,12 @@ def _alpha_converter(alpha: Union[int, float] = None) -> float:
         return 1.0
 
     return float(alpha)
+
+
+class ColorTypus(Enum):
+    RGB = auto()
+    HLS = auto()
+    HSV = auto()
 
 
 class BaseColor(ABC):
@@ -261,10 +268,10 @@ color_class_map: dict[str, type[BaseColor]] = {"rgb": RGBColor,
 
 
 class ColorRegistry:
+    color_typus = ColorTypus
 
     def __init__(self) -> None:
         self.colors_by_name: dict[str:RGBColor] = {}
-        self.colors_by_rgba_value: dict[tuple[float, float, float, float]:RGBColor] = {}
 
     def _add_color(self, color: RGBColor) -> None:
         if color.name:
@@ -272,30 +279,30 @@ class ColorRegistry:
         for alias in color.aliases:
             self.colors_by_name[alias.casefold()] = color
 
-        self.colors_by_rgba_value[color.as_rgb_float(True, False)] = color
+    def color_factory(self, value: tuple, typus: ColorTypus, name: str = None, aliases: Iterable[str] = None):
+        if len(value) == 3:
+            value = (value[0], value[1], value[2], 1.0)
 
-    def get_color(self, r: float, g: float, b: float, alpha: float = 1.0, name: str = None, aliases: Iterable[str] = None) -> RGBColor:
-        if name is not None:
-            if color := self.colors_by_name.get(name.casefold()):
-                return color
-        if color := self.colors_by_rgba_value.get((r, g, b, alpha)):
-            return color
+        if typus is ColorTypus.RGB:
+            _values = []
+            for v in value:
+                if isinstance(v, int) and v != 0:
+                    v = round(v / 255, BaseColor.float_round_n)
+                _values.append(v)
 
-        color = RGBColor(r, g, b, alpha, name, aliases)
+            color = RGBColor(*_values, name=name, aliases=aliases)
+
+        elif typus is ColorTypus.HLS:
+            ...
+
+        elif typus is ColorTypus.HSV:
+            ...
+
         self._add_color(color)
         return color
 
-    def color_factory(self, r: Union[int, float], g: Union[int, float], b: Union[int, float], alpha: float = 1.0, name: str = None, aliases: Iterable[str] = None):
-
-        if any(sub_v > 1 for sub_v in (r, g, b)) or all(isinstance(sub_v, int) for sub_v in (r, g, b)):
-            values = tuple(round(sub_v / 255, BaseColor.float_round_n) for sub_v in (r, g, b))
-
-        if alpha is not None and alpha > 1:
-            alpha = round(alpha / 255, BaseColor.float_round_n)
-        return self.get_color(*values, alpha=alpha, name=name, aliases=aliases)
-
-    def __call__(self, r: Union[int, float], g: Union[int, float], b: Union[int, float], alpha: float = 1.0, name: str = None, aliases: Iterable[str] = None) -> Any:
-        return self.color_factory(r, g, b, alpha, name, aliases)
+    def __call__(self, value: tuple, typus: ColorTypus, name: str = None, aliases: Iterable[str] = None) -> Any:
+        return self.color_factory(value=value, typus=typus, name=name, aliases=aliases)
 
     def get_color_by_name(self, name: str) -> "RGBColor":
         return self.colors_by_name[name.casefold()]
@@ -303,7 +310,7 @@ class ColorRegistry:
 
 Color = ColorRegistry()
 for p_color in get_webcolors_data():
-    Color(**p_color)
+    Color(**p_color, typus=Color.color_typus.RGB)
 
 # region[Main_Exec]
 if __name__ == '__main__':

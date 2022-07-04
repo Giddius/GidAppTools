@@ -239,7 +239,10 @@ class PathSection(AbstractLoggingStyleSection):
         return self._width_cache
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
-        path = Path(record.pathname).resolve()
+        if record.extras.get("file_path", None) is not None:
+            path = Path(record.extras["file_path"]).resolve()
+        else:
+            path = Path(record.pathname).resolve()
         if os.getenv("_MAIN_DIR", None) is not None:
             path = path.relative_to(Path(os.getenv("_MAIN_DIR")).resolve())
         if self.with_extension is False:
@@ -264,6 +267,8 @@ class LoggerNameSection(AbstractLoggingStyleSection):
         return self._width_cache
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
+        if record.extras.get("module", None) is not None:
+            return record.extras["module"]
         return record.name
 
 
@@ -284,6 +289,8 @@ class FunctionNameSection(AbstractLoggingStyleSection):
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
         if record.funcName == "<module>":
             return self.default_text
+        if record.extras.get("function_name", None) is not None:
+            return record.extras["function_name"]
         return record.funcName
 
 

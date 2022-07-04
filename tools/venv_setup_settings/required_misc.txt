@@ -1,1 +1,2 @@
-colour-science[optional]~=0.4.1
+distinctipy[optional]~=1.2.1
+identify[license]~=2.5.1

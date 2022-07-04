@@ -18,7 +18,7 @@ from gidapptools.general_helper.mixins.file_mixin import FileMixin
 
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
-    pass
+    from gidapptools.custom_types import PATH_TYPE
 
 # endregion[Imports]
 
@@ -58,6 +58,15 @@ class ConfigData:
     @property
     def all_section_names(self) -> tuple[str]:
         return tuple(self.sections)
+
+    def has_section(self, section_name: str) -> bool:
+        return section_name in self.all_section_names
+
+    def has_key(self, section_name: str, key_name: str) -> bool:
+        if self.has_section(section_name=section_name) is False:
+            return False
+
+        return self.get_section(section_name=section_name).has_key(key_name=key_name)
 
     def get_section(self, section_name: str, create_missing_section: bool = False) -> Section:
         try:
@@ -162,7 +171,15 @@ class ConfigFile(FileMixin, ConfigData):
 
         self.parser = parser
         self.auto_write = auto_write
-        super().__init__(file_path=file_path, changed_parameter=changed_parameter, **kwargs)
+        super().__init__(file_path=self.handle_file_path(file_path), changed_parameter=changed_parameter, **kwargs)
+
+    def handle_file_path(self, file_path: "PATH_TYPE") -> Path:
+        file_path = Path(file_path).resolve()
+        if file_path.exists() is False:
+            file_path.parent.mkdir(exist_ok=True, parents=True)
+            file_path.touch(exist_ok=True)
+
+        return file_path
 
     def _do_auto_write(self, success: bool) -> None:
         if success is True and self.auto_write is True:

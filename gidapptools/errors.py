@@ -195,10 +195,6 @@ class TrailingCommentError(IniParsingError):
     ...
 
 
-class EmptyConfigTextError(IniParsingError):
-    ...
-
-
 class KeyPathError(AdvancedDictError):
     def __init__(self, missing_key: Hashable, key_path: list[Hashable], last_key: Hashable = None) -> None:
         self.missing_key = missing_key

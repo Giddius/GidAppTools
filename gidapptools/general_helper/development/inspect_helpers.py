@@ -48,7 +48,7 @@ from statistics import mean, mode, stdev, median, variance, pvariance, harmonic_
 from collections import Counter, ChainMap, deque, namedtuple, defaultdict
 from urllib.parse import urlparse
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
-from importlib.metadata import metadata
+from importlib.metadata import metadata, distributions
 from pkg_resources import DistributionNotFound
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from importlib.machinery import SourceFileLoader, ModuleSpec, FileFinder
@@ -58,6 +58,7 @@ import typing
 import attrs
 import pkgutil
 import ast
+import requests
 import gidapptools
 from importlib import import_module
 from gidapptools.errors import MissingOptionalDependencyError
@@ -261,7 +262,25 @@ def get_all_sub_modules(in_module: ModuleType) -> dict[str, SubModule]:
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    pass
 
+    _out_data = {}
+    for i in distributions():
+        _out_data[i.name] = None
+        x = metadata(i.name)
+        try:
+            all_extra_keywords = {k: [] for k in x.get_all('Provides-Extra') if k not in {"test", "docs", "testing", "doc", "lint", "ipython", "testing-integration", "python2", "tests", "license"}}
+            all_requires_dist = tuple(i for i in x.get_all('Requires-Dist'))
+            for extra_name in all_extra_keywords:
+                re_pat = re.compile(rf"\bextra *\=\= *[\'\"]{extra_name}[\'\"]")
+                for req_dist in all_requires_dist:
+                    if re_pat.search(req_dist):
+                        all_extra_keywords[extra_name].append(req_dist.rsplit(";", 1)[0].strip())
+            _out_data[i.name] = all_extra_keywords
+        except TypeError:
+            continue
+    import pp
+    _out_data = {k: v for k, v in _out_data.items() if v}
+    with open("blah.json", "w", encoding='utf-8', errors='ignore') as f:
+        json.dump(_out_data, f, sort_keys=True, default=str, indent=4)
 
 # endregion[Main_Exec]

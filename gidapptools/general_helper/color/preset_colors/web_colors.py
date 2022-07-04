@@ -40,10 +40,7 @@ def get_webcolors_data() -> list[dict[str:Any]]:
     for item_data in data:
         new_item_data = {}
         new_item_data["name"] = item_data.get("name").casefold()
-        new_item_data["r"] = item_data.get("rgb").get('r')
-        new_item_data["g"] = item_data.get("rgb").get('g')
-        new_item_data["b"] = item_data.get("rgb").get('b')
-        new_item_data["alpha"] = 1.0
+        new_item_data["value"] = (item_data.get("rgb").get('r'), item_data.get("rgb").get('g'), item_data.get("rgb").get('b'), 1.0)
         _out.append(new_item_data)
     return _out
 # region[Main_Exec]

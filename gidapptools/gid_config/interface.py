@@ -78,7 +78,8 @@ class GidIniConfig:
                  empty_is_missing: bool = True,
                  spec_visitor: SpecVisitor = None,
                  parser: BaseIniParser = None,
-                 file_changed_parameter: str = 'size') -> None:
+                 file_changed_parameter: str = 'size',
+                 fill_missing_with_defaults: bool = False) -> None:
 
         self.parser = self.default_parser() if parser is None else parser
         self.spec_visitor = self.default_spec_visitor() if spec_visitor is None else spec_visitor
@@ -86,6 +87,21 @@ class GidIniConfig:
         self.spec = SpecFile(file_path=spec_file, visitor=self.spec_visitor, changed_parameter=file_changed_parameter) if spec_file is not None else None
         self.converter = self.default_converter() if converter is None else converter
         self.empty_is_missing = empty_is_missing
+        self.fill_config_file(fill_missing_with_defaults=fill_missing_with_defaults)
+
+    def fill_config_file(self, fill_missing_with_defaults: bool):
+        if fill_missing_with_defaults is True:
+            for section, keys in self.spec.data.items():
+                if section == "ENV":
+                    continue
+                for key, data in keys.items():
+                    if not "default" in data:
+                        continue
+
+                    if not self.config.has_key(section_name=section, key_name=key):
+
+                        self.config.set_value(section_name=section, entry_key=key, entry_value=data["default"], create_missing_section=True)
+            self.config.save()
 
     @property
     def access_lock(self) -> RLock:

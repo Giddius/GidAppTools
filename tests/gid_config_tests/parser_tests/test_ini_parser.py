@@ -1,5 +1,5 @@
 import pytest
-from gidapptools.gid_config.parser.ini_parser import BaseIniParser, Entry, Section, Comment, EmptyConfigTextError, TrailingCommentError
+from gidapptools.gid_config.parser.ini_parser import BaseIniParser, Entry, Section, Comment, TrailingCommentError
 from pathlib import Path
 from pprint import pprint
 from typing import Any
@@ -36,8 +36,7 @@ def test_preprocess_comments_all(in_text: str, expected_result: str):
     assert check == result
 
 
-@pytest.mark.parametrize('in_text, resulting_exception', [("", EmptyConfigTextError),
-                                                          ('# a trailing commment', TrailingCommentError),
+@pytest.mark.parametrize('in_text, resulting_exception', [('# a trailing commment', TrailingCommentError),
                                                           (SIMPLE_INI_CONFIG_W_TRAILING_COMMENT.read_text(encoding='utf-8'), TrailingCommentError)])
 def test_verify(in_text, resulting_exception):
     parser = BaseIniParser()

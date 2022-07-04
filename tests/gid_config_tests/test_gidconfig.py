@@ -147,3 +147,64 @@ def test_string_sub_arguments(gid_ini_config_3: GidIniConfig):
 
 def test_descriptions(gid_ini_config_3: GidIniConfig):
     assert gid_ini_config_3.get_description("debug", "current_testing_channel") == "This is a description."
+
+
+def test_empty_config(gid_ini_config_empty: GidIniConfig):
+    gid_ini_config_empty.reload()
+    assert gid_ini_config_empty.get("a_section", "a_key") == "this is a default"
+    assert gid_ini_config_empty.get("a_section", "a_key", default="this is a manual default") == "this is a manual default"
+
+    assert gid_ini_config_empty.get("a_section_not_in_spec", "a_key_not_in_spec", default="this is a default not in spec") == "this is a default not in spec"
+
+    with pytest.raises(SectionMissingError):
+        gid_ini_config_empty.get("a_section_not_in_spec", "a_key_not_in_spec")
+
+    gid_ini_config_empty.set("a_created_section", "a_created_key", True, create_missing_section=True)
+
+    assert gid_ini_config_empty.get("a_created_section", "a_created_key", default=False) is True
+
+
+def test_non_existing_config_file(non_existing_config: Path, example_empty_config_spec: Path):
+    assert non_existing_config.exists() is False
+    assert example_empty_config_spec.exists() is True
+
+    config = GidIniConfig(config_file=non_existing_config, spec_file=example_empty_config_spec)
+
+    assert config.get("a_section", "a_key") == "this is a default"
+
+    assert non_existing_config.exists() is True
+
+
+def test_non_existing_config_file_prefill(non_existing_config: Path, example_spec_4: Path):
+    assert non_existing_config.exists() is False
+    assert example_spec_4.exists() is True
+
+    config = GidIniConfig(config_file=non_existing_config, spec_file=example_spec_4, fill_missing_with_defaults=True)
+    assert config.config.has_section("this") is True
+    assert config.config.has_section("folder") is False
+
+    assert config.config.has_key("this", "that") is True
+
+    assert config.config.has_key("folder", "folder_1") is False
+
+    assert config.config.has_key("general_settings", "empty_entry") is False
+
+    assert config.get("this", "that") == 48
+
+    assert config.get("general_settings", "owner_ids") == [123, 456]
+
+    assert config.get("this", "max_update_time_frame") == timedelta(days=0, hours=3, minutes=5, milliseconds=0, microseconds=0, weeks=0)
+
+    assert non_existing_config.exists() is True
+
+    expected_lines = ["[debug]",
+                      "current_testing_channel = default_testing_channel",
+                      "[general_settings]",
+                      "cogs_location = default_cogs_location",
+                      "main_folder_name = default_main_folder_name",
+                      "owner_ids = 123, 456",
+                      "[this]",
+                      "that = 48",
+                      "max_update_time_frame = 3 hours 5 minutes"]
+
+    assert [l for l in non_existing_config.read_text(encoding='utf-8', errors='ignore').splitlines() if l] == expected_lines

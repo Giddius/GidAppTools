@@ -1,0 +1,48 @@
+{
+    "ENV": {
+        "__default__": { "converter": "string" },
+        "PATH": { "converter": "list(sub_typus=path,split_char=;)" }
+    },
+    "debug": {
+        "current_testing_channel": {
+            "converter": "string",
+            "description": "This is a description.",
+            "default": "default_testing_channel"
+        },
+        "a_value_with_spaces": { "converter": "string" }
+    },
+    "general_settings": {
+        "cogs_location": {
+            "converter": "string",
+            "default": "default_cogs_location"
+        },
+        "main_folder_name": {
+            "converter": "string",
+            "default": "default_main_folder_name"
+        },
+        "owner_ids": {
+            "converter": "list(sub_typus=integer)",
+            "default": "123, 456"
+        },
+        "empty_entry": { "converter": "string" },
+        "__default__": { "converter": "integer" }
+    },
+    "this": {
+        "something": { "converter": "string" },
+        "that": { "converter": "integer", "default": "48" },
+        "max_threads": { "converter": "integer" },
+        "max_update_time_frame": {
+            "converter": "timedelta",
+            "default": "3 hours 5 minutes"
+        }
+    },
+    "folder": {
+        "folder_1": { "converter": "path" }
+    },
+    "data_types": { "this_is_a_boolean": { "converter": "boolean" } },
+    "string_subargs": {
+        "this_has_choices": { "converter": "string(choices=alpha|beta)" },
+        "choices_with_empty": { "converter": "string(choices=prima|secundus)" },
+        "choices_with_wrong_value": { "converter": "string(choices=start|end)" }
+    }
+}

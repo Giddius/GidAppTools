@@ -14,7 +14,7 @@ from pathlib import Path
 import pyparsing as pp
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.errors import EmptyConfigTextError, TrailingCommentError
+from gidapptools.errors import TrailingCommentError
 from gidapptools.gid_config.parser.tokens import Entry, Token, Comment, Section, TokenFactory
 from gidapptools.gid_config.parser.grammar import BaseIniGrammar
 
@@ -77,8 +77,7 @@ class BaseIniParser:
         check_text = text.strip()
 
         if check_text == '':
-
-            raise EmptyConfigTextError('Config text cannot be empty.')
+            return text
 
         if check_text.splitlines()[-1].strip().startswith(self.comment_indicator):
 
