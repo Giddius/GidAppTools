@@ -7,7 +7,7 @@ from gidapptools.gid_config.meta_factory import GidIniConfig
 from gidapptools.gid_logger.logger import setup_main_logger, get_logger, setup_main_logger_with_file_logging, get_main_logger, get_handlers
 
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 
 from pathlib import Path
