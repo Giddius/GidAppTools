@@ -9,24 +9,22 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import re
 from enum import Flag, auto
-from typing import Any, Union, ClassVar, Iterable
+from typing import Any, Union, Iterable
+from pathlib import Path
 from datetime import timedelta
 from operator import neg, or_, pos
 from functools import reduce, total_ordering, cached_property
 from collections import defaultdict
-from pathlib import Path
+
 # * Third Party Imports --------------------------------------------------------------------------------->
 import attr
-
 import pyparsing as pp
 import pyparsing.common as ppc
-from sortedcontainers import SortedList
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.gid_warning.deprecation import deprecated_argument
 from gidapptools.errors import FlagConflictError
-from gidapptools.data.conversion_data import STRING_FALSE_VALUES, STRING_TRUE_VALUES, NANOSECONDS_IN_SECOND, FILE_SIZE_SYMBOL_DATA, RAW_TIMEUNITS
-
+from gidapptools.data.conversion_data import RAW_TIMEUNITS, STRING_TRUE_VALUES, STRING_FALSE_VALUES, FILE_SIZE_SYMBOL_DATA, NANOSECONDS_IN_SECOND
+from gidapptools.gid_warning.deprecation import deprecated_argument
 
 # endregion[Imports]
 
@@ -259,7 +257,7 @@ TIMEUNITS = sorted([TimeUnit(*item) for item in RAW_TIMEUNITS], key=lambda x: x.
 class TimeUnits:
 
     def __init__(self, with_year: bool = True) -> None:
-        self._units = SortedList(TIMEUNITS.copy(), key=lambda x: -x.factor)
+        self._units = sorted(TIMEUNITS.copy(), key=lambda x: -x.factor)
         self._with_year = with_year
         self.units = self._get_units()
         self.name_dict: dict[str, TimeUnit] = {item.name.casefold(): item for item in self.units} | {item.plural.casefold(): item for item in self.units}
@@ -301,7 +299,12 @@ _time_units_without_year = TimeUnits(False)
 _time_units_with_year = TimeUnits(True)
 
 
-def seconds2human(in_seconds: Union[int, float, timedelta], as_list_result: bool = False, as_dict_result: bool = False, as_symbols: bool = False, with_year: bool = True, min_unit: str = None) -> Union[dict[TimeUnit, int], str]:
+def seconds2human(in_seconds: Union[int, float, timedelta],
+                  as_list_result: bool = False,
+                  as_dict_result: bool = False,
+                  as_symbols: bool = False,
+                  with_year: bool = True,
+                  min_unit: str = None) -> Union[dict[TimeUnit, int], str]:
     if as_list_result is True and as_dict_result is True:
         raise FlagConflictError(["as_list_result", "as_dict_result"], True)
     rest = in_seconds.total_seconds() if isinstance(in_seconds, timedelta) else in_seconds

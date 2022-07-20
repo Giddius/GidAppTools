@@ -15,6 +15,7 @@ from PySide6.QtGui import QIcon, QPixmap
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.data.images import PLACEHOLDER_IMAGE, StoredImage
 from gidapptools.gidapptools_qt.resources.resources_helper import PixmapResourceItem
+
 # endregion[Imports]
 
 # region [TODO]

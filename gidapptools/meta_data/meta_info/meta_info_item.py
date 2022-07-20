@@ -10,7 +10,7 @@ Soon.
 import os
 import sys
 import platform
-from typing import Any, Callable, Optional, Union
+from typing import Any, Union, Callable, Optional, TYPE_CHECKING
 from pathlib import Path
 from datetime import datetime, timezone
 from functools import cached_property
@@ -18,20 +18,20 @@ from functools import cached_property
 # * Third Party Imports --------------------------------------------------------------------------------->
 import attr
 from yarl import URL
-from tzlocal import get_localzone, reload_localzone
+from tzlocal import get_localzone
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
+from gidapptools.gid_utility import VersionItem
 from gidapptools.utility.enums import OperatingSystem
 from gidapptools.utility.helper import utc_now, make_pretty, memory_in_use
-
 from gidapptools.general_helper.general import is_frozen
 from gidapptools.general_helper.date_time import DatetimeFmt
 from gidapptools.general_helper.conversion import bytes2human
 from gidapptools.general_helper.string_helper import StringCase, StringCaseConverter
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
-from gidapptools.gid_utility import VersionItem
 
-
+if TYPE_CHECKING:
+    from gidapptools.meta_data.meta_info.meta_info_factory import License
 # endregion[Imports]
 
 # region [TODO]
@@ -52,10 +52,16 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion[Constants]
 
-def url_converter(in_url: str) -> Optional[URL]:
+def url_converter(in_url: Optional[str]) -> Optional[URL]:
     if in_url is None:
         return in_url
     return URL(in_url)
+
+
+def many_url_converter(in_urls: Optional[dict[str, str]]) -> Optional[dict[str, URL]]:
+    if in_urls is None:
+        return in_urls
+    return {k: URL(v) for k, v in in_urls.items()}
 
 
 def version_converter(in_version: Union[str, VersionItem]) -> VersionItem:
@@ -70,6 +76,7 @@ class MetaInfo(AbstractMetaItem):
     app_author: str = attr.ib(default=None)
     version: VersionItem = attr.ib(default=None, converter=version_converter)
     url: URL = attr.ib(converter=url_converter, default=None)
+    other_urls: dict[str, URL] = attr.ib(converter=many_url_converter, default=dict())
     pid: int = attr.ib(factory=os.getpid)
     os: OperatingSystem = attr.ib(factory=OperatingSystem.determine_operating_system)
     os_release: str = attr.ib(factory=platform.release)
@@ -79,6 +86,9 @@ class MetaInfo(AbstractMetaItem):
     is_dev: bool = attr.ib(default=None, converter=attr.converters.default_if_none(False))
     is_gui: bool = attr.ib(default=None, converter=attr.converters.default_if_none(False))
     local_tz: timezone = attr.ib(default=get_localzone())
+    summary: str = attr.ib(default=None)
+    app_license: "License" = attr.ib(default=None)
+    description: str = attr.ib(default=None)
 
     @cached_property
     def is_frozen_app(self) -> bool:
@@ -134,7 +144,6 @@ class MetaInfo(AbstractMetaItem):
 
     def clean_up(self, **kwargs) -> None:
         pass
-
 
     # region[Main_Exec]
 if __name__ == '__main__':

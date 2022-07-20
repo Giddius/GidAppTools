@@ -6,65 +6,27 @@ Soon.
 
 # region [Imports]
 
-import os
+# * Standard Library Imports ---------------------------------------------------------------------------->
 import re
-import sys
-import json
-import queue
-import math
-import base64
-import pickle
-import random
-import shelve
-import dataclasses
-import shutil
-import asyncio
-import logging
-import sqlite3
-import platform
-import importlib
-import subprocess
-import inspect
-
-from time import sleep, process_time, process_time_ns, perf_counter, perf_counter_ns
-from io import BytesIO, StringIO
-from abc import ABC, ABCMeta, abstractmethod
-from copy import copy, deepcopy
-from enum import Enum, Flag, auto, unique
-from time import time, sleep
-from pprint import pprint, pformat
-from pathlib import Path
-from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
-from timeit import Timer
-from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, Hashable, Generator, Literal, TypeVar, TypedDict, AnyStr
-from zipfile import ZipFile, ZIP_LZMA
-from datetime import datetime, timezone, timedelta
-from tempfile import TemporaryDirectory
-from textwrap import TextWrapper, fill, wrap, dedent, indent, shorten
-from functools import wraps, partial, lru_cache, singledispatch, total_ordering, cached_property
-from importlib import import_module, invalidate_caches
-from contextlib import contextmanager, asynccontextmanager, nullcontext, closing, ExitStack, suppress
-from statistics import mean, mode, stdev, median, variance, pvariance, harmonic_mean, median_grouped
-from collections import Counter, ChainMap, deque, namedtuple, defaultdict
-from urllib.parse import urlparse
-from importlib.util import find_spec, module_from_spec, spec_from_file_location
-from importlib.metadata import metadata, distributions
-from pkg_resources import DistributionNotFound
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from importlib.machinery import SourceFileLoader, ModuleSpec, FileFinder
-from types import ModuleType
-import typing
-
-import attrs
-import pkgutil
 import ast
-import requests
-import gidapptools
+import json
+import inspect
+import pkgutil
+from types import ModuleType
+from typing import Any
+from pathlib import Path
 from importlib import import_module
+from importlib.metadata import metadata, distributions
+
+# * Third Party Imports --------------------------------------------------------------------------------->
+import attrs
+
+# * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.errors import MissingOptionalDependencyError
 
 with MissingOptionalDependencyError.try_import("gidapptools"):
     import isort
+
 # endregion[Imports]
 
 # region [TODO]
@@ -278,7 +240,6 @@ if __name__ == '__main__':
             _out_data[i.name] = all_extra_keywords
         except TypeError:
             continue
-    import pp
     _out_data = {k: v for k, v in _out_data.items() if v}
     with open("blah.json", "w", encoding='utf-8', errors='ignore') as f:
         json.dump(_out_data, f, sort_keys=True, default=str, indent=4)

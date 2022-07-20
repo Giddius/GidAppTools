@@ -8,11 +8,11 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 from abc import ABC, abstractmethod
-from typing import Any, Union, Iterable, Optional, Literal
+from enum import Enum, auto
+from typing import Any, Union, Iterable, Optional
 from pathlib import Path
 from colorsys import hls_to_rgb, hsv_to_rgb, rgb_to_hls, rgb_to_hsv
 from functools import cached_property
-from enum import Enum, unique, auto
 
 # * Third Party Imports --------------------------------------------------------------------------------->
 import attr

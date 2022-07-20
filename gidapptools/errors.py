@@ -8,15 +8,17 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import os
-from typing import TYPE_CHECKING, Any, Union, Literal, Hashable, Optional, Iterable
+from typing import TYPE_CHECKING, Any, Union, Literal, Hashable, Iterable, Optional
 from pathlib import Path
 from datetime import timezone
-from contextlib import contextmanager, suppress
+from contextlib import contextmanager
+
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.general_helper.date_time import DateTimeFrame
     from gidapptools.gid_config.parser.config_data import ConfigData
     from gidapptools.gid_config.conversion.entry_typus_item import EntryTypus
+    from gidapptools.meta_data.meta_paths.meta_paths_item import NamedMetaPath
 
 # endregion[Imports]
 
@@ -277,6 +279,22 @@ class BaseMetaPathsError(GidAppToolsBaseError):
     """
     Base error for meta_paths.
     """
+
+
+class UnknownMetaPathIdentifier(BaseMetaPathsError):
+
+    def __init__(self, identifier: str) -> None:
+        self.identifier = identifier
+        self.msg = f"{self.identifier!r} is not an valid identifier for a Meta-Path."
+        super().__init__(self.msg)
+
+
+class NotImplementedMetaPath(BaseMetaPathsError):
+
+    def __init__(self, identifier: "NamedMetaPath") -> None:
+        self.identifier = identifier
+        self.msg = f"No Path implemented for identifer {self.identifier!r}."
+        super().__init__(self.msg)
 
 
 class AppNameMissingError(BaseMetaPathsError):

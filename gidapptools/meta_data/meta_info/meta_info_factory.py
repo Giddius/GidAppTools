@@ -13,16 +13,14 @@ import inspect
 from typing import Any, Callable
 from pathlib import Path
 from functools import partial
-
+from enum import Enum, Flag, auto, unique
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.utility.helper import meta_data_from_path
-
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
 from gidapptools.general_helper.conversion import str_to_bool
 from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
-
-
+import pp
 # endregion[Imports]
 
 # region [TODO]
@@ -40,6 +38,36 @@ from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFacto
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion[Constants]
+
+
+class License:
+    special_licenses: dict[str, "License"] = {}
+
+    def __init__(self, name: str, osi_approved: bool, description: str = None):
+        self.name = name
+        self.osi_approved = osi_approved
+        self.description = description or ""
+
+    @classmethod
+    def from_classifier_string(cls, classifier_string: str):
+        parts = [i.strip() for i in classifier_string.split("::")]
+        osi_approved = True if "OSI Approved" in parts else False
+        name = parts[-1]
+        try:
+            return cls.special_licenses[name]
+        except KeyError:
+            return cls(name=name, osi_approved=osi_approved)
+
+    @classmethod
+    def add_to_special_licenses(cls, special_license: "License"):
+        cls.special_licenses[special_license.name] = special_license
+
+    def __str__(self) -> str:
+        return self.name
+
+
+License.add_to_special_licenses(License(name="MIT License", osi_approved=True, description=""))
+License.add_to_special_licenses(License(name="Unknown", osi_approved=False, description="License is missing or unknown."))
 
 
 class MetaInfoFactory(AbstractMetaFactory):
@@ -89,12 +117,32 @@ class MetaInfoFactory(AbstractMetaFactory):
         return {k: v for k, v in meta_info_kwargs.items() if v is not None}
 
     def _default_arg_getter(self, arg_name: str) -> Any:
+
         return self.package_metadata.get(arg_name.casefold())
 
+    def _arg_get_app_license(self) -> License:
+        license_classifier = next((i for i in self.package_metadata.get("classifier", []) if i.startswith("License")), "License :: Unknown")
+        return License.from_classifier_string(license_classifier)
+
+    def _arg_get_other_urls(self) -> dict[str, str]:
+        _out = {}
+        for item in self.package_metadata.get('project-url', []):
+            if item.startswith("Source"):
+                continue
+
+            parts = [i.strip() for i in item.split(",") if i.strip()]
+            if len(parts) != 2:
+                continue
+            if not parts[1].startswith("http"):
+                continue
+            _out[parts[0]] = parts[1]
+        return _out
+
     def _arg_get_url(self) -> str:
-        url_text = self.package_metadata.get('project-url')
-        if url_text is None:
-            return url_text
+        url_list = self.package_metadata.get('project-url', [])
+
+        url_text = next((i for i in url_list if i.startswith("Source")), "")
+
         parts = map(lambda x: x.strip(), url_text.split(','))
         for part in parts:
             if part.startswith('http'):

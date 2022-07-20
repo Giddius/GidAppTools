@@ -18,10 +18,9 @@ from string import ascii_letters
 from typing import Any
 from pathlib import Path
 from tempfile import TemporaryDirectory
+
+# * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.errors import MissingOptionalDependencyError
-
-# * Third Party Imports --------------------------------------------------------------------------------->
-
 
 with MissingOptionalDependencyError.try_import("gidapptools"):
     from rich import inspect as rinspect

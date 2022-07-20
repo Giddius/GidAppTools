@@ -15,9 +15,6 @@ from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
 
-# * Third Party Imports --------------------------------------------------------------------------------->
-
-
 # * Qt Imports --------------------------------------------------------------------------------------->
 from PySide6.QtGui import QMouseEvent, QPaintEvent, QResizeEvent, QStatusTipEvent, QPlatformSurfaceEvent, QInputMethodQueryEvent
 from PySide6.QtCore import QEvent, QChildEvent, QDynamicPropertyChangeEvent

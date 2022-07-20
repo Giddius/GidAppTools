@@ -101,6 +101,7 @@ class NamedMetaPath(BaseGidEnum):
     SITE_CONFIG = 'site_config_dir'
     TEMP = 'user_temp_dir'
     DB = 'database_dir'
+    _ONLY_FOR_TESTING = '_ONLY_FOR_TESTING'
 
     def __str__(self) -> str:
         return self.name

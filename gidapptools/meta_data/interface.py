@@ -15,20 +15,19 @@ from warnings import warn
 from functools import reduce
 from importlib.metadata import entry_points
 
-
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.data import ENTRY_POINT_SELECT_ARGS
-from gidapptools.custom_types import PATH_TYPE
 from gidapptools.errors import NotSetupError, NoFactoryFoundError, MetaItemNotFoundError, RegisterAfterSetupError
+from gidapptools.custom_types import PATH_TYPE
 from gidapptools.meta_data.meta_info import MetaInfo, MetaInfoFactory
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.meta_data.meta_paths import MetaPaths, MetaPathsFactory
-from gidapptools.gid_config.meta_factory import MetaConfig, MetaConfigFactory, GidIniConfig
+from gidapptools.gid_config.meta_factory import MetaConfig, MetaConfigFactory
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
 from gidapptools.general_helper.dict_helper import SafeMergeDict
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
-from gidapptools.utility.helper import get_main_module_path
+
 # endregion[Imports]
 
 # region [TODO]
@@ -200,7 +199,6 @@ def get_meta_paths() -> MetaPaths:
 
 def get_meta_config() -> MetaConfig:
     return app_meta['meta_config']
-
 
     # region[Main_Exec]
 if __name__ == '__main__':
