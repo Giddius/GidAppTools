@@ -10,7 +10,7 @@ simple_spec_file = THIS_FILE_DIR.joinpath("example_spec_file.json")
 
 def test_spec_data_file_init():
     spec = SpecFile(simple_spec_file, visitor=SpecVisitor())
-    assert spec.spec_name == "example_spec_file"
+    assert spec.name == "example_spec_file"
 
 
 def test_load():

@@ -1,5 +1,5 @@
 {
-    "ENV": {
+    "__ENV__": {
         "__default__": { "converter": "string" },
         "PATH": { "converter": "list(sub_typus=path,split_char=;)" }
     },

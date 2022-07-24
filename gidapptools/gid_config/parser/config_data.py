@@ -42,7 +42,8 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 class ConfigData:
     env_section = EnvSection()
 
-    def __init__(self) -> None:
+    def __init__(self, name: str) -> None:
+        self.name = name
         self._sections: dict[str, Section] = None
 
     @property
@@ -171,15 +172,7 @@ class ConfigFile(FileMixin, ConfigData):
 
         self.parser = parser
         self.auto_write = auto_write
-        super().__init__(file_path=self.handle_file_path(file_path), changed_parameter=changed_parameter, **kwargs)
-
-    def handle_file_path(self, file_path: "PATH_TYPE") -> Path:
-        file_path = Path(file_path).resolve()
-        if file_path.exists() is False:
-            file_path.parent.mkdir(exist_ok=True, parents=True)
-            file_path.touch(exist_ok=True)
-
-        return file_path
+        super().__init__(name=Path(file_path).stem.removesuffix("config").removesuffix("_"), file_path=file_path, changed_parameter=changed_parameter, **kwargs)
 
     def _do_auto_write(self, success: bool) -> None:
         if success is True and self.auto_write is True:

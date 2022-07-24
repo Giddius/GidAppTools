@@ -189,6 +189,9 @@ class FileMixin(os.PathLike):
 
     def read(self):
         with self.lock:
+            if self.file_path.exists() is False:
+                self.file_path.parent.mkdir(parents=True, exist_ok=True)
+                self.file_path.touch(exist_ok=True)
             self._update_changed_data()
             # pylint: disable=unspecified-encoding
             with self.file_path.open(**self._read_kwargs) as f:

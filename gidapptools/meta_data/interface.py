@@ -53,7 +53,8 @@ META_ITEMS_TYPE = Any
 class AppMeta:
     factories: list[AbstractMetaFactory] = [MetaInfoFactory,
                                             MetaPathsFactory,
-                                            MetaConfigFactory]
+                                            # MetaConfigFactory
+                                            ]
     plugin_data: list[dict[str, Any]] = []
     default_to_initialize = [factory.product_name for factory in factories]
     default_base_configuration: dict[str, Any] = SafeMergeDict(raise_on_overwrite=True)

@@ -1,6 +1,8 @@
 import pytest
 from pathlib import Path
 from gidapptools.gid_config.interface import GidIniConfig
+from gidapptools.gid_config.parser.config_data import ConfigFile, BaseIniParser
+from gidapptools.gid_config.conversion.spec_data import SpecFile, SpecVisitor
 from gidapptools.errors import SectionExistsError, SectionMissingError, ValueValidationError
 from gidapptools.gid_config.conversion.entry_typus_item import EntryTypus
 from pprint import pprint
@@ -11,7 +13,7 @@ from datetime import timedelta
 
 
 def test_gid_ini_config_general(example_config_1: Path, example_spec_1: Path):
-    config = GidIniConfig(config_file=example_config_1, spec_file=example_spec_1)
+    config = GidIniConfig(config_file=ConfigFile(example_config_1, BaseIniParser()), spec_file=SpecFile(example_spec_1, SpecVisitor()))
     config.reload()
     assert config.get("debug", "a_value_with_spaces") == "this is a test"
     assert config.as_dict() == {'debug': {'current_testing_channel': 'bot-testing', "a_value_with_spaces": "this is a test"},
@@ -50,18 +52,18 @@ def test_gid_ini_config_sections(gid_ini_config: GidIniConfig):
     gid_ini_config.reload()
     gid_ini_config.config.changed_signal.connect(config_has_changed)
     assert len(gid_ini_config.config.all_sections) == 6
-    assert set(gid_ini_config.config.all_section_names) == {"general_settings", "debug", "this", "folder", 'ENV', 'data_types'}
+    assert set(gid_ini_config.config.all_section_names) == {"general_settings", "debug", "this", "folder", '__ENV__', 'data_types'}
     gid_ini_config.add_section('a_new_section')
     assert len(gid_ini_config.config.all_sections) == 7
     assert config_changes == 1
-    assert set(gid_ini_config.config.all_section_names) == {"general_settings", "debug", "this", "folder", "a_new_section", 'ENV', 'data_types'}
+    assert set(gid_ini_config.config.all_section_names) == {"general_settings", "debug", "this", "folder", "a_new_section", '__ENV__', 'data_types'}
 
     gid_ini_config.add_section("this")
     with pytest.raises(SectionExistsError):
         gid_ini_config.add_section("this", existing_ok=False)
     gid_ini_config.remove_section("debug")
     assert gid_ini_config.get("this", "something") == "blah"
-    assert set(gid_ini_config.config.all_section_names) == {"general_settings", "this", "folder", "a_new_section", 'ENV', 'data_types'}
+    assert set(gid_ini_config.config.all_section_names) == {"general_settings", "this", "folder", "a_new_section", '__ENV__', 'data_types'}
     assert len(gid_ini_config.config.all_sections) == 6
 
     assert config_changes == 2
@@ -91,7 +93,7 @@ def test_gid_ini_config_get_section(gid_ini_config: GidIniConfig):
 
 def test_env_get(gid_ini_config: GidIniConfig):
     gid_ini_config.reload()
-    x = gid_ini_config.get('ENV', "PATH")
+    x = gid_ini_config.get('__ENV__', "PATH")
     assert set(x) == {Path(item.strip()) for item in os.getenv('PATH').split(';') if item.strip()}
 
 

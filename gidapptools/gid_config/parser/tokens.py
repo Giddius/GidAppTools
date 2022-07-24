@@ -111,7 +111,7 @@ class Section(IniToken):
 class EnvSection(Section):
     # pylint: disable=super-init-not-called
     def __init__(self) -> None:
-        self.name = "ENV"
+        self.name = "__ENV__"
         self.comments = None
 
     @property

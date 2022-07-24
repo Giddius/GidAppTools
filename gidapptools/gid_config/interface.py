@@ -7,7 +7,7 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
-from typing import Any, Union, Callable, Iterable, Optional
+from typing import Any, Union, Callable, Iterable, Optional, TYPE_CHECKING
 from pathlib import Path
 from functools import partial
 from threading import RLock
@@ -22,6 +22,9 @@ from gidapptools.gid_config.parser.config_data import ConfigFile
 from gidapptools.gid_config.conversion.spec_data import SpecFile, SpecVisitor, SpecAttribute
 from gidapptools.gid_config.conversion.conversion_table import ConfigValueConversionTable
 from gidapptools.gid_config.conversion.entry_typus_item import EntryTypus
+
+if TYPE_CHECKING:
+    from gidapptools.meta_data.meta_paths.meta_paths_item import MetaPaths
 
 # endregion[Imports]
 
@@ -65,42 +68,19 @@ class SectionAccessor:
 
 class GidIniConfig:
     access_locks_storage: dict[tuple, RLock] = {}
-    default_spec_visitor: type[SpecVisitor] = SpecVisitor
-    default_parser: type[BaseIniParser] = BaseIniParser
     default_converter: type[ConfigValueConversionTable] = ConfigValueConversionTable
 
     def __init__(self,
-                 config_file: Path,
-                 config_file_auto_write: bool = True,
-                 spec_file: Optional[SpecFile] = None,
+                 spec_file: SpecFile,
                  converter: ConfigValueConversionTable = None,
                  empty_is_missing: bool = True,
-                 spec_visitor: SpecVisitor = None,
-                 parser: BaseIniParser = None,
-                 file_changed_parameter: str = 'size',
-                 fill_missing_with_defaults: bool = False) -> None:
+                 meta_paths: "MetaPaths" = None,
+                 is_dev: bool = False) -> None:
+        self.spec = spec_file
+        self.config = ConfigFile(self.spec.create_config_file(meta_paths=meta_paths, is_dev=is_dev), parser=BaseIniParser())
 
-        self.parser = self.default_parser() if parser is None else parser
-        self.spec_visitor = self.default_spec_visitor() if spec_visitor is None else spec_visitor
-        self.config = ConfigFile(file_path=config_file, parser=self.parser, changed_parameter=file_changed_parameter, auto_write=config_file_auto_write)
-        self.spec = SpecFile(file_path=spec_file, visitor=self.spec_visitor, changed_parameter=file_changed_parameter) if spec_file is not None else None
         self.converter = self.default_converter() if converter is None else converter
         self.empty_is_missing = empty_is_missing
-        self.fill_config_file(fill_missing_with_defaults=fill_missing_with_defaults)
-
-    def fill_config_file(self, fill_missing_with_defaults: bool):
-        if fill_missing_with_defaults is True:
-            for section, keys in self.spec.data.items():
-                if section == "ENV":
-                    continue
-                for key, data in keys.items():
-                    if not "default" in data:
-                        continue
-
-                    if not self.config.has_key(section_name=section, key_name=key):
-
-                        self.config.set_value(section_name=section, entry_key=key, entry_value=data["default"], create_missing_section=True)
-            self.config.save()
 
     @property
     def access_lock(self) -> RLock:
