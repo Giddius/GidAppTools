@@ -69,10 +69,10 @@ class ConfigData:
 
         return self.get_section(section_name=section_name).has_key(key_name=key_name)
 
-    def get_section(self, section_name: str, create_missing_section: bool = False) -> Section:
+    def get_section(self, section_name: str, create_missing_section: bool = True) -> Section:
         try:
             return self.sections[section_name]
-        except KeyError as error:
+        except (KeyError, SectionMissingError) as error:
             if create_missing_section is False:
                 raise SectionMissingError(section_name=section_name, config_data=self) from error
             section = Section(section_name)
@@ -100,19 +100,19 @@ class ConfigData:
         self._sections = None
         return True
 
-    def get_entry(self, section_name: str, entry_key: str, create_missing_section: bool = False) -> Entry:
+    def get_entry(self, section_name: str, entry_key: str, create_missing_section: bool = True) -> Entry:
         section = self.get_section(section_name=section_name, create_missing_section=create_missing_section)
         try:
             return section[entry_key]
         except KeyError as error:
             raise EntryMissingError(section_name=section_name, entry_key=entry_key, config_data=self) from error
 
-    def add_entry(self, section_name: str, entry: Entry, create_missing_section: bool = False) -> bool:
+    def add_entry(self, section_name: str, entry: Entry, create_missing_section: bool = True) -> bool:
         section = self.get_section(section_name=section_name, create_missing_section=create_missing_section)
         section.add_entry(entry=entry)
         return True
 
-    def set_value(self, section_name: str, entry_key: str, entry_value: str, create_missing_section: bool = False) -> bool:
+    def set_value(self, section_name: str, entry_key: str, entry_value: str, create_missing_section: bool = True) -> bool:
         try:
             entry = self.get_entry(section_name=section_name, entry_key=entry_key, create_missing_section=create_missing_section)
             entry.value = entry_value

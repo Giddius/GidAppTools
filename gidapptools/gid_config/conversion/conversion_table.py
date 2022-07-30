@@ -7,14 +7,14 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
-from typing import Any, Union, Mapping, Callable, Hashable
+from typing import Any, Union, Mapping, Callable, Hashable, Protocol
 from pathlib import Path
 from datetime import datetime, timedelta
 from functools import partial
 
 # * Third Party Imports --------------------------------------------------------------------------------->
 from yarl import URL
-
+from abc import ABC, abstractmethod
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.errors import ValueValidationError
 from gidapptools.general_helper.enums import MiscEnum
@@ -41,11 +41,6 @@ from gidapptools.gid_config.conversion.extra_base_typus import NonTypeBaseTypus
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion[Constants]
-
-# Function for conversion
-#
-# def conversion_function(value: Any, *other_arguments, **named_arguments)->Any:
-#     ...
 
 
 class ValueEncoder:

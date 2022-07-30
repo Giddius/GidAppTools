@@ -177,6 +177,10 @@ class ConfigSpecError(GidConfigError):
     ...
 
 
+class InvalidConverterValue(ConfigSpecError):
+    ...
+
+
 class UnconvertableTypusError(ConfigSpecError):
     ...
 
@@ -190,6 +194,10 @@ class MissingTypusOrSpecError(GidConfigError):
 
 
 class IniParsingError(GidConfigError):
+    ...
+
+
+class MissingDefaultValue(GidConfigError):
     ...
 
 

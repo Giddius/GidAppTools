@@ -7,13 +7,14 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
-from typing import Any, Union, Callable, Iterable, Optional, TYPE_CHECKING
+from typing import Any, Union, Callable, Iterable, Optional, TYPE_CHECKING, Literal
 from pathlib import Path
 from functools import partial
+import os
 from threading import RLock
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.errors import EntryMissingError, SectionMissingError, ValueValidationError, MissingTypusOrSpecError
+from gidapptools.errors import EntryMissingError, SectionMissingError, ValueValidationError, MissingTypusOrSpecError, MissingDefaultValue
 from gidapptools.gid_config.enums import SpecialTypus
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_config.parser.tokens import Section
@@ -25,7 +26,7 @@ from gidapptools.gid_config.conversion.entry_typus_item import EntryTypus
 
 if TYPE_CHECKING:
     from gidapptools.meta_data.meta_paths.meta_paths_item import MetaPaths
-
+    from gidapptools.custom_types import PATH_TYPE
 # endregion[Imports]
 
 # region [TODO]
@@ -69,18 +70,28 @@ class SectionAccessor:
 class GidIniConfig:
     access_locks_storage: dict[tuple, RLock] = {}
     default_converter: type[ConfigValueConversionTable] = ConfigValueConversionTable
+    __slots__ = ("spec",
+                 "config",
+                 "converter",
+                 "empty_is_missing")
 
     def __init__(self,
                  spec_file: SpecFile,
+                 config_file: ConfigFile,
                  converter: ConfigValueConversionTable = None,
-                 empty_is_missing: bool = True,
-                 meta_paths: "MetaPaths" = None,
-                 is_dev: bool = False) -> None:
+                 empty_is_missing: bool = True) -> None:
         self.spec = spec_file
-        self.config = ConfigFile(self.spec.create_config_file(meta_paths=meta_paths, is_dev=is_dev), parser=BaseIniParser())
-
+        self.config = config_file
         self.converter = self.default_converter() if converter is None else converter
         self.empty_is_missing = empty_is_missing
+
+    @property
+    def name(self) -> str:
+        return self.config.name
+
+    @property
+    def is_dev(self) -> bool:
+        return os.getenv("is_dev", "false") != "false"
 
     @property
     def access_lock(self) -> RLock:
@@ -94,15 +105,15 @@ class GidIniConfig:
         return lock
 
     def get_description(self, section_name: str, entry_key: str) -> str:
-        return self.spec.get(key_path=[section_name, entry_key, SpecAttribute.DESCRIPTION.value], default="")
+        return self.spec.get_description(section_name=section_name, entry_key=entry_key)
 
     def get_gui_visible(self, section_name: str, entry_key: str) -> bool:
         return self.spec.get_gui_visible(section_name=section_name, entry_key=entry_key)
 
     def get_implemented(self, section_name: str, entry_key: str) -> bool:
-        self.get_spec_attribute(section_name=section_name, entry_key=entry_key, attribute=SpecAttribute.IMPLEMENTED, default=True)
+        self.get_spec_attribute(section_name=section_name, entry_key=entry_key, attribute="implemented", default=True)
 
-    def get_spec_attribute(self, section_name: str, entry_key: str, attribute: Union[SpecAttribute, str], default=None) -> Any:
+    def get_spec_attribute(self, section_name: str, entry_key: str, attribute: str, default=None) -> Any:
         return self.spec.get_spec_attribute(section_name=section_name, entry_key=entry_key, attribute=attribute, default=default)
 
     def reload(self) -> None:
@@ -142,8 +153,10 @@ class GidIniConfig:
                 if default is not MiscEnum.NOTHING:
                     return default
                 by_spec_default = self.get_from_spec_default(section_name=section_name, entry_key=entry_key)
+
                 if by_spec_default is not MiscEnum.NOT_FOUND:
                     return by_spec_default
+
                 raise
 
             if not entry.value:
@@ -153,10 +166,13 @@ class GidIniConfig:
                     if default is not MiscEnum.NOTHING:
                         return default
                 spec_default = self.spec._get_entry_default(section_name=section_name, entry_key=entry_key)
-                if spec_default not in {MiscEnum.NOTHING, None}:
-                    entry.value = spec_default
-                else:
+                if spec_default is None:
                     return None
+
+                if spec_default is MiscEnum.NOTHING:
+                    raise MissingDefaultValue(f"No value found and no default provided for section {section_name!r}, key {entry_key!r}.")
+                else:
+                    entry.value = spec_default
 
             if typus is SpecialTypus.AUTO:
                 if self.spec is None:
@@ -230,13 +246,27 @@ class GidIniConfig:
         Basic Repr
         !REPLACE!
         """
-        return f'{self.__class__.__name__}'
+        return f'{self.__class__.__name__}(name={self.name!r}, spec={self.spec!r}, config={self.config!r}, converter={self.converter!r}, empty_is_missing={self.empty_is_missing!r})'
+
+
+def get_config(spec_path: "PATH_TYPE",
+               config_path: "PATH_TYPE",
+               spec_visitor: "SpecVisitor" = None,
+               config_parser: "BaseIniParser" = None,
+               config_auto_write: bool = True,
+               changed_parameter: Union[Literal['size'], Literal['file_hash']] = 'size',
+               converter: "ConfigValueConversionTable" = None,
+               empty_is_missing: bool = True):
+    spec = SpecFile(spec_path, visitor=spec_visitor or SpecVisitor(), changed_parameter=changed_parameter)
+    config = ConfigFile(config_path, parser=config_parser or BaseIniParser(), changed_parameter=changed_parameter, auto_write=config_auto_write)
+    config_item = GidIniConfig(spec, config, converter=converter, empty_is_missing=empty_is_missing)
+    return config_item
 
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    pass
-    # x = GidIniConfig(config_file=Path(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\tests\gid_config_tests\example_config_1.ini"),
-    #                  spec_file=Path(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\tests\gid_config_tests\example_spec_1.json"))
-    # x.reload()
+    x = get_config(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\tests\gid_config_tests\example_spec_2.json", r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\tests\gid_config_tests\example_config_2.ini")
+
+    print(x.get("general_settings", "owner_ids"))
+
 # endregion[Main_Exec]

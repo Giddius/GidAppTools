@@ -65,7 +65,6 @@ class FileMixin(os.PathLike):
 
     def __init__(self, file_path: Path, changed_parameter: str = None, **kwargs) -> None:
         self.file_path = Path(file_path)
-        self.name = self.file_path.name.casefold()
         self.changed_parameter = self.ChangeParameter.SIZE if changed_parameter is None else self.ChangeParameter(changed_parameter)
         self.read_mode: READ_TYPE = 'r'
         self.write_mode: WRITE_TYPE = 'w'
@@ -80,6 +79,10 @@ class FileMixin(os.PathLike):
             self.changed_parameter = changed_parameter
         else:
             self.changed_parameter = self.ChangeParameter(changed_parameter)
+
+    @property
+    def file_name(self) -> str:
+        return self.file_path.name
 
     @property
     def lock(self) -> RLock:
@@ -202,11 +205,6 @@ class FileMixin(os.PathLike):
             # pylint: disable=unspecified-encoding
             with self.file_path.open(**self._write_kwargs) as f:
                 f.write(data)
-
-    # def __getattr__(self, name: str) -> Any:
-    #     if hasattr(self.file_path, name):
-    #         return getattr(self.file_path, name)
-    #     return super().__getattr__(name)
 
     def __fspath__(self) -> str:
         return str(self.file_path)

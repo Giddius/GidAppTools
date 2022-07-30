@@ -5,7 +5,7 @@ from gidapptools.general_helper.mixins.file_mixin import FileMixin
 
 def test_init(check_file_path: Path):
     file = FileMixin(file_path=check_file_path)
-    assert file.name == check_file_path.name.casefold()
+    assert file.file_name == check_file_path.name.casefold()
     assert file.file_path == check_file_path
     assert file.last_size is None
     assert file.last_changed_time is None

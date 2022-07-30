@@ -22,7 +22,7 @@ from gidapptools.custom_types import PATH_TYPE
 from gidapptools.meta_data.meta_info import MetaInfo, MetaInfoFactory
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.meta_data.meta_paths import MetaPaths, MetaPathsFactory
-from gidapptools.gid_config.meta_factory import MetaConfig, MetaConfigFactory
+
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
 from gidapptools.general_helper.dict_helper import SafeMergeDict
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
@@ -197,9 +197,6 @@ def get_meta_info() -> MetaInfo:
 def get_meta_paths() -> MetaPaths:
     return app_meta['meta_paths']
 
-
-def get_meta_config() -> MetaConfig:
-    return app_meta['meta_config']
 
     # region[Main_Exec]
 if __name__ == '__main__':

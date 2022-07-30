@@ -114,6 +114,7 @@ def meta_data_from_path(in_path: Path) -> dict[str, Any]:
     _init_module = inspect.getmodule(None, in_path)
 
     _metadata = metadata(_init_module.__package__)
+
     _out = PackageMetadataDict.from_meta_importlib_meta_data(_metadata)
 
     return _out
