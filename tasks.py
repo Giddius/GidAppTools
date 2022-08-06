@@ -23,7 +23,7 @@ PYPROJECT_TOML_FILE_PATH = THIS_FILE_DIR.joinpath("pyproject.toml")
 VENV_FOLDER = THIS_FILE_DIR.joinpath('.venv')
 SCRIPTS_FOLDER = VENV_FOLDER.joinpath('scripts')
 VENV_ACTIVATOR_PATH = SCRIPTS_FOLDER.joinpath("activate.bat")
-CODE_DIR = THIS_FILE_DIR.joinpath("antistasi_sqf_tools")
+CODE_DIR = THIS_FILE_DIR.joinpath("gidapptools")
 
 
 class PyprojectTomlFile:
