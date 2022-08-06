@@ -7,61 +7,43 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
-import sys
-from typing import TYPE_CHECKING, Union, Optional, Any, Sequence, IO, Literal, TypeVar, ValuesView, KeysView, ItemsView
-from pathlib import Path
-import json
-from weakref import WeakSet
-import argparse
-from collections.abc import Iterable, Mapping
-from time import sleep
-from functools import partial
 import os
+import sys
+import argparse
+from typing import IO, TYPE_CHECKING, Any, Union, Literal, TypeVar, Optional, Sequence
+from pathlib import Path
+from collections.abc import Iterable
+from concurrent.futures import ThreadPoolExecutor
+
+# * Third Party Imports --------------------------------------------------------------------------------->
+from yarl import URL
+from jinja2 import Template, BaseLoader, Environment
+from rich.console import Console as RichConsole
+
 # * Qt Imports --------------------------------------------------------------------------------------->
 import PySide6
-from PySide6 import (QtCore, QtGui, QtWidgets, Qt3DAnimation, Qt3DCore, Qt3DExtras, Qt3DInput, Qt3DLogic, Qt3DRender, QtAxContainer, QtBluetooth,
-                     QtCharts, QtConcurrent, QtDataVisualization, QtDesigner, QtHelp, QtMultimedia, QtMultimediaWidgets, QtNetwork, QtNetworkAuth,
-                     QtOpenGL, QtOpenGLWidgets, QtPositioning, QtPrintSupport, QtQml, QtQuick, QtQuickControls2, QtQuickWidgets, QtRemoteObjects,
-                     QtScxml, QtSensors, QtSerialPort, QtSql, QtStateMachine, QtSvg, QtSvgWidgets, QtTest, QtUiTools, QtWebChannel, QtWebEngineCore,
-                     QtWebEngineQuick, QtWebEngineWidgets, QtWebSockets, QtXml)
+from PySide6.QtGui import QIcon, QImage, QPixmap
+from PySide6.QtCore import Qt, Slot, QEvent, QObject, QSettings
+from PySide6.QtWidgets import QWidget, QMainWindow, QMessageBox, QApplication, QSplashScreen, QSystemTrayIcon
 
-from PySide6.QtCore import (QByteArray, QCoreApplication, QDate, QDateTime, QEvent, QLocale, QMetaObject, QModelIndex, QModelRoleData, QMutex,
-                            QMutexLocker, QObject, QPoint, QRect, QRecursiveMutex, QRunnable, QSettings, QSize, QThread, QThreadPool, QTime, QUrl,
-                            QWaitCondition, Qt, QAbstractItemModel, QAbstractListModel, QAbstractTableModel, Signal, Slot)
-
-from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QFontMetrics, QGradient, QIcon, QImage,
-                           QKeySequence, QLinearGradient, QPainter, QPalette, QPixmap, QRadialGradient, QTransform)
-
-from PySide6.QtWidgets import (QApplication, QBoxLayout, QCheckBox, QColorDialog, QColumnView, QComboBox, QDateTimeEdit, QDialogButtonBox,
-                               QDockWidget, QDoubleSpinBox, QFontComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
-                               QLCDNumber, QLabel, QLayout, QLineEdit, QListView, QListWidget, QMainWindow, QMenu, QMenuBar, QMessageBox,
-                               QProgressBar, QProgressDialog, QPushButton, QSizePolicy, QSpacerItem, QSpinBox, QStackedLayout, QStackedWidget,
-                               QStatusBar, QStyledItemDelegate, QSystemTrayIcon, QTabWidget, QTableView, QTextEdit, QTimeEdit, QToolBox, QTreeView,
-                               QVBoxLayout, QWidget, QAbstractItemDelegate, QSplashScreen, QAbstractItemView, QAbstractScrollArea, QRadioButton, QFileDialog, QButtonGroup)
-from rich.console import Console as RichConsole
-from rich.highlighter import RegexHighlighter, Highlighter as RichHighlighter
-from rich.text import Text as RichText
-from rich.style import Style
-from jinja2 import Environment, BaseLoader, Template
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.gidapptools_qt.resources.placeholder import QT_PLACEHOLDER_IMAGE
+from gidapptools.errors import NotSetupError, MetaItemNotFoundError, ApplicationExistsError
 from gidapptools.general_helper.enums import MiscEnum
-from gidapptools.errors import ApplicationExistsError
-from gidapptools.general_helper.string_helper import StringCaseConverter, StringCase
 from gidapptools.gid_utility.version_item import VersionItem
 from gidapptools.general_helper.class_helper import make_repr
-from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
-from yarl import URL
-from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor, Future, ALL_COMPLETED, FIRST_EXCEPTION, FIRST_COMPLETED
-# * Type-Checking Imports --------------------------------------------------------------------------------->
-from gidapptools import get_meta_info
-from gidapptools.errors import MetaItemNotFoundError, NotSetupError
+from gidapptools.general_helper.string_helper import StringCase, StringCaseConverter
 from gidapptools.gidapptools_qt.basics.sys_tray import GidBaseSysTray
 from gidapptools.gidapptools_qt.basics.main_window import GidBaseMainWindow
+from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
+from gidapptools.gidapptools_qt.resources.placeholder import QT_PLACEHOLDER_IMAGE
+
+# * Local Imports --------------------------------------------------------------------------------------->
+from gidapptools import get_meta_info
+
+# * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.gidapptools_qt.resources.resources_helper import PixmapResourceItem
-import pp
+
 # endregion[Imports]
 
 # region [TODO]

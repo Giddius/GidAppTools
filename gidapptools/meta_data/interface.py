@@ -15,20 +15,19 @@ from warnings import warn
 from functools import reduce
 from importlib.metadata import entry_points
 
-
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.data import ENTRY_POINT_SELECT_ARGS
-from gidapptools.custom_types import PATH_TYPE
 from gidapptools.errors import NotSetupError, NoFactoryFoundError, MetaItemNotFoundError, RegisterAfterSetupError
+from gidapptools.custom_types import PATH_TYPE
 from gidapptools.meta_data.meta_info import MetaInfo, MetaInfoFactory
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.meta_data.meta_paths import MetaPaths, MetaPathsFactory
-from gidapptools.gid_config.meta_factory import MetaConfig, MetaConfigFactory, GidIniConfig
+
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
 from gidapptools.general_helper.dict_helper import SafeMergeDict
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
-from gidapptools.utility.helper import get_main_module_path
+
 # endregion[Imports]
 
 # region [TODO]
@@ -54,7 +53,8 @@ META_ITEMS_TYPE = Any
 class AppMeta:
     factories: list[AbstractMetaFactory] = [MetaInfoFactory,
                                             MetaPathsFactory,
-                                            MetaConfigFactory]
+                                            # MetaConfigFactory
+                                            ]
     plugin_data: list[dict[str, Any]] = []
     default_to_initialize = [factory.product_name for factory in factories]
     default_base_configuration: dict[str, Any] = SafeMergeDict(raise_on_overwrite=True)
@@ -196,10 +196,6 @@ def get_meta_info() -> MetaInfo:
 
 def get_meta_paths() -> MetaPaths:
     return app_meta['meta_paths']
-
-
-def get_meta_config() -> MetaConfig:
-    return app_meta['meta_config']
 
 
     # region[Main_Exec]

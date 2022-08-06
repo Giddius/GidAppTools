@@ -88,7 +88,7 @@ mkdir %WORKSPACE_FOLDER%\.venv
 ECHO.
 
 ECHO ################# Calling venv module to initialize new venv
-python -m venv %WORKSPACE_FOLDER%\.venv
+python -m venv --clear --upgrade-deps %WORKSPACE_FOLDER%\.venv
 ECHO.
 
 ECHO ################# activating venv for package installation
@@ -96,11 +96,7 @@ CALL %WORKSPACE_FOLDER%\.venv\Scripts\activate.bat
 ECHO.
 
 
-ECHO ################# upgrading venv for package installation
 
-call %WORKSPACE_FOLDER%\.venv\Scripts\python.exe -m pip install --upgrade pip
-
-ECHO.
 
 ECHO.
 ECHO -------------------------------------------------------------------------------------------------------------
@@ -115,9 +111,7 @@ ECHO +++++++++++++++++++++++++++++ Standard Packages +++++++++++++++++++++++++++
 ECHO.
 ECHO.
 
-ECHO ################# Installing Setuptools
-CALL pip install --no-cache-dir --upgrade setuptools
-ECHO.
+
 
 ECHO ################# Installing wheel
 CALL pip install --no-cache-dir --upgrade wheel
@@ -162,22 +156,22 @@ ECHO.
 Echo +++++++++++++++++++++++++++++ Misc Packages +++++++++++++++++++++++++++++
 ECHO.
 ECHO.
-CALL pip install --upgrade --no-cache-dir -r .\venv_setup_settings\required_misc.txt
+CALL pip install --upgrade -r .\venv_setup_settings\required_misc.txt
 ECHO.
 
 
 ECHO.
 ECHO.
 
-Echo +++++++++++++++++++++++++++++ Experimental Packages +++++++++++++++++++++++++++++
-ECHO.
+rem Echo +++++++++++++++++++++++++++++ Experimental Packages +++++++++++++++++++++++++++++
+rem ECHO.
 
-ECHO.
-CALL pip install --upgrade --no-cache-dir -r .\venv_setup_settings\required_experimental.txt
-ECHO.
+rem ECHO.
+rem CALL pip install --upgrade --no-cache-dir -r .\venv_setup_settings\required_experimental.txt
+rem ECHO.
 
-ECHO.
-ECHO.
+rem ECHO.
+rem ECHO.
 
 
 
@@ -187,7 +181,7 @@ FOR /F "tokens=1 delims=," %%A in (.\venv_setup_settings\required_from_github.tx
 ECHO.
 ECHO -------------------------- Installing %%A --------------^>
 ECHO.
-CALL pip install --upgrade --no-cache-dir git+%%A
+CALL pip install --upgrade git+%%A
 ECHO.
 )
 
@@ -198,7 +192,7 @@ Echo +++++++++++++++++++++++++++++ Test Packages +++++++++++++++++++++++++++++
 ECHO.
 
 ECHO.
-CALL pip install --upgrade --no-cache-dir -r .\venv_setup_settings\required_test.txt
+CALL pip install --upgrade -r .\venv_setup_settings\required_test.txt
 ECHO.
 
 
@@ -209,7 +203,7 @@ Echo +++++++++++++++++++++++++++++ Dev Packages +++++++++++++++++++++++++++++
 ECHO.
 
 ECHO.
-CALL pip install --upgrade --no-cache-dir -r .\venv_setup_settings\required_dev.txt
+CALL pip install --upgrade -r .\venv_setup_settings\required_dev.txt
 ECHO.
 
 

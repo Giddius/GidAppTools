@@ -8,24 +8,24 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import os
-import sys
 import re
-from contextlib import contextmanager
+import sys
 import queue
 import atexit
-import warnings
-import inspect
-from weakref import WeakSet, WeakValueDictionary
 import logging
-from typing import Union, Iterable, Mapping, TYPE_CHECKING, Any, Optional, Callable
+import warnings
+from typing import TYPE_CHECKING, Any, Union, Mapping, Callable, Iterable
 from pathlib import Path
+from weakref import WeakValueDictionary
+from contextlib import contextmanager
 from logging.handlers import QueueHandler, QueueListener
-import pp
+
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_logger.enums import LoggingLevel
-from gidapptools.gid_logger.handler import GidBaseRotatingFileHandler, GidBaseStreamHandler, GidStoringHandler
+from gidapptools.gid_logger.handler import GidBaseStreamHandler, GidBaseRotatingFileHandler
 from gidapptools.gid_logger.formatter import GidLoggingFormatter, get_all_func_names, get_all_module_names
 
+# * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.gid_logger.records import LOG_RECORD_TYPES
 
@@ -165,7 +165,7 @@ class WarningHandler:
                     func = "module"
                     break
 
-            record = logger.makeRecord(logger.name, level=logging.WARNING, fn=func, lno=lineno, msg=message, args=[], exc_info=None, func=func)
+            record = logger.makeRecord(logger.name, level=logging.WARNING, fn=func, lno=lineno, msg=message.rstrip('\n'), args=[], exc_info=None, func=func)
             logger.handle(record)
         except Exception as e:
             if self.old_show_warnings_func:

@@ -1,0 +1,44 @@
+{
+    "sections": {
+        "first_section": {
+            "default_converter": "integer",
+            "description": "this is the first section description",
+            "dynamic_entries_allowed": false,
+            "gui_visible": true,
+            "implemented": true,
+            "verbose_name": "1. Section",
+            "entries": {
+                "entry_one": {
+                    "converter": "string",
+                    "default": "one"
+                },
+                "entry_two": {
+                    "converter": "path",
+                    "description": "this is the second entry description",
+                    "verbose_name": "2. Entry",
+                    "default": "c:/path/to/two"
+                },
+                "entry_three": { "default": 3 }
+            }
+        },
+        "second_section": {
+            "entries": {
+                "entry_four": {
+                    "converter": "list(sub_typus=boolean)",
+                    "default": "yes, no, yes"
+                }
+            }
+        },
+        "third_section": {
+            "dynamic_entries_allowed": true,
+            "gui_visible": false,
+            "default_converter": "string",
+            "entries": {}
+        },
+        "fourth_section": {
+            "default_converter": "timedelta",
+            "dynamic_entries_allowed": true,
+            "entries": {}
+        }
+    }
+}

@@ -6,52 +6,15 @@ Soon.
 
 # region [Imports]
 
-import os
-import re
-import sys
-import json
+# * Standard Library Imports ---------------------------------------------------------------------------->
 import queue
-import math
-import base64
-import pickle
-import random
-import shelve
-import dataclasses
-import shutil
-import asyncio
 import logging
-import sqlite3
-import platform
-import importlib
-import subprocess
-import inspect
-import atexit
-from time import sleep, process_time, process_time_ns, perf_counter, perf_counter_ns
-from io import BytesIO, StringIO
-from abc import ABC, ABCMeta, abstractmethod
-from copy import copy, deepcopy
-from enum import Enum, Flag, auto, unique
-from time import time, sleep
-from pprint import pprint, pformat
+from abc import ABC, abstractmethod
+from typing import Any, TypeVar, Callable
 from pathlib import Path
-from string import Formatter, digits, printable, whitespace, punctuation, ascii_letters, ascii_lowercase, ascii_uppercase
-from timeit import Timer
-from typing import TYPE_CHECKING, Union, Callable, Iterable, Optional, Mapping, Any, IO, TextIO, BinaryIO, Hashable, Generator, Literal, TypeVar, TypedDict, AnyStr
-from zipfile import ZipFile, ZIP_LZMA
-from datetime import datetime, timezone, timedelta
-from tempfile import TemporaryDirectory
-from textwrap import TextWrapper, fill, wrap, dedent, indent, shorten
-from functools import wraps, partial, lru_cache, singledispatch, total_ordering, cached_property
-from importlib import import_module, invalidate_caches
-from contextlib import contextmanager, asynccontextmanager, nullcontext, closing, ExitStack, suppress
-from statistics import mean, mode, stdev, median, variance, pvariance, harmonic_mean, median_grouped
-from collections import Counter, ChainMap, deque, namedtuple, defaultdict
-from urllib.parse import urlparse
-from importlib.util import find_spec, module_from_spec, spec_from_file_location
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-from importlib.machinery import SourceFileLoader
-import queue
-from threading import Lock, RLock, Condition, Event, Semaphore, BoundedSemaphore, Barrier
+from threading import Lock
+from contextlib import contextmanager
+
 # endregion[Imports]
 
 # region [TODO]
@@ -128,7 +91,7 @@ class AbstractThreadsafePool(ABC):
 
 
 class GenericThreadsafePool(AbstractThreadsafePool):
-    __slots__ = ("_lock", "_max_size", "_prefill", "_objects", "_queue", "_obj_creator")
+    __slots__ = ("_obj_creator",)
 
     def __init__(self, obj_creator: Callable, max_size: int = 0, prefill: bool = False) -> None:
         self._obj_creator = obj_creator
@@ -140,6 +103,16 @@ class GenericThreadsafePool(AbstractThreadsafePool):
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(obj_creator={self._obj_creator!r}, max_size={self.max_size!r}, prefill={self._prefill!r})'
+
+
+T = TypeVar('T')
+
+
+class DecorateAbleList(list):
+
+    def decorate_append(self, item: T) -> T:
+        self.append(item)
+        return item
 
 # region[Main_Exec]
 

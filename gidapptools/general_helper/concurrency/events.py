@@ -45,6 +45,9 @@ class BlockingEvent(Event):
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(state={self.is_set()!r})'
 
+    def wait(self, timeout: float | None = None) -> bool:
+        return super().wait(timeout)
+
 
 # region[Main_Exec]
 if __name__ == '__main__':

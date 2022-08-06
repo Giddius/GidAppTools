@@ -1,78 +1,34 @@
+# region [Imports]
+
 import pytest
-from gidapptools.gid_config.interface import GidIniConfig
 from pathlib import Path
-from tempfile import TemporaryDirectory
 import shutil
 
+try:
+    from .data import THIS_FILE_DIR as DATA_DIR, get_file_path
+except ImportError:
+    ...
+
+# endregion [Imports]
+
+# region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-EXAMPLE_CONFIG_1_ORIGINAL_PATH = THIS_FILE_DIR.joinpath('example_config_1.ini')
-EXAMPLE_SPEC_1_ORIGINAL_PATH = THIS_FILE_DIR.joinpath("example_spec_1.json")
+# endregion [Constants]
 
 
-EXAMPLE_CONFIG_2_ORIGINAL_PATH = THIS_FILE_DIR.joinpath('example_config_2.ini')
-EXAMPLE_SPEC_2_ORIGINAL_PATH = THIS_FILE_DIR.joinpath("example_spec_2.json")
-
-EXAMPLE_CONFIG_3_ORIGINAL_PATH = THIS_FILE_DIR.joinpath('example_config_3.ini')
-EXAMPLE_SPEC_3_ORIGINAL_PATH = THIS_FILE_DIR.joinpath("example_spec_3.json")
-
-
-@pytest.fixture(scope="function")
-def example_config_1():
-    with TemporaryDirectory() as temp_folder:
-        new_path = shutil.copy(EXAMPLE_CONFIG_1_ORIGINAL_PATH, temp_folder)
-        yield Path(new_path)
+@pytest.fixture()
+def basic_configspec_path(tmp_path) -> Path:
+    temporary_dir = tmp_path
+    orig_path = get_file_path("basic_configspec.json")
+    new_path = temporary_dir.joinpath(orig_path.name)
+    shutil.copyfile(orig_path, new_path)
+    yield new_path
 
 
-@pytest.fixture(scope="function")
-def example_spec_1():
-    with TemporaryDirectory() as temp_folder:
-        new_path = shutil.copy(EXAMPLE_SPEC_1_ORIGINAL_PATH, temp_folder)
-        yield Path(new_path)
-
-
-@pytest.fixture(scope="function")
-def example_config_2():
-    with TemporaryDirectory() as temp_folder:
-        new_path = shutil.copy(EXAMPLE_CONFIG_2_ORIGINAL_PATH, temp_folder)
-        yield Path(new_path)
-
-
-@pytest.fixture(scope="function")
-def example_spec_2():
-    with TemporaryDirectory() as temp_folder:
-        new_path = shutil.copy(EXAMPLE_SPEC_2_ORIGINAL_PATH, temp_folder)
-        yield Path(new_path)
-
-
-@pytest.fixture(scope="function")
-def example_spec_3():
-    with TemporaryDirectory() as temp_folder:
-        new_path = shutil.copy(EXAMPLE_SPEC_3_ORIGINAL_PATH, temp_folder)
-        yield Path(new_path)
-
-
-@pytest.fixture(scope="function")
-def example_config_3():
-    with TemporaryDirectory() as temp_folder:
-        new_path = shutil.copy(EXAMPLE_CONFIG_3_ORIGINAL_PATH, temp_folder)
-        yield Path(new_path)
-
-
-@pytest.fixture(scope="function")
-def gid_ini_config(example_config_1: Path, example_spec_1: Path):
-    config = GidIniConfig(config_file=example_config_1, spec_file=example_spec_1)
-    yield config
-
-
-@pytest.fixture(scope="function")
-def gid_ini_config_2(example_config_2: Path, example_spec_2: Path):
-    config = GidIniConfig(config_file=example_config_2, spec_file=example_spec_2)
-    yield config
-
-
-@pytest.fixture(scope="function")
-def gid_ini_config_3(example_config_3: Path, example_spec_3: Path):
-    config = GidIniConfig(config_file=example_config_3, spec_file=example_spec_3)
-    yield config
+@pytest.fixture()
+def basic_ini_file_not_existing(tmp_path) -> Path:
+    temporary_dir = tmp_path
+    ini_path = temporary_dir.joinpath("basic_config.ini")
+    yield ini_path

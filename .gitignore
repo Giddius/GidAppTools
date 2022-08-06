@@ -139,3 +139,4 @@ dmypy.json
 /tools/reports
 /tests/reports
 gidapptools/gid_scribe/markdown/document.py
+/all_dependencies.json

@@ -37,10 +37,11 @@ def config_kwargs_item():
     yield item
 
 
-@pytest.fixture()
+@pytest.fixture(scope="function")
 def app_meta_instance():
     import gidapptools.meta_data.interface
     reload(gidapptools.meta_data.interface)
+    gidapptools.meta_data.interface.app_meta = gidapptools.meta_data.interface.AppMeta()
     call_and_return(gidapptools.meta_data.interface.setup_meta_data)
     yield gidapptools.meta_data.interface.app_meta
     gidapptools.meta_data.interface.app_meta.clean_up(remove_all_paths=True)
@@ -50,6 +51,7 @@ def app_meta_instance():
 def app_meta_instance_dry_run():
     import gidapptools.meta_data.interface
     reload(gidapptools.meta_data.interface)
+    gidapptools.meta_data.interface.app_meta = gidapptools.meta_data.interface.AppMeta()
     call_and_return(gidapptools.meta_data.interface.setup_meta_data)
     yield gidapptools.meta_data.interface.app_meta
     gidapptools.meta_data.interface.app_meta.clean_up(remove_all_paths=True, dry_run=True)

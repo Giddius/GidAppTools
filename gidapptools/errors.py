@@ -7,15 +7,18 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
-from typing import TYPE_CHECKING, Any, Union, Literal, Hashable, Optional, Iterable
+import os
+from typing import TYPE_CHECKING, Any, Union, Literal, Hashable, Iterable, Optional
 from pathlib import Path
 from datetime import timezone
-from contextlib import contextmanager, suppress
+from contextlib import contextmanager
+
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.general_helper.date_time import DateTimeFrame
     from gidapptools.gid_config.parser.config_data import ConfigData
     from gidapptools.gid_config.conversion.entry_typus_item import EntryTypus
+    from gidapptools.meta_data.meta_paths.meta_paths_item import NamedMetaPath
 
 # endregion[Imports]
 
@@ -40,6 +43,18 @@ class GidAppToolsBaseError(Exception):
     """
     Base Exception For GidAppTools.
     """
+
+
+class GidAppToolsFatalError(RuntimeError):
+    ...
+
+
+class ApplicationInstanceAlreadyRunningError(GidAppToolsFatalError):
+    def __init__(self, app_name: str, running_pid: int) -> None:
+        self.app_name = app_name
+        self.running_pid = running_pid
+        os.environ["FATAL_ERROR_RAISED"] = "1"
+        super().__init__(f"There is already an instance of {self.app_name!r} running with the pid of {self.running_pid!r}.")
 
 
 class MissingOptionalDependencyError(GidAppToolsBaseError):
@@ -162,7 +177,15 @@ class ConfigSpecError(GidConfigError):
     ...
 
 
+class InvalidConverterValue(ConfigSpecError):
+    ...
+
+
 class UnconvertableTypusError(ConfigSpecError):
+    ...
+
+
+class SpecDataMissingError(ConfigSpecError):
     ...
 
 
@@ -178,11 +201,11 @@ class IniParsingError(GidConfigError):
     ...
 
 
-class TrailingCommentError(IniParsingError):
+class MissingDefaultValue(GidConfigError):
     ...
 
 
-class EmptyConfigTextError(IniParsingError):
+class TrailingCommentError(IniParsingError):
     ...
 
 
@@ -270,6 +293,22 @@ class BaseMetaPathsError(GidAppToolsBaseError):
     """
 
 
+class UnknownMetaPathIdentifier(BaseMetaPathsError):
+
+    def __init__(self, identifier: str) -> None:
+        self.identifier = identifier
+        self.msg = f"{self.identifier!r} is not an valid identifier for a Meta-Path."
+        super().__init__(self.msg)
+
+
+class NotImplementedMetaPath(BaseMetaPathsError):
+
+    def __init__(self, identifier: "NamedMetaPath") -> None:
+        self.identifier = identifier
+        self.msg = f"No Path implemented for identifer {self.identifier!r}."
+        super().__init__(self.msg)
+
+
 class AppNameMissingError(BaseMetaPathsError):
 
     def __init__(self) -> None:
@@ -280,5 +319,6 @@ class AppNameMissingError(BaseMetaPathsError):
 # region[Main_Exec]
 if __name__ == '__main__':
     pass
+
 
 # endregion[Main_Exec]

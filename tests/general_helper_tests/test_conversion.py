@@ -1,7 +1,7 @@
 import pytest
 from pytest import param
 from typing import Union, Literal, Mapping, Any, Optional
-from gidapptools.general_helper.conversion import seconds2human, human2timedelta, ns_to_s, str_to_bool, human2bytes, bytes2human
+from gidapptools.general_helper.conversion import seconds2human, human2timedelta, ns_to_s, str_to_bool, human2bytes, bytes2human, number_to_pretty
 from collections import namedtuple
 import random
 from datetime import timedelta, datetime
@@ -184,3 +184,17 @@ def test_bytes2human(in_bytes: int, error: Optional[type[Exception]], expected: 
     else:
         converted = bytes2human(in_bytes)
         assert converted == expected
+
+
+def test_number_to_pretty():
+    assert number_to_pretty(10_000) == "10,000"
+
+    assert number_to_pretty(1) == "1"
+
+    assert number_to_pretty(10) == "10"
+
+    assert number_to_pretty(100) == "100"
+
+    assert number_to_pretty(0.1) == "0.1"
+
+    assert number_to_pretty(100_000_000) == "100,000,000"

@@ -7,15 +7,15 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
-import inspect
 import sys
+import json
+import inspect
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Mapping, TypeVar, Callable, Optional, Literal, Union
+from typing import Any, Mapping, TypeVar, Callable, Optional
 from pathlib import Path
 from datetime import datetime, timezone
-import json
-from importlib.metadata import metadata, packages_distributions, requires, files as metadata_files, distribution
+from importlib.metadata import metadata, PackageMetadata
 
 # * Third Party Imports --------------------------------------------------------------------------------->
 import psutil
@@ -26,7 +26,7 @@ from platformdirs import PlatformDirs
 from gidapptools.custom_types import PATH_TYPE
 from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.general_helper.date_time import DatetimeFmt
-
+import pp
 # endregion[Imports]
 
 # region [TODO]
@@ -44,6 +44,51 @@ from gidapptools.general_helper.date_time import DatetimeFmt
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion[Constants]
+
+
+class PackageMetadataDict(dict):
+    list_fields: set[str] = {"dynamic",
+                             "platform",
+                             "supported-platform",
+                             "classifier",
+                             "requires-dist",
+                             "requires-external",
+                             "project-url",
+                             "provides-extra",
+                             "provides-dist",
+                             "obsoletes-dist"}
+
+    get_fallback_keys: dict[str, tuple[str]] = {"maintainer": ("author",)}
+
+    def add(self, k, v) -> None:
+        k = k.casefold()
+
+        if k in self.list_fields:
+            try:
+                v = self[k] + [v]
+            except KeyError:
+                v = [v]
+
+        super().__setitem__(k, v)
+
+    def __getitem__(self, k):
+        try:
+            return super().__getitem__(k)
+        except KeyError as e:
+            if k in self.get_fallback_keys:
+                for fallback_k in self.get_fallback_keys[k]:
+                    try:
+                        return super().__getitem__(fallback_k)
+                    except KeyError:
+                        continue
+        raise KeyError(k)
+
+    @classmethod
+    def from_meta_importlib_meta_data(cls, importlib_meta_data: PackageMetadata) -> "PackageMetadataDict":
+        instance = cls()
+        for k, v in importlib_meta_data.items():
+            instance.add(k, v)
+        return instance
 
 
 def abstract_class_property(func):
@@ -69,7 +114,10 @@ def meta_data_from_path(in_path: Path) -> dict[str, Any]:
     _init_module = inspect.getmodule(None, in_path)
 
     _metadata = metadata(_init_module.__package__)
-    return {k.casefold(): v for k, v in _metadata.items()}
+
+    _out = PackageMetadataDict.from_meta_importlib_meta_data(_metadata)
+
+    return _out
 
 
 TCallable = TypeVar("TCallable", bound=Callable)

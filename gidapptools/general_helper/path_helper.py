@@ -8,18 +8,21 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import os
+import string
+import subprocess
 from glob import iglob
+from ctypes import windll
 from typing import TYPE_CHECKING, Union, Optional, Generator
 from pathlib import Path
 from contextlib import contextmanager
 from concurrent.futures import ThreadPoolExecutor
-from ctypes import windll
-import string
-import subprocess
-import platform
+
 # * Third Party Imports --------------------------------------------------------------------------------->
 from psutil import disk_partitions
+
+# * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.utility.enums import OperatingSystem
+
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.custom_types import PATH_TYPE

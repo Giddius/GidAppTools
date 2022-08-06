@@ -37,7 +37,7 @@ def mod_key_check_dispatch_table():
     yield CheckDispatchTable(key_conversion={"callable_key_conversion": "modified_callable_key_conversion"})
 
 
-file_helper_file_content_1 = """
+FILE_HELPER_FILE_CONTENT_1 = """
 
 this is the first line
 this is the second line
@@ -47,9 +47,10 @@ this is the last line
 
 """
 
-file_helper_file_content_2 = file_helper_file_content_1.strip()
+FILE_HELPER_FILE_CONTENT_2 = FILE_HELPER_FILE_CONTENT_1.strip()
 
-file_helper_file_content_3 = """
+
+FILE_HELPER_FILE_CONTENT_3 = """
 
 asdasd
 asdasdasd
@@ -58,7 +59,9 @@ asdasd
 asd
 \n"""
 
-file_helper_file_content_4 = """
+print(f"'{FILE_HELPER_FILE_CONTENT_3}'")
+
+FILE_HELPER_FILE_CONTENT_4 = """
 
 asdasd
 asdasdasd
@@ -72,7 +75,7 @@ asd
 def file_helper_file_1() -> Path:
     with TemporaryDirectory() as temp_folder:
         path = Path(temp_folder, "file_helper_file_1.txt")
-        path.write_text(file_helper_file_content_1, encoding='utf-8', errors='ignore')
+        path.write_text(FILE_HELPER_FILE_CONTENT_1, encoding='utf-8', errors='ignore')
         yield path
 
 
@@ -80,7 +83,7 @@ def file_helper_file_1() -> Path:
 def file_helper_file_2() -> Path:
     with TemporaryDirectory() as temp_folder:
         path = Path(temp_folder, "file_helper_file_2.txt")
-        path.write_text(file_helper_file_content_2, encoding='utf-8', errors='ignore')
+        path.write_text(FILE_HELPER_FILE_CONTENT_2, encoding='utf-8', errors='ignore')
         yield path
 
 
@@ -88,7 +91,7 @@ def file_helper_file_2() -> Path:
 def file_helper_file_3() -> Path:
     with TemporaryDirectory() as temp_folder:
         path = Path(temp_folder, "file_helper_file_3.txt")
-        path.write_text(file_helper_file_content_3, encoding='utf-8', errors='ignore')
+        path.write_text(FILE_HELPER_FILE_CONTENT_3, encoding='utf-8', errors='ignore')
         yield path
 
 
@@ -96,5 +99,5 @@ def file_helper_file_3() -> Path:
 def file_helper_file_4() -> Path:
     with TemporaryDirectory() as temp_folder:
         path = Path(temp_folder, "file_helper_file_4.txt")
-        path.write_text(file_helper_file_content_4, encoding='utf-8', errors='ignore')
+        path.write_text(FILE_HELPER_FILE_CONTENT_4, encoding='utf-8', errors='ignore')
         yield path

@@ -225,14 +225,17 @@ class BaseVisitor:
     handle_prefix = "_handle_"
     handler_regex = re.compile(rf"^{handle_prefix}(?P<target>\w+)$")
     named_args_doc_identifier = "NAMED_VALUE_ARGUMENTS"
-    extra_handlers: dict[Hashable, Callable] = {}
+    _extra_global_handlers: dict[Hashable, Callable] = {}
 
     def __init__(self, extra_handlers: dict[Hashable, Callable] = None, default_handler: Callable = None) -> None:
-        if extra_handlers:
-            self.extra_handlers |= extra_handlers
+        self._extra_handlers: dict[Hashable, Callable] = extra_handlers or {}
         self.default_handler = default_handler
         self._handlers: dict[Hashable, Callable] = None
         self._inspect_lock = Lock()
+
+    @property
+    def extra_handlers(self) -> dict[Hashable, Callable]:
+        return self._extra_global_handlers | self._extra_handlers
 
     def reload(self) -> None:
         self._collect_handlers()
@@ -243,24 +246,25 @@ class BaseVisitor:
         return True
 
     @classmethod
-    def add_handler(cls, target_name: str, handler: Callable) -> None:
+    def add_global_handler(cls, target_name: str, handler: Callable) -> None:
         # TODO: make it possible to inject self, or decide if.
         if cls._validate_new_handler(handler) is True:
-            cls.extra_handlers[target_name] = handler
+            cls._extra_global_handlers[target_name] = handler
+
+    def add_handler(self, target_name: str, handler: Callable) -> None:
+        if self._validate_new_handler(handler) is True:
+            self._extra_handlers[target_name] = handler
 
     def set_default_handler(self, handler: Callable):
         self.add_handler(MiscEnum.DEFAULT, handler)
 
-    @classmethod
-    def get_all_handler_names(cls) -> tuple[str]:
-        instance = cls(AdvancedDict())
-        return tuple(instance.handlers)
+    def get_all_handler_names(self) -> tuple[str]:
+        return tuple(self.handlers)
 
-    @classmethod
-    def get_all_handlers_with_named_arguments(cls) -> dict[str, Optional[dict[str, str]]]:
+    def get_all_handlers_with_named_arguments(self) -> dict[str, Optional[dict[str, str]]]:
         def get_named_args(text: str) -> dict[str, str]:
             _named_args = {}
-            named_args_index = text.find(cls.named_args_doc_identifier)
+            named_args_index = text.find(self.named_args_doc_identifier)
             next_line_index = text.find('\n', named_args_index)
             if named_args_index == -1:
                 return _named_args
@@ -281,9 +285,8 @@ class BaseVisitor:
                 line = next(gen, '')
             return _named_args
 
-        instance = cls(AdvancedDict())
         _out = {}
-        for handler_name, handler_obj in instance.handlers.items():
+        for handler_name, handler_obj in self.handlers.items():
             doc_text = handler_obj.__doc__
             if doc_text is None:
                 _out[handler_name] = {}

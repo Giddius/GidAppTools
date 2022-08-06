@@ -67,6 +67,9 @@ class Section(IniToken):
         self.comments = []
         self.entries = {}
 
+    def has_key(self, key_name: str) -> bool:
+        return key_name in self.entries
+
     def add_entry(self, entry: "Entry") -> None:
         entry.section = proxy(self)
         self.entries[entry.key] = entry
@@ -108,7 +111,7 @@ class Section(IniToken):
 class EnvSection(Section):
     # pylint: disable=super-init-not-called
     def __init__(self) -> None:
-        self.name = "ENV"
+        self.name = "__ENV__"
         self.comments = None
 
     @property

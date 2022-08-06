@@ -8,9 +8,11 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import inspect
+from typing import Callable
+from types import FunctionType
 from enum import Enum, auto
 from pathlib import Path
-from warnings import warn
+from warnings import warn, warn_explicit
 from functools import wraps
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
@@ -63,11 +65,12 @@ def _make_deprication_warning(typus: DeprecationWarning, **kwargs) -> None:
         if kwargs.get('alternative_arg_name', None):
             message_parts.append(f"use the alternative {kwargs.get('alternative_arg_name')!r}")
         message = ', '.join(message_parts) + '.'
+    func: FunctionType = kwargs["func"]
+    warn_explicit(message=message, category=DeprecationWarning, filename=func.__code__.co_filename, lineno=func.__code__.co_firstlineno, module=func.__module__)
+    # warn(message=message, category=DeprecationWarning, stacklevel=3)
 
-    warn(message=message, category=DeprecationWarning, stacklevel=3)
 
-
-def deprecated_argument(arg_name: str, alternative_arg_name: str = None):
+def deprecated_argument(arg_name: str, alternative_arg_name: str = None, not_used:bool=True):
 
     def _wrapper(func):
         func_name = func.__qualname__ or func.__name__
@@ -78,7 +81,7 @@ def deprecated_argument(arg_name: str, alternative_arg_name: str = None):
             args = new_bound_args.args
             kwargs = new_bound_args.kwargs
             if new_bound_args.arguments[arg_name] is not MiscEnum.NOTHING:
-                _make_deprication_warning(DeprecationWarningTypus.ARGUMENT, func=func, arg_name=arg_name, func_name=func_name, not_used=True, alternative_arg_name=alternative_arg_name)
+                _make_deprication_warning(DeprecationWarningTypus.ARGUMENT, func=func, arg_name=arg_name, func_name=func_name, not_used=not_used, alternative_arg_name=alternative_arg_name)
             return func(*args, **kwargs)
 
         return _wrapped
