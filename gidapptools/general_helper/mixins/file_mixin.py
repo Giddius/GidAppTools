@@ -19,7 +19,7 @@ from gidapptools.general_helper.enums import BaseGidEnum
 from gidapptools.general_helper.concurrency.locks import GLOBAL_RLOCK_MANAGER, GLOBAL_LOCK_MANAGER
 from gidapptools.gid_signal.interface import get_signal
 from gidapptools.general_helper.conversion import human2bytes
-
+from gidapptools.vendored.atomic_writes import atomic_write
 # endregion[Imports]
 
 # region [TODO]
@@ -189,7 +189,7 @@ class FileMixin(os.PathLike):
     def write(self, data) -> None:
         with self.lock:
             # pylint: disable=unspecified-encoding
-            with self.file_path.open(**self._write_kwargs) as f:
+            with atomic_write(self.file_path, overwrite=True, **self._write_kwargs) as f:
                 f.write(data)
 
     def __fspath__(self) -> str:
