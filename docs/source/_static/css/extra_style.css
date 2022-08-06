@@ -1,0 +1,8 @@
+
+
+
+.function{padding-bottom: 5rem;}
+
+.function::after{content: " ";
+    display: block;
+    border-bottom: 3px solid #9E9E9E;}

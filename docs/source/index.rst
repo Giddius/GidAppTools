@@ -7,9 +7,8 @@ Welcome to gidapptools's documentation!
 =======================================
 
 
-.. thumbnail:: /_images/gid_app_tools_logo.png
+.. image:: /_images/gid_app_tools_logo.png
    :width: 500px
-   :show_caption: False
    :align: center
 
 .. toctree::

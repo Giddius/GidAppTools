@@ -9,4 +9,4 @@ API
    :caption: Contents:
    :glob:
 
-   /api/*
+   /api/general_helper/general_helper_index

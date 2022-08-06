@@ -43,6 +43,7 @@ STRING_CASE_FUNC_TYPE = Callable[[Iterable[str]], str]
 
 # TODO: Rewrite as normal class/Module-Singleton
 class StringCaseConverter:
+    """ """
     SNAKE = StringCase.SNAKE
     SCREAMING_SNAKE = StringCase.SCREAMING_SNAKE
     CAMEL = StringCase.CAMEL
@@ -75,7 +76,6 @@ class StringCaseConverter:
     @classmethod
     @property
     def split_grammar(cls):
-
         if cls._split_grammar is None:
             underscore = ppa.Literal('_').suppress()
             dash = ppa.Literal("-").suppress()
@@ -90,48 +90,94 @@ class StringCaseConverter:
 
     @classmethod
     def _to_word_list(cls, in_string: str) -> Iterable[str]:
+        """
+        :param in_string: str:
+        """
         parts = cls.split_grammar.parse_string(in_string, parse_all=True)
 
         return [word for word in parts if word]
 
     @staticmethod
     def _to_block_upper_case(word_list: Iterable[str]) -> str:
+        """
+        :param word_list: Iterable[str]:
+        """
         return ''.join(word.upper() for word in word_list)
 
     @staticmethod
     def _to_snake_case(word_list: Iterable[str]) -> str:
+        """
+        :param word_list: Iterable[str]:
+        """
         return '_'.join(word_list).casefold()
 
     @staticmethod
     def _to_camel_case(word_list: Iterable[str]) -> str:
+        """
+        :param word_list: Iterable[str]:
+        """
         return word_list[0].casefold() + ''.join(item.title() for item in word_list[1:])
 
     @staticmethod
     def _to_pascal_case(word_list: Iterable[str]) -> str:
+        """
+        :param word_list: Iterable[str]:
+        """
         return ''.join(item.title() for item in word_list)
 
     @staticmethod
     def _to_kebap_case(word_list: Iterable[str]) -> str:
+        """
+
+        :param word_list: Iterable[str]:
+
+        """
         return '-'.join(word_list)
 
     @staticmethod
     def _to_screaming_snake_case(word_list: Iterable[str]) -> str:
+        """
+
+        :param word_list: Iterable[str]:
+
+        """
         return '_'.join(word_list).upper()
 
     @staticmethod
     def _to_split_case(word_list: Iterable[str]) -> str:
+        """
+
+        :param word_list: Iterable[str]:
+
+        """
         return ' '.join(word_list)
 
     @staticmethod
     def _to_title_case(word_list: Iterable[str]) -> str:
+        """
+
+        :param word_list: Iterable[str]:
+
+        """
         return ' '.join(word.title() for word in word_list)
 
     @staticmethod
     def _to_upper_case(word_list: Iterable[str]) -> str:
+        """
+
+        :param word_list: Iterable[str]:
+
+        """
         return ' '.join(word.upper() for word in word_list)
 
     @classmethod
     def convert_to(cls, in_string: str, target_case: Union[str, StringCase]) -> str:
+        """
+
+        :param in_string: str:
+        :param target_case: Union[str, StringCase]:
+
+        """
         target_case = StringCase(target_case) if isinstance(target_case, str) else target_case
         word_list = cls._to_word_list(in_string)
         return cls.dispatch_table.get(target_case)(word_list)
@@ -142,6 +188,12 @@ _ = StringCaseConverter.split_grammar
 
 
 def replace_by_dict(in_string: str, in_dict: dict[str, str]) -> str:
+    """
+
+    :param in_string: str:
+    :param in_dict: dict[str, str]:
+
+    """
     mod_string = in_string
     for key, value in in_dict.items():
         mod_string = mod_string.replace(key, value)
@@ -149,6 +201,12 @@ def replace_by_dict(in_string: str, in_dict: dict[str, str]) -> str:
 
 
 def extract_by_map(in_string: str, extract_data: Union[Iterable[str], Mapping[str, str]]) -> Iterable[str]:
+    """
+
+    :param in_string: str:
+    :param extract_data: Union[Iterable[str], Mapping[str, str]]:
+
+    """
     parts = []
     re_pattern = re.compile(r'|'.join(extract_data))
     for match in re_pattern.finditer(in_string):
@@ -164,13 +222,30 @@ NEWLINE_CLEANING_REGEX = re.compile(r"\n+")
 
 
 def clean_whitespace(in_text: str, replace_newline: bool = False) -> str:
+    """
+
+    :param in_text: str:
+    :param replace_newline: bool:  (Default value = False)
+
+    """
     cleaned_text = SPACE_CLEANING_REGEX.sub(' ', in_text)
     if replace_newline is True:
         cleaned_text = NEWLINE_CLEANING_REGEX.sub(' ', cleaned_text)
     return cleaned_text
 
 
-def shorten_string(in_text: str, max_length: int, shorten_side: Literal["right", "left"] = "right", placeholder: str = '...', clean_before: bool = True, ensure_space_around_placeholder: bool = False, split_on: str = '\s|\n') -> str:
+def shorten_string(in_text: str, max_length: int, shorten_side: Literal["right", "left"] = "right", placeholder: str = '...', clean_before: bool = True, ensure_space_around_placeholder: bool = False, split_on: str = r'\s|\n') -> str:
+    """
+
+    :param in_text: str:
+    :param max_length: int:
+    :param shorten_side: Literal["right", "left"]:  (Default value = "right")
+    :param placeholder: str:  (Default value = "...")
+    :param clean_before: bool:  (Default value = True)
+    :param ensure_space_around_placeholder: bool:  (Default value = False)
+    :param split_on: str:
+
+    """
     max_length = int(max_length)
     if shorten_side.casefold() not in {"left", "right"}:
         raise ValueError(shorten_side)
@@ -196,17 +271,23 @@ def shorten_string(in_text: str, max_length: int, shorten_side: Literal["right",
 
 
 def split_quotes_aware(text: str, split_chars: Iterable[str] = None, quote_chars: Iterable[str] = None, strip_parts: bool = True) -> list[str]:
-    """
-    Splits a string on but not if the separator char is inside of quotes.
+    """Splits a string on but not if the separator char is inside of quotes.
 
-    Args:
-        text (str): The string to split.
-        split_chars (Iterable[str], optional): The characters to split on. Defaults to `,`.
-        quote_chars (Iterable[str], optional): The quote chars that should be considered real quotes. Defaults to `"` and `'`.
-        strip_parts (bool, optional): If each found substrin should be striped of preceding and trailing whitespace in the result. Defaults to True.
+    :param text: The string to split.
+    :type text: str
+    :param split_chars: The characters to split on. Defaults to `,`.
+    :type split_chars: Iterable[str]
+    :param quote_chars: The quote chars that should be considered real quotes. Defaults to `"` and `'`.
+    :type quote_chars: Iterable[str]
+    :param strip_parts: If each found substrin should be striped of preceding and trailing whitespace in the result. Defaults to True.
+    :type strip_parts: bool
+    :param text: str:
+    :param split_chars: Iterable[str]:  (Default value = None)
+    :param quote_chars: Iterable[str]:  (Default value = None)
+    :param strip_parts: bool:  (Default value = True)
+    :returns: The found sub-parts.
+    :rtype: list[str]
 
-    Returns:
-        list[str]: The found sub-parts.
     """
     split_chars = {','} if split_chars is None else set(split_chars)
     quote_chars = {"'", '"'} if quote_chars is None else set(quote_chars)
@@ -215,6 +296,7 @@ def split_quotes_aware(text: str, split_chars: Iterable[str] = None, quote_chars
     inside_quotes: str = None
 
     def _add_part():
+        """ """
         nonlocal parts
         nonlocal temp_chars
         part = ''.join(temp_chars)
@@ -245,6 +327,11 @@ def split_quotes_aware(text: str, split_chars: Iterable[str] = None, quote_chars
 
 
 def make_attribute_name(in_string: str) -> str:
+    """
+
+    :param in_string: str:
+
+    """
 
     # Remove invalid characters
     in_string = re.sub(r'-', '_', in_string)
@@ -257,8 +344,19 @@ def make_attribute_name(in_string: str) -> str:
 
 
 def fix_multiple_quotes(_text: str, max_consecutive_quotes: int = None) -> str:
+    """
+
+    :param _text: str:
+    :param max_consecutive_quotes: int:  (Default value = None)
+
+    """
 
     def _replace_function(match: re.Match):
+        """
+
+        :param match: re.Match:
+
+        """
         return match.group()[0]
     if max_consecutive_quotes is None:
         pattern = r"""(\"+)|(\'+)"""
@@ -270,13 +368,29 @@ def fix_multiple_quotes(_text: str, max_consecutive_quotes: int = None) -> str:
 
 
 def escape_doubled_quotes(text: str) -> str:
+    """
+
+    :param text: str:
+
+    """
     def _replace_function(match: re.Match):
+        """
+
+        :param match: re.Match:
+
+        """
         return r"\ ".strip() + match.group()[0]
 
     return re.sub(r"""(\"{2})|(\'{2})""", _replace_function, text)
 
 
 def deindent(in_text: str, ignore_first_line: bool = False) -> str:
+    """
+
+    :param in_text: str:
+    :param ignore_first_line: bool:  (Default value = False)
+
+    """
     if in_text == "":
         return in_text
     pre_whitespace_regex = re.compile(r"\s*")
@@ -308,6 +422,13 @@ def deindent(in_text: str, ignore_first_line: bool = False) -> str:
 
 
 def multi_line_dedent(in_text: str, strip_pre_lines: bool = True, strip_post_lines: bool = True) -> str:
+    """
+
+    :param in_text: str:
+    :param strip_pre_lines: bool:  (Default value = True)
+    :param strip_post_lines: bool:  (Default value = True)
+
+    """
     text = dedent(in_text)
 
     if strip_pre_lines is True:
@@ -321,15 +442,32 @@ def multi_line_dedent(in_text: str, strip_pre_lines: bool = True, strip_post_lin
 
 
 def strip_only_wrapping_empty_lines(in_text: str) -> str:
+    """
+
+    :param in_text: str:
+
+    """
     empty_line_pattern = re.compile(r"(^\s*)|(\s*$)")
     return empty_line_pattern.sub("", in_text)
 
 
 def string_strip(in_string: str, chars: str = None) -> str:
+    """
+
+    :param in_string: str:
+    :param chars: str:  (Default value = None)
+
+    """
     return in_string.strip(chars)
 
 
 def remove_chars(in_string: str, *chars) -> str:
+    """
+
+    :param in_string: str:
+    :param chars: Iterable[str]:
+
+    """
     return ''.join(char for char in in_string if char not in set(chars))
 # region[Main_Exec]
 
