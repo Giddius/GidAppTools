@@ -54,6 +54,7 @@ from gidapptools.general_helper.enums import MiscEnum
 import pyparsing as ppa
 from pyparsing import common as ppc
 from gidapptools.errors import InvalidConverterValue
+from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_globals
 # endregion[Imports]
 
 # region [TODO]
@@ -67,21 +68,10 @@ from gidapptools.errors import InvalidConverterValue
 # endregion[Logging]
 
 # region [Constants]
-
+get_dummy_profile_decorator_in_globals()
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion[Constants]
-
-
-class ConverterSpecification:
-    __slots__ = ("typus", "kw_arguments")
-
-    def __init__(self, typus: str, kw_arguments: Mapping[str, Union[str, int, float]] = None) -> None:
-        self.typus = typus
-        self.kw_arguments = kw_arguments or {}
-
-    def __repr__(self) -> str:
-        return f'{self.__class__.__name__}(typus={self.typus!r}, kw_arguments={self.kw_arguments!r})'
 
 
 REPLACE_WORDS = {"$comma$": ",",

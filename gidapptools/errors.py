@@ -185,6 +185,10 @@ class UnconvertableTypusError(ConfigSpecError):
     ...
 
 
+class SpecDataMissingError(ConfigSpecError):
+    ...
+
+
 class ConversionError(GidConfigError):
     ...
 

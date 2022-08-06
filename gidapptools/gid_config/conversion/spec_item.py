@@ -53,7 +53,8 @@ from importlib.machinery import SourceFileLoader
 import attrs
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_config.conversion.converter_grammar import ConverterSpecData, reverse_replace_value_words
-
+if TYPE_CHECKING:
+    from gidapptools.gid_config.conversion.base_converters import ConfigValueConverter
 
 # endregion[Imports]
 
@@ -74,6 +75,47 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
+class SpecSection:
+    __slots__ = ("name",
+                 "default_converter",
+                 "description",
+                 "dynamic_entries_allowed",
+                 "gui_visible",
+                 "implemented",
+                 "verbose_name",
+                 "entries")
+
+    def __init__(self,
+                 name: str,
+                 default_converter: ConverterSpecData = MiscEnum.NOTHING,
+                 description: str = "",
+                 dynamic_entries_allowed: bool = False,
+                 gui_visible: bool = True,
+                 implemented: bool = True,
+                 verbose_name: str = MiscEnum.NOTHING) -> None:
+        self.name = name
+        self.default_converter = default_converter
+        self.description = description
+        self.dynamic_entries_allowed = dynamic_entries_allowed
+        self.gui_visible = gui_visible
+        self.implemented = implemented
+        self.verbose_name = verbose_name if verbose_name is not MiscEnum.NOTHING else self.name.replace("_", " ").title()
+        self.entries: dict[str, "SpecEntry"] = {}
+
+    def __getitem__(self, name: str) -> "SpecEntry":
+        return self.entries[name]
+
+    def add_entry(self, entry: "SpecEntry") -> None:
+        entry.set_section(self)
+        self.entries[entry.name] = entry
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(name={self.name!r})'
+
+
 def converter_data_to_string(converter_data: "ConverterSpecData") -> str:
     text = converter_data["typus"]
     if converter_data["kw_arguments"]:
@@ -85,107 +127,62 @@ def converter_data_to_string(converter_data: "ConverterSpecData") -> str:
     return text
 
 
-class SpecItem:
-    __slots__ = ("_section_name",
-                 "_key_name",
-                 "_converter_data",
-                 "_verbose_name",
-                 "_default",
-                 "_short_description",
-                 "_gui_visible",
-                 "_implemented",
-                 "_default_converter_data")
+class SpecEntry:
+    __slots__ = ("name",
+                 "converter",
+                 "default",
+                 "description",
+                 "gui_visible",
+                 "implemented",
+                 "verbose_name",
+                 "_section")
 
     def __init__(self,
-                 section_name: str,
-                 key_name: str,
-                 converter_data: Union["ConverterSpecData", MiscEnum],
+                 name: str,
+                 converter: ConverterSpecData = MiscEnum.NOTHING,
+                 default: str = MiscEnum.NOTHING,
+                 description: str = "",
                  verbose_name: str = MiscEnum.NOTHING,
-                 default: Union[None, str, MiscEnum] = MiscEnum.NOTHING,
-                 short_description: str = MiscEnum.NOTHING,
-                 gui_visible: bool = MiscEnum.NOTHING,
-                 implemented: bool = MiscEnum.NOTHING,
-                 default_converter_data: Union["ConverterSpecData", MiscEnum] = MiscEnum.NOTHING) -> None:
-        self._section_name = section_name
-        self._key_name = key_name
-        self._converter_data = converter_data
-        self._verbose_name = verbose_name
-        self._default = default
-        self._short_description = short_description
-        self._gui_visible = gui_visible
-        self._implemented = implemented
-        self._default_converter_data = default_converter_data
+                 implemented: bool = True,
+                 gui_visible: bool = True) -> None:
+        self.name = name
+        self.converter = converter
+        self.default = default
+        self.description = description
+        self.verbose_name = verbose_name if verbose_name is not MiscEnum.NOTHING else self.name.replace("_", " ").title()
+        self.implemented = implemented
+        self.gui_visible = gui_visible
+        self._section: SpecSection = None
 
     @property
-    def is_section_default(self) -> bool:
-        return self.key_name == "__default__"
+    def section(self) -> Optional[SpecSection]:
+        return self._section
 
-    @property
-    def section_name(self) -> str:
-        return self._section_name
+    def set_section(self, section: SpecSection) -> None:
+        self._section = section
+        if self.converter is MiscEnum.NOTHING and self.section.default_converter is not MiscEnum.NOTHING:
+            self.converter = self.section.default_converter
 
-    @property
-    def key_name(self) -> str:
-        return self._key_name
+        if self.section.gui_visible is False:
+            self.gui_visible = False
 
-    @property
-    def converter_data(self) -> Union["ConverterSpecData", MiscEnum]:
-        if self._converter_data is MiscEnum.NOTHING:
-            return self._default_converter_data
-        return self._converter_data
+        if self.section.implemented is False:
+            self.implemented = False
 
-    @property
-    def verbose_name(self) -> str:
-        if self._verbose_name is MiscEnum.NOTHING:
-            return self.key_name.replace("_", " ").title()
-        return self._verbose_name
+    def __getitem__(self, name: str):
+        if name in {"name", "converter", "default", "description", "verbose_name", "implemented", "gui_visible"}:
+            return getattr(self, name)
+        raise KeyError(name)
 
-    @property
-    def default(self) -> Union[None, str, MiscEnum]:
-        return self._default
-
-    @property
-    def short_description(self) -> str:
-        return self._short_description
-
-    @property
-    def gui_visible(self) -> bool:
-        return self._gui_visible
-
-    @property
-    def implemented(self) -> bool:
-        return self._implemented
+    def __str__(self) -> str:
+        return self.name
 
     def __repr__(self) -> str:
-        param_strings = []
-        for attr_name in (n for n in self.__slots__ if n != "_default_converter_data"):
-
-            name = attr_name.removeprefix("_")
-
-            param_strings.append(f"{name}={getattr(self, name)!r}")
-
-        params_text = ", ".join(param_strings)
-
-        return f'{self.__class__.__name__}({params_text})'
-
-    def to_json(self) -> dict[str, object]:
-        _out = {}
-        for attr_name in (n for n in self.__slots__ if n not in {"_default_converter_data", "_section_name", "_key_name"}):
-            attr_value = getattr(self, attr_name)
-            if attr_value is MiscEnum.NOTHING:
-                continue
-
-            if attr_name == "_converter_data":
-                attr_name = "converter"
-                attr_value = converter_data_to_string(attr_value)
-
-            _out[attr_name.removeprefix("_")] = attr_value
-        return _out
+        return f'{self.__class__.__name__}(name={self.name!r})'
 
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    x = SpecItem("sec", "key", {})
-    print(x)
+    pass
 
 # endregion[Main_Exec]

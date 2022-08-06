@@ -10,6 +10,7 @@ Soon.
 from pathlib import Path
 from threading import Lock, RLock
 
+
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.custom_types import LOCK_TYPE, PATH_TYPE
 
@@ -69,8 +70,32 @@ class FileLocksManager:
 GLOBAL_LOCK_MANAGER = FileLocksManager(Lock)
 GLOBAL_RLOCK_MANAGER = FileLocksManager(RLock)
 
+
+class PathSpecificLock:
+    _selection_lock = Lock()
+    _lock_registry: dict[Path, "PathSpecificLock"] = {}
+
+    def __new__(cls, path: Path) -> Lock:
+        with cls._selection_lock:
+            if path not in cls._lock_registry:
+                cls._lock_registry[path] = Lock()
+
+            return cls._lock_registry[path]
+
+
+class PathSpecificRLock:
+    _selection_lock = Lock()
+    _lock_registry: dict[Path, "PathSpecificLock"] = {}
+
+    def __new__(cls, path: Path) -> RLock:
+        with cls._selection_lock:
+            if path not in cls._lock_registry:
+                cls._lock_registry[path] = RLock()
+
+            return cls._lock_registry[path]
+
+
 # region[Main_Exec]
 if __name__ == '__main__':
     pass
-
 # endregion[Main_Exec]

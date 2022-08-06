@@ -36,19 +36,15 @@ class BlockingEvent(Event):
         super().__init__()
         self.set()
 
-    @profile
     def __enter__(self) -> None:
         self.clear()
 
-    @profile
     def __exit__(self, exception_type: type = None, exception_value: BaseException = None, traceback: Any = None) -> None:
         self.set()
 
-    @profile
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(state={self.is_set()!r})'
 
-    @profile
     def wait(self, timeout: float | None = None) -> bool:
         return super().wait(timeout)
 

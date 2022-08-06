@@ -10,26 +10,30 @@ Soon.
 import re
 import json
 import os
+import pp
 from typing import Any, Union, Literal, Callable, Hashable, Optional, TYPE_CHECKING
 from pathlib import Path
 from datetime import datetime, timedelta
 from threading import RLock
 from collections import defaultdict
 from inspect import isfunction, ismethod
+import weakref
 # * Third Party Imports --------------------------------------------------------------------------------->
 from yarl import URL
-
+import deepmerge
+from copy import deepcopy
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.custom_types import PATH_TYPE
-
+from gidapptools.general_helper.class_helper import MethodEnabledWeakSet
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.general_helper.dict_helper import BaseVisitor, AdvancedDict, KeyPathError, set_by_key_path
 from gidapptools.general_helper.string_helper import split_quotes_aware
 from gidapptools.general_helper.mixins.file_mixin import FileMixin
-from gidapptools.gid_config.conversion.conversion_table import EntryTypus
+from gidapptools.errors import SectionMissingError, ConfigSpecError, SpecDataMissingError
 from gidapptools.gid_config.conversion.extra_base_typus import NonTypeBaseTypus
-from gidapptools.gid_config.conversion.converter_grammar import parse_specification, ConverterSpecification, ConverterSpecData
-from gidapptools.gid_config.conversion.spec_item import SpecItem
+from gidapptools.gid_config.conversion.converter_grammar import parse_specification, ConverterSpecData
+from gidapptools.gid_config.conversion.spec_item import SpecEntry, SpecSection
+from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_globals
 if TYPE_CHECKING:
     from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
     from gidapptools.meta_data.meta_paths.meta_paths_item import MetaPaths
@@ -47,159 +51,184 @@ if TYPE_CHECKING:
 # endregion[Logging]
 
 # region [Constants]
-
+get_dummy_profile_decorator_in_globals()
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion[Constants]
 
 
-class SpecVisitor:
+class SpecLoader:
+    __slots__ = ("spec_section_class",
+                 "spec_entry_class",
+                 "parse_func",
+                 "loaded_data")
 
-    def __init__(self, spec_item_class: type["SpecItem"] = SpecItem) -> None:
-        self.spec_item_class = spec_item_class
-        self.parse_func: Callable[[str], ConverterSpecData] = parse_specification
+    def __init__(self,
+                 spec_section_class: type[SpecSection] = SpecSection,
+                 spec_entry_class: type[SpecEntry] = SpecEntry,
+                 parse_function: Callable[[str], ConverterSpecData] = parse_specification) -> None:
+        self.spec_section_class = spec_section_class
+        self.spec_entry_class = spec_entry_class
+        self.parse_func = parse_function
+        self.loaded_data: dict[str, SpecSection] = None
 
-    def visit(self, in_dict: Union["AdvancedDict", dict], key_path: tuple[str], value: dict[str, object], default_convertert_data: ConverterSpecData = MiscEnum.NOTHING) -> None:
+    @property
+    def is_loaded(self) -> bool:
+        return self.loaded_data is not None
 
-        key_path = tuple(key_path)
-        try:
-            converter_data = self.parse_func(value["converter"])
-        except KeyError:
-            converter_data = default_convertert_data
-        new_value = self.spec_item_class(section_name=key_path[0], key_name=key_path[1], converter_data=converter_data, **{k: v for k, v in value.items() if k != "converter"})
+    def process_entry(self, entry_name: str, entry_data: dict[str, object]) -> SpecEntry:
+        entry_data = dict(entry_data)
+        if entry_data.get("converter", None) is not None:
+            entry_data["converter"] = self.parse_func(entry_data["converter"])
+        return self.spec_entry_class(name=entry_name, **entry_data)
 
-        if isinstance(in_dict, AdvancedDict):
-            in_dict.set(key_path, new_value)
-        else:
-            set_by_key_path(in_dict, key_path, new_value)
+    def process_section(self, section_name: str, section_data: dict[str, object]) -> SpecSection:
+        section_data = {k: v for k, v in section_data.items() if k != "entries"}
+        if section_data.get("default_converter", None) is not None:
+            section_data["default_converter"] = self.parse_func(section_data["default_converter"])
+
+        return self.spec_section_class(name=section_name, **section_data)
+
+    def process_data(self, data: dict[str, object]) -> None:
+        self.reset()
+        sections_data = data["sections"]
+        for section_name, section_data in sections_data.items():
+            section = self.process_section(section_name=section_name, section_data=section_data)
+
+            for entry_name, entry_data in section_data["entries"].items():
+                section.add_entry(self.process_entry(entry_name=entry_name, entry_data=entry_data))
+            self.loaded_data[section_name] = section
+
+    def create_dynamic_entry(self, section: SpecSection, entry_name: str) -> SpecEntry:
+        entry = self.spec_entry_class(name=entry_name)
+        entry.set_section(section)
+        return entry
+
+    def reset(self) -> None:
+        self.loaded_data = {}
+
+    def __repr__(self) -> str:
+
+        return f'{self.__class__.__name__}(spec_section_class={self.spec_section_class!r}, spec_entry_class={self.spec_entry_class!r})'
 
 
-class SpecData(AdvancedDict):
-    visit_lock = RLock()
-    special_section_names: dict[str, str] = {"config_file_creation_settings": "__CONFIG_FILE_CREATION_SETTINGS__"}
+class SpecData:
 
-    def __init__(self, name: str, visitor: SpecVisitor, default_converter_data: ConverterSpecData = None, **kwargs) -> None:
+    def __init__(self, name: str, loader: SpecLoader) -> None:
         self.name = name
-        self.visitor = visitor
-        self.default_converter_data = default_converter_data or ConverterSpecData(typus="string", kw_arguments={})
-        self._spec_items: dict[tuple[str, str], SpecItem] = None
-        super().__init__(data=None, **kwargs)
+        self.loader = loader
+        self.load_lock: RLock = RLock()
+        self._original_data: dict[str, object] = None
 
     @property
-    def spec_items(self) -> dict[tuple[str, str], SpecItem]:
-        if self._spec_items is None:
-            self.reload()
-
-        return self._spec_items
+    def original_data(self) -> Optional[dict[str, object]]:
+        with self.load_lock:
+            return self._original_data
 
     @property
-    def data(self) -> dict:
-        with self.visit_lock:
-            return super().data
+    def sections(self) -> dict[str, SpecSection]:
+        with self.load_lock:
+            return {k: v for k, v in self.loader.loaded_data.items()}
 
     @property
-    def all_spec_items(self) -> tuple[SpecItem]:
-        _out = []
-        for section_content in self.data.values():
-            _out += section_content.values()
-        return tuple(sorted(_out, key=lambda x: (x.section_name, x.key_name)))
+    def entries(self) -> dict[tuple[str, str], SpecEntry]:
+        with self.load_lock:
+            _out = {}
+            for section in self.loader.loaded_data.values():
+                for entry in section.entries.values():
+                    _out[(section.name, entry.name)] = entry
+        return _out
 
-    def get_spec_item(self, section_name: str, key_name: str) -> SpecItem:
-        return self.spec_items[(section_name, key_name)]
+    def get_spec_entry(self, section_name: str, entry_name: str) -> SpecEntry:
+        with self.load_lock:
+            section = self.sections[section_name]
+            try:
+                return section[entry_name]
+            except KeyError as e:
+                if section.dynamic_entries_allowed is True:
+                    return self.loader.create_dynamic_entry(section=section, entry_name=entry_name)
+                else:
+                    raise SpecDataMissingError(f"No entry with name {entry_name!r} in section {section_name!r} of {self!r}.") from e
 
-    def _get_section_default(self, section_name: str) -> EntryTypus:
-
-        return self.get_spec_item(section_name, '__default__')
-
-    def _get_entry_default(self, section_name: str, entry_key: str) -> Union[str, MiscEnum]:
-        return self.get_spec_attribute(section_name, entry_key, 'default', MiscEnum.NOTHING)
-
-    def get_verbose_name(self, section_name: str, entry_key: str = None) -> Optional[str]:
-        return self.get_spec_attribute(section_name=section_name, entry_key=entry_key, attribute="verbose_name", default=None)
-
-    def get_description(self, section_name: str, entry_key: str) -> str:
-        return self.get_spec_attribute(section_name, entry_key, "short_description", default="")
-
-    def get_gui_visible(self, section_name: str, entry_key: str) -> bool:
-        return self.get_spec_attribute(section_name, entry_key, "gui_visible", default=True)
-
-    def get_spec_attribute(self, section_name: str, entry_key: str, attribute: str, default=None) -> Any:
-
-        result = getattr(self.get_spec_item(section_name, entry_key), attribute)
-        if result is MiscEnum.NOTHING:
-            return default
-
-    def modify_with_visitor(self, visitor: "BaseVisitor") -> None:
-        for section, section_content in self.data.items():
-            for key, key_content in sorted(section_content.items(), key=lambda x: x[0] != "__default__"):
-                default_convertert_data = self.default_converter_data.copy()
-                if key != "__default__":
-                    try:
-                        default_convertert_data = self[(section, "__default__")].converter_data
-                    except KeyPathError:
-                        pass
-                visitor.visit(self, key_path=(section, key), value=key_content, default_convertert_data=default_convertert_data)
-
-    def _resolve_values(self) -> None:
-        self.modify_with_visitor(self.visitor)
-        self._spec_items = {}
-        for item in self.all_spec_items:
-            self._spec_items[(item.section_name, item.key_name)] = item
-
-    def reload(self) -> None:
-        with self.visit_lock:
-            self._resolve_values()
+    def load_data(self, data: dict) -> "SpecData":
+        with self.load_lock:
+            self._original_data = data
+            self.loader.process_data(self.original_data)
+        return self
 
     def __repr__(self) -> str:
         """
         Basic Repr
         !REPLACE!
         """
-        return f'{self.__class__.__name__}'
+        return f'{self.__class__.__name__}(name={self.name!r}, loader={self.loader!r})'
 
 
 class SpecFile(FileMixin, SpecData):
-    def __init__(self, file_path: PATH_TYPE, visitor: SpecVisitor, changed_parameter: Union[Literal['size'], Literal['file_hash']] = 'size', **kwargs) -> None:
-        super().__init__(name=Path(file_path).stem.removesuffix("spec").removesuffix("config").removesuffix("_"), visitor=visitor, file_path=file_path, changed_parameter=changed_parameter, ** kwargs)
-        self._data = None
+    def __init__(self,
+                 file_path: PATH_TYPE,
+                 loader: SpecLoader = None,
+                 changed_parameter: Union[Literal['size'], Literal['file_hash']] = 'size') -> None:
+        super().__init__(name=Path(file_path).stem.removesuffix("spec").removesuffix("config").removesuffix("_"),
+                         loader=loader or SpecLoader(),
+                         file_path=file_path,
+                         changed_parameter=changed_parameter)
+        self._on_reload_targets: MethodEnabledWeakSet = MethodEnabledWeakSet()
 
     @property
-    def data(self) -> dict:
-        if self._data is None or self.has_changed is True:
-            self.load()
-        return self._data
+    def original_data(self) -> dict:
+        self.reload_if_changed()
+        return self._original_data
 
-    def reload(self) -> None:
+    @property
+    def sections(self) -> dict[str, SpecSection]:
+        self.reload_if_changed()
+        return super().sections
+
+    @property
+    def entries(self) -> dict[tuple[str, str], SpecEntry]:
+        self.reload_if_changed()
+        return super().entries
+
+    def add_on_reload_target(self, target: Callable[[], None]) -> None:
+        self._on_reload_targets.add(target)
+
+    def reload_if_changed(self) -> None:
+        if self._original_data is None or self.has_changed is True:
+            self.reload()
+
+    def reload(self) -> "SpecFile":
         self.load()
+        for target in self._on_reload_targets:
+            target()
+        return self
 
-    def load(self) -> None:
+    def load(self) -> "SpecFile":
         with self.lock:
-            self._data = json.loads(self.read())
-            super().reload()
+            self.load_data(json.loads(self.read()))
+
+        return self
 
     def save(self) -> None:
         with self.lock:
-            data = defaultdict(dict)
-            for section, section_content in self.data.items():
-                for key, spec_item in section_content.items():
-                    data[section][key] = spec_item.to_json()
-
+            data = self.original_data
             json_data = json.dumps(data, indent=4, sort_keys=False)
             self.write(json_data)
 
     def __repr__(self) -> str:
-        """
-        Basic Repr
-        !REPLACE!
-        """
-        return f'{self.__class__.__name__}(name={self.name!r},visitor={self.visitor!r}, file_path={self.file_path.as_posix()!r})'
+
+        return f'{self.__class__.__name__}(name={self.name!r}, file_path={self.file_path.as_posix()!r})'
 
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    x = SpecFile(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\tests\gid_config_tests\data\general_configspec.json", visitor=SpecVisitor())
-    x.reload()
-    import pp
+    spec_file_path = Path(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\tests\gid_config_tests\data\basic_configspec.json")
 
+    x = SpecFile(spec_file_path).load()
+    pp(x.get_spec_entry("first_section", "entry_one").default)
+    pp(x.get_spec_entry("first_section", "entry_two").default)
+    pp(x.get_spec_entry("first_section", "entry_three").default)
     x.save()
+
+
 # endregion[Main_Exec]

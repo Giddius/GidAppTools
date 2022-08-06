@@ -16,6 +16,7 @@ from threading import Event, RLock
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import BaseGidEnum
+from gidapptools.general_helper.concurrency.locks import GLOBAL_RLOCK_MANAGER, GLOBAL_LOCK_MANAGER
 from gidapptools.gid_signal.interface import get_signal
 from gidapptools.general_helper.conversion import human2bytes
 
@@ -51,10 +52,8 @@ class FileMixin(os.PathLike):
 
     hash_func: HASH_FUNC_TYPE = md5
     file_hash_size_threshold: int = human2bytes("100 mb")
-    path_locks: dict[Path, RLock] = {}
-    path_events: dict[Path, Event] = {}
 
-    @unique
+    @ unique
     class ChangeParameter(BaseGidEnum):
         SIZE = "size"
         FILE_HASH = "file_hash"
@@ -72,6 +71,7 @@ class FileMixin(os.PathLike):
         self.last_file_hash: str = None
         self.last_changed_time: int = None
         self.changed_signal = get_signal(key=self.file_path)
+        self.lock: RLock = GLOBAL_RLOCK_MANAGER.get_file_lock(self.file_path)
         super().__init__(**kwargs)
 
     def set_changed_parameter(self, changed_parameter: Union["ChangeParameter", str]) -> None:
@@ -80,28 +80,16 @@ class FileMixin(os.PathLike):
         else:
             self.changed_parameter = self.ChangeParameter(changed_parameter)
 
-    @property
+    @ property
     def file_name(self) -> str:
         return self.file_path.name
 
-    @property
-    def lock(self) -> RLock:
-        if self.file_path not in self.path_locks:
-            self.path_locks[self.file_path] = RLock()
-        return self.path_locks[self.file_path]
-
-    @property
-    def disable_read_event(self) -> Event:
-        if self.file_path not in self.path_events:
-            self.path_events[self.file_path] = Event()
-        return self.path_events[self.file_path]
-
-    @property
+    @ property
     def size(self) -> int:
         size = self.file_path.stat().st_size
         return size
 
-    @property
+    @ property
     def file_hash(self) -> str:
 
         with self.file_path.open('rb') as f:
@@ -113,14 +101,12 @@ class FileMixin(os.PathLike):
                 _file_hash.update(chunk)
             return _file_hash.hexdigest()
 
-    @property
+    @ property
     def changed_time(self) -> int:
         return self.file_path.stat().st_mtime
 
-    @property
+    @ property
     def has_changed(self) -> bool:
-        if self.disable_read_event.is_set() is True:
-            return False
 
         def on_size() -> bool:
             return self.last_size is None or self.last_size != self.size
@@ -174,7 +160,7 @@ class FileMixin(os.PathLike):
                         self.ChangeParameter.ALL: _update_all}
         update_table[self.changed_parameter]()
 
-    @property
+    @ property
     def _read_kwargs(self) -> dict[str, str]:
         kwargs = {"mode": self.read_mode}
         if 'b' not in self.read_mode:
@@ -182,7 +168,7 @@ class FileMixin(os.PathLike):
             kwargs['errors'] = self._on_errors
         return kwargs
 
-    @property
+    @ property
     def _write_kwargs(self) -> dict[str, str]:
         kwargs = {"mode": self.write_mode}
         if 'b' not in self.write_mode:
