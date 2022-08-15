@@ -51,6 +51,8 @@ class BaseIniParser:
         remove_all_comments (bool, optional): If the parser should remove all comments and not just inline comments in the preprocessing step. Defaults to False.
 
     """
+
+    __slots__ = ("comment_indicator", "key_value_separator", "grammar_item", "remove_all_comments", "all_comment_regex", "inline_comment_regex", "grammar")
     all_comment_regex_pattern = r'[ \t]*{comment_indicator}.*'
     inline_comment_regex_pattern = r"(?<=\w)[ \t]*{comment_indicator}[ \t\w]+"
 
@@ -146,7 +148,8 @@ class BaseIniParser:
 
         return self._parse(text)
 
-
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}'
 # region[Main_Exec]
 
 

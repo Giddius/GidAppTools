@@ -141,6 +141,10 @@ class ApplicationExistsError(GidQtError):
         super().__init__(self.msg)
 
 
+class ApplicationNotSetupError(GidQtError):
+    ...
+
+
 class SectionExistsError(GidConfigError):
     ...
 

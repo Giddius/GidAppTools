@@ -132,7 +132,7 @@ def time_func(time_ns_func: TIME_NS_FUNC_TYPE = perf_counter_ns,
 
 def profile(func):
     """
-    Dummy decorator to be able to leave the `line_profiler`-decorator `@profile` in place,
+    Dummy decorator to be able to leave the `line_profiler`-decorator `` in place,
     even when not line-profiling.
     """
     return func

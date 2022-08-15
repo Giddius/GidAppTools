@@ -16,6 +16,7 @@ from threading import Event, RLock
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import BaseGidEnum
+from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_globals
 from gidapptools.general_helper.concurrency.locks import GLOBAL_RLOCK_MANAGER, GLOBAL_LOCK_MANAGER
 from gidapptools.gid_signal.interface import get_signal
 from gidapptools.general_helper.conversion import human2bytes
@@ -33,7 +34,7 @@ from gidapptools.vendored.atomic_writes import atomic_write
 # endregion[Logging]
 
 # region [Constants]
-
+get_dummy_profile_decorator_in_globals()
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 

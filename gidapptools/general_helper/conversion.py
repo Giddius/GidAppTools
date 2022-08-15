@@ -47,6 +47,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 @total_ordering
 class FileSizeUnit:
+    __slots__ = ("_short_name", "_long_name", "factor", "aliases", "all_names", "all_names_casefolded")
 
     def __init__(self, short_name: str, long_name: str, factor: int, aliases: Iterable[str] = None) -> None:
         self._short_name = short_name
@@ -57,11 +58,11 @@ class FileSizeUnit:
         self.all_names = self._get_names()
         self.all_names_casefolded = {name.casefold() for name in self.all_names}
 
-    @cached_property
+    @property
     def short_name(self) -> str:
         return f"{self._short_name}b"
 
-    @cached_property
+    @property
     def long_name(self) -> str:
         return f"{self._long_name}bytes"
 
@@ -124,7 +125,9 @@ class FileSizeUnit:
 
 
 class FileSizeByte(FileSizeUnit):
+    __slots__ = ("short_name", "long_name")
     # pylint: disable=super-init-not-called
+
     def __init__(self) -> None:
         self.short_name = 'b'
         self.long_name = 'bytes'
@@ -135,6 +138,7 @@ class FileSizeByte(FileSizeUnit):
 
 
 class FileSizeReference:
+    __slots__ = ("byte_unit", "units")
 
     def __init__(self) -> None:
         self.byte_unit = FileSizeByte()

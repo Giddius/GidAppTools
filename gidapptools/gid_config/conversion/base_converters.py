@@ -54,6 +54,10 @@ from importlib.machinery import SourceFileLoader
 from gidapptools.gid_config.conversion.extra_base_typus import NonTypeBaseTypus
 from gidapptools.general_helper.enums import MiscEnum
 import weakref
+
+from gidapptools.general_helper.import_helper import is_importable
+
+
 if TYPE_CHECKING:
     from gidapptools.gid_config.conversion.conversion_table import ConversionTable
 
@@ -70,7 +74,7 @@ if TYPE_CHECKING:
 # endregion[Logging]
 
 # region [Constants]
-
+PYSIDE6_AVAILABLE = is_importable("PySide6")
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion[Constants]
@@ -282,6 +286,26 @@ class ListConfigValueConverter(ConfigValueConverter):
             return None
         sub_converter: "ConfigValueConverter" = self.conversion_table.converters[self.sub_typus](self.conversion_table)
         return [sub_converter.to_python_value(item) for item in value.split(self.split_char) if item.strip()]
+
+
+if PYSIDE6_AVAILABLE is True:
+    from PySide6.QtGui import QColor
+
+    class QColorValueConverter(ConfigValueConverter):
+        __slots__ = tuple()
+        is_standard_converter: bool = True
+        value_typus = "qcolor"
+
+        def to_config_value(self, value: Any, **named_arguments) -> str:
+            if value is None:
+                return ""
+            return ', '.join(str(i) for i in value.getRgb())
+
+        def to_python_value(self, value: str, **named_arguments) -> Any:
+            if value is None:
+                return None
+            r, g, b, a = (int(i.strip()) for i in value.split(',') if i.strip())
+            return QColor(r, g, b, a)
 
 
 def get_standard_converter() -> tuple[type["ConfigValueConverter"]]:

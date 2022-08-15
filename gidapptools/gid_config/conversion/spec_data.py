@@ -24,6 +24,7 @@ import deepmerge
 from copy import deepcopy
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.custom_types import PATH_TYPE
+
 from gidapptools.general_helper.class_helper import MethodEnabledWeakSet
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.general_helper.dict_helper import BaseVisitor, AdvancedDict, KeyPathError, set_by_key_path

@@ -72,7 +72,7 @@ def _validate_date_time_frame_tzinfo(instance: "DateTimeFrame", attribute: attr.
         raise DateTimeFrameTimezoneError(instance, instance.start.tzinfo, instance.end.tzinfo, 'start time and end time do not have the same timezone')
 
 
-@attr.s(auto_attribs=True, auto_detect=True, frozen=True)
+@attr.s(auto_attribs=True, auto_detect=True, frozen=True, slots=True)
 @total_ordering
 class DateTimeFrame:
     start: datetime = attr.ib(validator=_validate_date_time_frame_tzinfo)

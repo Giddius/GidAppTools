@@ -10,3 +10,4 @@ API
    :glob:
 
    /api/general_helper/general_helper_index
+   /api/gid_config/gid_config_index

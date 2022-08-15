@@ -43,6 +43,7 @@ class BaseIniGrammar:
         comment_indicator (str, optional): String that indicates the start of a comment, gets also used for transforming back into text. Defaults to '#'.
         token_factory (TokenFactory, optional): Factory that transforms pyparsing results into tokens, gets set as `set_parse_action`s. Defaults to None.
     """
+    __slots__ = ("token_factory", "raw_key_value_separator", "key_value_separator", "raw_comment_indicator", "comment_indicator")
     l_sqr_bracket = pp.Literal("[").suppress()
     r_sqr_bracket = pp.Literal("]").suppress()
 

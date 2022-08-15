@@ -17,6 +17,7 @@ from yarl import URL
 from abc import ABC, abstractmethod
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.errors import ValueValidationError
+from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_globals
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_config.parser.tokens import Entry
 from gidapptools.general_helper.conversion import bytes2human, human2bytes, str_to_bool, seconds2human, human2timedelta
@@ -37,7 +38,7 @@ from gidapptools.errors import UnconvertableTypusError
 # endregion[Logging]
 
 # region [Constants]
-
+get_dummy_profile_decorator_in_globals()
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion[Constants]

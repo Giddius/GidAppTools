@@ -36,12 +36,14 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
 class Token:
+    __slots__ = tuple()
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" + ', '.join(f"{k}={v!r}" for k, v in vars(self).items()) + ')'
+        return f"{self.__class__.__name__}(" + ', '.join(f"{n}={getattr(self, n)!r}" for n in self.__slots__) + ')'
 
 
 class IniToken(Token, metaclass=ABCMeta):
+    __slots__ = tuple()
     spec_data = None
 
     def add_comment(self, comment: "Comment") -> None:
@@ -49,6 +51,8 @@ class IniToken(Token, metaclass=ABCMeta):
 
 
 class Comment(Token):
+    __slots__ = ("content", "comment_indicator")
+
     def __init__(self, content: str) -> None:
         self.content = content.strip()
         self.comment_indicator: str = '#'
@@ -61,6 +65,7 @@ class Comment(Token):
 
 
 class Section(IniToken):
+    __slots__ = ("name", "comments", "entries", "__weakref__")
 
     def __init__(self, name: str) -> None:
         self.name = name
@@ -109,7 +114,9 @@ class Section(IniToken):
 
 
 class EnvSection(Section):
+    __slots__ = tuple()
     # pylint: disable=super-init-not-called
+
     def __init__(self) -> None:
         self.name = "__ENV__"
         self.comments = None
@@ -120,6 +127,7 @@ class EnvSection(Section):
 
 
 class Entry(IniToken):
+    __slots__ = ("key", "value", "key_value_separator", "comments", "section")
 
     def __init__(self, key: str, value: str = None) -> None:
         self.key = key.strip()
@@ -140,6 +148,7 @@ class Entry(IniToken):
 
 
 class TokenFactory:
+    __slots__ = ("token_map",)
 
     def __init__(self, token_map: dict[str, type] = None) -> None:
         self.token_map = {'comment': Comment,

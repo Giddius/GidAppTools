@@ -69,6 +69,7 @@ class SectionAccessor:
 
 
 class ResolvedSection:
+    __slots__ = ("config", "name", "item", "spec")
 
     def __init__(self, config: "GidIniConfig", section_name: str, section_item: Section, spec_Section: SpecSection) -> None:
         self.config = config
@@ -99,6 +100,7 @@ class ResolvedSection:
 
 
 class ResolvedEntry:
+    __slots__ = ("section_name", "entry_name", "spec_entry", "converter", "raw_value")
 
     def __init__(self, section_name: str, entry_name: str, spec_entry: SpecEntry, converter: ConfigValueConverter, raw_value: str = MiscEnum.NOTHING) -> None:
         self.section_name = section_name
@@ -295,9 +297,5 @@ def get_config(spec_path: "PATH_TYPE",
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    x = get_config(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\tests\gid_config_tests\data\basic_configspec.json",
-                   r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\tests\gid_config_tests\data\basic.ini",
-                   preload_ini_file=True)
-
-    print(repr(x.get("first_section", "entry_two")))
+    pass
 # endregion[Main_Exec]

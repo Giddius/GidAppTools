@@ -27,7 +27,7 @@ from PySide6.QtCore import Qt, Slot, QEvent, QObject, QSettings
 from PySide6.QtWidgets import QWidget, QMainWindow, QMessageBox, QApplication, QSplashScreen, QSystemTrayIcon
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.errors import NotSetupError, MetaItemNotFoundError, ApplicationExistsError
+from gidapptools.errors import NotSetupError, MetaItemNotFoundError, ApplicationExistsError, ApplicationNotSetupError
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_utility.version_item import VersionItem
 from gidapptools.general_helper.class_helper import make_repr
@@ -556,6 +556,8 @@ class GidQtApplication(QApplication):
 
     @property
     def settings(self) -> QSettings:
+        if self.is_setup is False:
+            raise ApplicationNotSetupError(f"Unable to use 'settings' before {self!r} has been setup.")
         return QSettings()
 
     @property
@@ -583,17 +585,21 @@ class GidQtApplication(QApplication):
     def setup(self) -> "GidQtApplication":
         if self.is_setup is False:
             self.setup_meta_data()
+            self.additional_setup()
             self.is_setup = True
         return self
 
     def setup_meta_data(self):
-        self.setApplicationName(self.meta_info.app_name)
-        self.setApplicationDisplayName(self.meta_info.pretty_app_name)
-        self.setOrganizationName(self.meta_info.app_author)
-        if self.meta_info.url:
-            self.setOrganizationDomain(str(self.meta_info.url))
-        version = str(self.meta_info.version) if self.meta_info.version else "-"
+        self.setApplicationName(self.name)
+        self.setApplicationDisplayName(self.pretty_name)
+        self.setOrganizationName(self.organization_name)
+        if self.url:
+            self.setOrganizationDomain(str(self.url))
+        version = str(self.version) if self.version else "-"
         self.setApplicationVersion(version)
+
+    def additional_setup(self) -> None:
+        ...
 
     def clear_settings(self):
         self.settings.clear()
