@@ -13,7 +13,7 @@ from pathlib import Path
 from PySide6.QtGui import QIcon, QPixmap
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.data.images import PLACEHOLDER_IMAGE, StoredImage
+from gidapptools.gidapptools_qt._data.images import PLACEHOLDER_IMAGE, DEFAULT_APP_ICON_IMAGE, StoredImage
 from gidapptools.gidapptools_qt.resources.resources_helper import PixmapResourceItem
 
 # endregion[Imports]
@@ -56,7 +56,7 @@ class GidQtPlaceholderImage:
 
 
 QT_PLACEHOLDER_IMAGE = PixmapResourceItem(PLACEHOLDER_IMAGE.path)
-
+QT_DEFAULT_APP_ICON_IMAGE = PixmapResourceItem(DEFAULT_APP_ICON_IMAGE.path)
 # region[Main_Exec]
 
 if __name__ == '__main__':

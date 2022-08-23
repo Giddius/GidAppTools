@@ -10,12 +10,13 @@ Soon.
 import shutil
 import logging
 from pprint import pformat
-from typing import Any, Union, Callable, Optional, TypeVar
+from typing import Any, Union, TypeVar, Callable, Optional
 from pathlib import Path
 from tempfile import mkdtemp
 from contextlib import contextmanager
-from gidapptools.errors import UnknownMetaPathIdentifier, NotImplementedMetaPath
+
 # * Gid Imports ----------------------------------------------------------------------------------------->
+from gidapptools.errors import NotImplementedMetaPath, UnknownMetaPathIdentifier
 from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.utility.helper import make_pretty
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem

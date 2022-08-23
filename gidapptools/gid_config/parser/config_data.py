@@ -12,15 +12,15 @@ from pathlib import Path
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.errors import EntryMissingError, SectionExistsError, SectionMissingError
+from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_globals
 from gidapptools.gid_config.parser.tokens import Entry, Section
+from gidapptools.general_helper.class_helper import MethodEnabledWeakSet
 from gidapptools.gid_config.parser.ini_parser import BaseIniParser
 from gidapptools.general_helper.mixins.file_mixin import FileMixin
-from gidapptools.general_helper.class_helper import MethodEnabledWeakSet
-from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_globals
-import pp
+
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
-    from gidapptools.custom_types import PATH_TYPE
+    pass
 
 # endregion[Imports]
 

@@ -7,28 +7,27 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
-from typing import Any, Union, Callable, Iterable, Optional, TYPE_CHECKING, Literal
-from pathlib import Path
-from functools import partial
 import os
+from typing import TYPE_CHECKING, Any, Union, Literal, Iterable
+from pathlib import Path
 from threading import RLock
-import pp
-from datetime import datetime, timedelta
+
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.errors import EntryMissingError, SectionMissingError, ValueValidationError, MissingTypusOrSpecError, MissingDefaultValue, UnconvertableTypusError
-from gidapptools.gid_config.enums import SpecialTypus
+from gidapptools.errors import EntryMissingError, MissingDefaultValue
 from gidapptools.general_helper.enums import MiscEnum
+from gidapptools.gid_signal.interface import get_signal
+from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_globals
 from gidapptools.gid_config.parser.tokens import Section
 from gidapptools.gid_config.parser.ini_parser import BaseIniParser
 from gidapptools.gid_config.parser.config_data import ConfigFile
-from gidapptools.gid_config.conversion.spec_data import SpecFile, SpecEntry, SpecSection, SpecLoader
-from gidapptools.gid_config.conversion.converter_grammar import ConverterSpecData
+from gidapptools.gid_config.conversion.spec_data import SpecFile, SpecEntry, SpecLoader, SpecSection
 from gidapptools.gid_config.conversion.conversion_table import ConversionTable, ConfigValueConverter
-from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_globals
-from gidapptools.gid_signal.interface import get_signal
+from gidapptools.gid_config.conversion.converter_grammar import ConverterSpecData
+
+# * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
-    from gidapptools.meta_data.meta_paths.meta_paths_item import MetaPaths
     from gidapptools.custom_types import PATH_TYPE
+
 # endregion[Imports]
 
 # region [TODO]
@@ -141,6 +140,7 @@ class ResolvedEntry:
             _value = self.spec_entry.default
         if _value is MiscEnum.NOTHING:
             raise MissingDefaultValue(f"No value or default value found for '{self.section_name}.{self.entry_name}'.")
+
         return self.converter.to_python_value(_value)
 
     def __repr__(self) -> str:

@@ -10,9 +10,6 @@ Soon.
 from enum import Enum, auto
 from pathlib import Path
 
-# * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.general_helper.enums import BaseGidEnum
-
 # endregion[Imports]
 
 # region [TODO]

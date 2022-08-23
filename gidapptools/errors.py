@@ -17,8 +17,8 @@ from contextlib import contextmanager
 if TYPE_CHECKING:
     from gidapptools.general_helper.date_time import DateTimeFrame
     from gidapptools.gid_config.parser.config_data import ConfigData
-    from gidapptools.gid_config.conversion.entry_typus_item import EntryTypus
     from gidapptools.meta_data.meta_paths.meta_paths_item import NamedMetaPath
+    from gidapptools.gid_config.conversion.spec_item import SpecEntry
 
 # endregion[Imports]
 
@@ -169,11 +169,16 @@ class EntryMissingError(GidConfigError):
 
 class ValueValidationError(GidConfigError):
 
-    def __init__(self, config_value: Any, base_typus: "EntryTypus", validation_description: str = None) -> None:
+    def __init__(self, config_value: Any, spec_entry: "SpecEntry", validation_description: str = None) -> None:
         self.config_value = config_value
-        self.base_typus = base_typus
+        self.spec_entry = spec_entry
         self.validation_description = validation_description
-        self.msg = f"Value {self.config_value!r} with Base-Typus {self.base_typus!r} failed its validation, {self.validation_description}."
+        self.msg = f"Value {self.config_value!r} with Spec {self.spec_entry!r} failed its validation"
+
+        if self.validation_description is not None:
+            self.msg += f", {self.validation_description}"
+        self.msg += "."
+
         super().__init__(self.msg)
 
 

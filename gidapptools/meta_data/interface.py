@@ -22,7 +22,6 @@ from gidapptools.custom_types import PATH_TYPE
 from gidapptools.meta_data.meta_info import MetaInfo, MetaInfoFactory
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.meta_data.meta_paths import MetaPaths, MetaPathsFactory
-
 from gidapptools.meta_data.config_kwargs import ConfigKwargs
 from gidapptools.general_helper.dict_helper import SafeMergeDict
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem

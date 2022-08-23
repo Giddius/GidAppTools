@@ -15,7 +15,7 @@ from enum import Enum
 from typing import Any, Mapping, TypeVar, Callable, Optional
 from pathlib import Path
 from datetime import datetime, timezone
-from importlib.metadata import metadata, PackageMetadata
+from importlib.metadata import PackageMetadata, metadata
 
 # * Third Party Imports --------------------------------------------------------------------------------->
 import psutil
@@ -26,7 +26,7 @@ from platformdirs import PlatformDirs
 from gidapptools.custom_types import PATH_TYPE
 from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.general_helper.date_time import DatetimeFmt
-import pp
+
 # endregion[Imports]
 
 # region [TODO]

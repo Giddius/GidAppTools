@@ -10,7 +10,6 @@ Soon.
 from pathlib import Path
 from threading import Lock, RLock
 
-
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.custom_types import LOCK_TYPE, PATH_TYPE
 

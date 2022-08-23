@@ -9,7 +9,7 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import re
 import inspect
-from string import ascii_lowercase
+from string import punctuation, ascii_lowercase
 from typing import Union, Literal, Mapping, Callable, Iterable
 from pathlib import Path
 from textwrap import dedent
@@ -61,6 +61,15 @@ class StringCaseConverter:
     _word_list_split_regex = re.compile(r'|'.join(list(_word_list_split_chars) + [r"(?=[A-Z])"]))
 
     _dispatch_table: dict[str, STRING_CASE_FUNC_TYPE] = None
+    _bad_chars: set[str] = None
+
+    @classmethod
+    @property
+    def bad_chars(cls) -> set[str]:
+        if cls._bad_chars is None:
+            bad_chars = {c for c in punctuation if c not in cls._word_list_split_chars}
+            cls._bad_chars = bad_chars
+        return cls._bad_chars
 
     @classmethod
     @property
@@ -171,13 +180,23 @@ class StringCaseConverter:
         return ' '.join(word.upper() for word in word_list)
 
     @classmethod
-    def convert_to(cls, in_string: str, target_case: Union[str, StringCase]) -> str:
+    def remove_bad_chars(cls, in_string: str) -> str:
+        new_string = str(in_string)
+        for char in cls.bad_chars:
+            new_string = new_string.replace(char, "")
+
+        return new_string
+
+    @classmethod
+    def convert_to(cls, in_string: str, target_case: Union[str, StringCase], clean_in_string: bool = False) -> str:
         """
 
         :param in_string: str:
         :param target_case: Union[str, StringCase]:
 
         """
+        if clean_in_string is True:
+            in_string = cls.remove_bad_chars(in_string)
         target_case = StringCase(target_case) if isinstance(target_case, str) else target_case
         word_list = cls._to_word_list(in_string)
         return cls.dispatch_table.get(target_case)(word_list)

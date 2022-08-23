@@ -3,7 +3,7 @@
 import pytest
 from pytest import param
 from pytest_lazyfixture import lazy_fixture
-import pp
+
 from pathlib import Path
 import json
 from gidapptools.gid_config.conversion.spec_data import SpecFile, SpecEntry, SpecSection, ConverterSpecData, SpecDataMissingError

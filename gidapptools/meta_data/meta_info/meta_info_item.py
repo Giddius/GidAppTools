@@ -10,7 +10,7 @@ Soon.
 import os
 import sys
 import platform
-from typing import Any, Union, Callable, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Union, Callable, Optional
 from pathlib import Path
 from datetime import datetime, timezone
 from functools import cached_property
@@ -30,8 +30,10 @@ from gidapptools.general_helper.conversion import bytes2human
 from gidapptools.general_helper.string_helper import StringCase, StringCaseConverter
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 
+# * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.meta_data.meta_info.meta_info_factory import License
+
 # endregion[Imports]
 
 # region [TODO]

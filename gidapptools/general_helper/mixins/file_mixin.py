@@ -12,15 +12,16 @@ from enum import unique
 from typing import Union, AnyStr, Literal
 from hashlib import md5, sha256, blake2b, blake2s, sha3_512
 from pathlib import Path
-from threading import Event, RLock
+from threading import RLock
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import BaseGidEnum
-from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_globals
-from gidapptools.general_helper.concurrency.locks import GLOBAL_RLOCK_MANAGER, GLOBAL_LOCK_MANAGER
 from gidapptools.gid_signal.interface import get_signal
-from gidapptools.general_helper.conversion import human2bytes
+from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_globals
 from gidapptools.vendored.atomic_writes import atomic_write
+from gidapptools.general_helper.conversion import human2bytes
+from gidapptools.general_helper.concurrency.locks import GLOBAL_RLOCK_MANAGER
+
 # endregion[Imports]
 
 # region [TODO]
@@ -135,7 +136,7 @@ class FileMixin(os.PathLike):
         with self.lock:
             result = checks[self.changed_parameter]()
             if result is True:
-                self.changed_signal.emit(self)
+                self.changed_signal.delayed_fire_and_forget(1, self)
         return result
 
     def _update_changed_data(self) -> None:

@@ -10,7 +10,7 @@ Soon.
 import asyncio
 import inspect
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Hashable
+from typing import Any, Callable, Hashable, Union
 from pathlib import Path
 from weakref import WeakSet, WeakMethod, ref
 
@@ -86,6 +86,14 @@ class AbstractSignal(ABC):
         name = get_qualname_or_name(target)
         self.targets.discard(target)
         self.targets_info.pop(name)
+
+    @abstractmethod
+    def fire_and_forget(self, *args, **kwargs):
+        ...
+
+    @abstractmethod
+    def delayed_fire_and_forget(self, delay: Union[int, float], *args, **kwargs):
+        ...
 
     @abstractmethod
     def emit(self, *args, **kwargs):

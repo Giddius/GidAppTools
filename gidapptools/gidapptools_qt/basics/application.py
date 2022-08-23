@@ -35,7 +35,7 @@ from gidapptools.general_helper.string_helper import StringCase, StringCaseConve
 from gidapptools.gidapptools_qt.basics.sys_tray import GidBaseSysTray
 from gidapptools.gidapptools_qt.basics.main_window import GidBaseMainWindow
 from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
-from gidapptools.gidapptools_qt.resources.placeholder import QT_PLACEHOLDER_IMAGE
+from gidapptools.gidapptools_qt.resources.placeholder import QT_PLACEHOLDER_IMAGE, QT_DEFAULT_APP_ICON_IMAGE
 
 # * Local Imports --------------------------------------------------------------------------------------->
 from gidapptools import get_meta_info
@@ -169,8 +169,7 @@ class CommandLineArgDoc:
 
     @property
     def help_text(self) -> str:
-        help_text = self.argument.help.replace("%(prog)r", "{prog}").replace("%(prog)s", "{prog}")
-        return help_text
+        return self.argument.help.replace("%(prog)r", "{prog}").replace("%(prog)s", "{prog}")
 
     @property
     def default_value(self) -> Optional[Any]:
@@ -263,20 +262,20 @@ class BaseAppArgParseAction(argparse.Action):
                  nargs=None,
                  const=None,
                  default=None,
-                 type=None,
+                 typus=None,
                  choices=None,
                  required=False,
-                 help=None,
+                 helpus=None,
                  metavar=None):
         self.option_strings = option_strings
         self.dest = dest
         self.nargs = nargs
         self.const = const
         self.default = default
-        self.type = type
+        self.type = typus
         self.choices = choices
         self.required = required
-        self.help = help
+        self.help = helpus
         self.metavar = metavar
 
     def get_doc_item(self, app_meta_info: MetaInfo) -> CommandLineArgDoc:
@@ -292,27 +291,27 @@ class FlagAction(BaseAppArgParseAction):
                  option_strings,
                  dest,
                  default=None,
-                 type=None,
+                 typus=None,
                  choices=None,
                  required=False,
-                 help=None,
+                 helpus=None,
                  metavar=None):
 
         _option_strings = []
         for option_string in option_strings:
             _option_strings.append(option_string)
 
-        if help is not None and default is not None:
-            help += " (default: %(default)s)"
+        if helpus is not None and default is not None:
+            helpus += " (default: %(default)s)"
 
         super().__init__(option_strings=_option_strings,
                          dest=dest,
                          nargs=0,
                          default=default,
-                         type=type,
+                         typus=typus,
                          choices=choices,
                          required=required,
-                         help=help,
+                         helpus=helpus,
                          metavar=metavar)
 
     @property
@@ -368,13 +367,12 @@ class VersionFlagAction(FlagAction):
                  version=None,
                  dest=argparse.SUPPRESS,
                  default=argparse.SUPPRESS,
-                 help="show program's version number and exit"):
+                 helpus="show program's version number and exit"):
         super().__init__(
             option_strings=option_strings,
             dest=dest,
             default=default,
-            nargs=0,
-            help=help)
+            helpus=helpus)
         self.version = version
 
     def __call__(self, parser, namespace, values, option_string=None):
@@ -513,7 +511,7 @@ class WindowHolder(QObject):
 
 
 class GidQtApplication(QApplication):
-    default_icon = QT_PLACEHOLDER_IMAGE
+    default_icon = QT_DEFAULT_APP_ICON_IMAGE
 
     def __init__(self,
                  argvs: list[str],
@@ -534,6 +532,7 @@ class GidQtApplication(QApplication):
 
     @property
     def name(self) -> str:
+        print(f"{self.meta_info.app_name=}")
         return self.meta_info.app_name
 
     @property
@@ -595,7 +594,9 @@ class GidQtApplication(QApplication):
         self.setOrganizationName(self.organization_name)
         if self.url:
             self.setOrganizationDomain(str(self.url))
+
         version = str(self.version) if self.version else "-"
+
         self.setApplicationVersion(version)
 
     def additional_setup(self) -> None:
@@ -625,6 +626,7 @@ class GidQtApplication(QApplication):
         sort_order = ["Name", "Author", "Link", "Version"]
         text_parts = {"Name": self.applicationDisplayName(),
                       "Version": self.applicationVersion()}
+
         if self.organizationName():
             text_parts["Author"] = self.organizationName()
         if self.organizationDomain():
@@ -780,6 +782,14 @@ class ApplicationBuilder:
 
 # region[Main_Exec]
 if __name__ == '__main__':
+
     pass
+
+    print("making application builder")
+    a = ApplicationBuilder()
+    print("building app")
+    b = a.build()
+    print("executing app")
+    b.start()
 
 # endregion[Main_Exec]

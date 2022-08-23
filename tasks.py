@@ -11,7 +11,6 @@ from tomlkit.exceptions import NonExistentKey
 import subprocess
 from functools import reduce
 from operator import getitem, setitem
-import pp
 
 
 PATH_TYPE = Union[str, os.PathLike, Path]

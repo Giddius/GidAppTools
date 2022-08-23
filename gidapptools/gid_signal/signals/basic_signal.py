@@ -8,9 +8,11 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import asyncio
+from typing import Callable, Union
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
-
+from time import sleep
+from functools import partial
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.utility.helper import get_qualname_or_name
 
@@ -35,6 +37,11 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
+def run_delayed(delay: Union[int, float], emit_func: Callable):
+    sleep(delay)
+    emit_func()
+
+
 class GidSignal(AbstractSignal):
 
     def fire_and_forget(self, *args, **kwargs):
@@ -42,7 +49,17 @@ class GidSignal(AbstractSignal):
             return
         with ThreadPoolExecutor(thread_name_prefix='signal_thread') as pool:
             for target in self.targets:
+
                 pool.submit(target, *args, **kwargs)
+
+    def delayed_fire_and_forget(self, delay: Union[int, float], *args, **kwargs):
+
+        if len(self.targets) <= 0:
+            return
+        with ThreadPoolExecutor(thread_name_prefix='signal_thread') as pool:
+            for target in self.targets:
+                emit_func = partial(target, *args, **kwargs)
+                pool.submit(run_delayed, delay=delay, emit_func=emit_func)
 
     def emit(self, *args, **kwargs):
 

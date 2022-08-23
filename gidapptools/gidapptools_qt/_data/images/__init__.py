@@ -21,6 +21,7 @@ class StoredImage:
 
 
 PLACEHOLDER_IMAGE = StoredImage(IMAGES_DIR.joinpath("placeholder.png"))
+DEFAULT_APP_ICON_IMAGE = StoredImage(IMAGES_DIR.joinpath("default_app_icon.png"))
 
 
 @cache

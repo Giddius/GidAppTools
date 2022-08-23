@@ -1,8 +1,9 @@
-import contextlib
+# * Standard Library Imports ---------------------------------------------------------------------------->
 import io
 import os
 import sys
 import tempfile
+import contextlib
 
 try:
     import fcntl
@@ -65,7 +66,7 @@ if sys.platform != 'win32':
         if src_dir != dst_dir:
             _sync_directory(src_dir)
 else:
-    from ctypes import windll, WinError
+    from ctypes import WinError, windll
 
     _MOVEFILE_REPLACE_EXISTING = 0x1
     _MOVEFILE_WRITE_THROUGH = 0x8

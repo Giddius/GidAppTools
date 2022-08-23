@@ -1,1 +1,2 @@
 D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\misc\faked_pack, faked_pack
+D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidTasks, gid_tasks
