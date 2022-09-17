@@ -68,7 +68,7 @@ class ImageTextButton(QPushButton):
 
     def _get_correct_image_size(self) -> QSize:
         if not self.text:
-            print("self.text is None")
+
             return self.sizeHint()
 
         fm = self.text_label.fontMetrics()

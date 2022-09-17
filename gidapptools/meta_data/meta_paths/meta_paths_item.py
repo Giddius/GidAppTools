@@ -113,6 +113,10 @@ class MetaPaths(AbstractMetaItem):
     def db_dir(self) -> Path:
         return self.get_path(NamedMetaPath.DB)
 
+    @property
+    def debug_dump_dir(self) -> Path:
+        return self.get_path(NamedMetaPath.DEBUG_DUMP)
+
     def _generate_named_temp_dir_path(self, name: str, suffix: str = None, number: int = 0) -> Path:
         _suffix = f"_{suffix}" if suffix is not None else ""
         _number = f"_{number}" if number > 0 else ""

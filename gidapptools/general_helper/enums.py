@@ -48,6 +48,11 @@ class MiscEnum(Enum):
     def __rich__(self) -> str:
         return f"[u i medium_purple]{self.__repr__()}[/u i medium_purple]"
 
+    def __bool__(self) -> bool:
+        if self in {MiscEnum.NOTHING, MiscEnum.NOT_FOUND}:
+            return False
+        return True
+
 
 class StringCase(BaseGidEnum):
     """
@@ -106,5 +111,4 @@ class FileTypus(BaseGidEnum):
 # region[Main_Exec]
 if __name__ == '__main__':
     pass
-
 # endregion[Main_Exec]

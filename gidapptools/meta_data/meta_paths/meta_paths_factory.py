@@ -56,6 +56,8 @@ class MetaPathsFactory(AbstractMetaFactory):
             raise AppNameMissingError()
 
         path_overwrites = self.config_kwargs.get('path_overwrites', {})
+        if self.config_kwargs.created_meta_items["meta_info"].is_dev is True and NamedMetaPath.DEBUG_DUMP not in path_overwrites:
+            path_overwrites[NamedMetaPath.DEBUG_DUMP] = self.code_base_dir.parent.joinpath("temp", "debug_dump")
         path_dict = self.appdirs_class.get_path_dict_direct(**_kwargs)
         return path_dict | path_overwrites
 

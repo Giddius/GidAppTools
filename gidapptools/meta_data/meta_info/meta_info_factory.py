@@ -150,7 +150,7 @@ class MetaInfoFactory(AbstractMetaFactory):
 
     def _arg_get_is_dev(self) -> bool:
         is_dev_string = os.getenv(self.is_dev_env_name, '0').casefold()
-        return str_to_bool(is_dev_string, strict=True)
+        return str_to_bool(is_dev_string, strict=True) or sys.flags.dev_mode
 
     def _arg_get_is_gui(self) -> bool:
         if str_to_bool(os.getenv(self.is_code_runner_env_name, '0'), strict=True) is True:

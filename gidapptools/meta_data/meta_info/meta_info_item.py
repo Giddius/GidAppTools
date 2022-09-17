@@ -60,13 +60,15 @@ def url_converter(in_url: Optional[str]) -> Optional[URL]:
     return URL(in_url)
 
 
-def many_url_converter(in_urls: Optional[dict[str, str]]) -> Optional[dict[str, URL]]:
+def many_url_converter(in_urls: Optional[dict[str, Union[str, URL]]]) -> Optional[dict[str, URL]]:
     if in_urls is None:
         return in_urls
     return {k: URL(v) for k, v in in_urls.items()}
 
 
-def version_converter(in_version: Union[str, VersionItem]) -> VersionItem:
+def version_converter(in_version: Optional[Union[str, VersionItem]]) -> VersionItem:
+    if in_version is None:
+        return None
     if isinstance(in_version, VersionItem):
         return in_version
     return VersionItem.from_string(in_version)
@@ -147,8 +149,24 @@ class MetaInfo(AbstractMetaItem):
     def clean_up(self, **kwargs) -> None:
         pass
 
+
+def ManualMetaInfoItem(app_name: str = None,
+                       app_author: str = None,
+                       version: Union[str, VersionItem] = None,
+                       url: Union[str, URL] = None,
+                       other_urls: dict[str, Union[str, URL]] = None,
+                       is_dev: bool = None,
+                       is_gui: bool = None,
+                       summary: str = None,
+                       description: str = None) -> MetaInfo:
+
+    kwargs = dict(app_name=app_name, app_author=app_author, version=version, url=url, other_urls=other_urls, is_dev=is_dev or os.getenv("IS_DEV", "0") != "0", is_gui=is_gui, summary=summary, description=description)
+    for k in list(kwargs):
+        if kwargs[k] is None:
+            kwargs.pop(k)
+    return MetaInfo(**kwargs)
+
     # region[Main_Exec]
 if __name__ == '__main__':
     pass
-
 # endregion[Main_Exec]

@@ -10,10 +10,11 @@ Soon.
 import queue
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, TypeVar, Callable
+from typing import Any, TypeVar, Callable, Generic, TypeAlias, TypeGuard, overload as typing_overload, Union, Type
 from pathlib import Path
 from threading import Lock
 from contextlib import contextmanager
+from functools import wraps
 
 # endregion[Imports]
 
@@ -105,14 +106,15 @@ class GenericThreadsafePool(AbstractThreadsafePool):
         return f'{self.__class__.__name__}(obj_creator={self._obj_creator!r}, max_size={self.max_size!r}, prefill={self._prefill!r})'
 
 
-T = TypeVar('T')
+T = TypeVar('T', Type, Callable)
 
 
-class DecorateAbleList(list):
+class DecorateAbleList(list[T]):
 
-    def decorate_append(self, item: T) -> T:
-        self.append(item)
+    def __call__(self, item: T) -> T:
+        super().append(item)
         return item
+
 
 # region[Main_Exec]
 

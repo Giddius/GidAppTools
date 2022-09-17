@@ -66,6 +66,10 @@ class GidAppDirs(PathLibAppDirs):
     def database_dir(self) -> Path:
         return self.user_data_dir().joinpath('database')
 
+    @PathLibAppDirs.mark_path
+    def debug_dump_dir(self) -> Path:
+        return self.user_log_dir().joinpath("debug_dump")
+
     @classmethod
     def get_path_dict_direct(cls,
                              app_name: str,

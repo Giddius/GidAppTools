@@ -258,5 +258,5 @@ def get_main_module_path() -> Path:
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    print(PathLibAppDirs("woof").as_path_dict())
+    pass
 # endregion[Main_Exec]

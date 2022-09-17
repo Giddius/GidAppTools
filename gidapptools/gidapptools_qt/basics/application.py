@@ -17,7 +17,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 # * Third Party Imports --------------------------------------------------------------------------------->
 from yarl import URL
-from jinja2 import Template, BaseLoader, Environment
+from jinja2 import Template, BaseLoader, Environment, FileSystemLoader
 from rich.console import Console as RichConsole
 
 # * Qt Imports --------------------------------------------------------------------------------------->
@@ -36,7 +36,7 @@ from gidapptools.gidapptools_qt.basics.sys_tray import GidBaseSysTray
 from gidapptools.gidapptools_qt.basics.main_window import GidBaseMainWindow
 from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
 from gidapptools.gidapptools_qt.resources.placeholder import QT_PLACEHOLDER_IMAGE, QT_DEFAULT_APP_ICON_IMAGE
-
+from gidapptools.gidapptools_qt._data.templates import ARG_DOC_HTML_TEMPLATE_FILE, ARG_DOC_MARKDOWN_TEMPLATE_FILE, ABOUT_STYLESHEET_FILE, ABOUT_TEMPLATE_FILE
 # * Local Imports --------------------------------------------------------------------------------------->
 from gidapptools import get_meta_info
 
@@ -72,91 +72,13 @@ class AppArgParserResult:
         self.show_window: bool = True
 
 
-ARG_DOC_MARKDOWN_TEMPLATE = """
-
-# {name}
-
----
-
-## Description
-
-
-> {help_text}
-
----
-
-## Arguments
-
-{argument_strings}
-
----
-
-## Default
-
-{default_value}
-
----
-
-## Required
-
-{is_required}
-
----
-
-## Flag
-
-{is_flag}
-
-
-""".strip()
-
-
-_ARG_DOC_HTML_TEMPLATE: str = """
-
-
-
-<a id="{{name}}"><b><u>{{name}}</b></u></a>
-
-<dl>
-<dt>Description</dt>
-<dd>
-<blockquote>
-<div class="description">
-{{help_text}}
-</div>
-</blockquote>
-
-</dd>
-
-<dt>Arguments</dt>
-<dd>
-<ul>
-{%for arg in argument_strings%}
-<li> <pre><code>{{arg}}</code></pre>
-{% endfor %}
-</ul>
-</dd>
-{% if default_value is not none %}
-<dt>Default</dt>
-<dd>{{default_value}}</dd>
-{% endif %}
-<dt>Required</dt>
-<dd>{{is_required}}</dd>
-
-<dt>Flag</dt>
-<dd>{{is_flag}}</dd>
-</dl>
-
-"""
-
-
 class CommandLineArgDoc:
 
     suppress_indicators: set[str] = {"==SUPPRESS=="}
-    single_line_text_template: str = "{name} - {help_text} - {argument_strings} - default: {default_value} - required: {is_required} - is flag:{is_flag}"
-    text_template: str = "{name}\n{help_text}\n{argument_strings}\ndefault: {default_value}\nrequired: {is_required}\nis flag:{is_flag}"
-    markdown_template: str = ARG_DOC_MARKDOWN_TEMPLATE
-    html_template: Template = Environment(loader=BaseLoader).from_string(_ARG_DOC_HTML_TEMPLATE)
+    single_line_text_template: Template = Environment(loader=BaseLoader).from_string("{{name}} - {{help_text}} - {{argument_strings}} - default: {{default_value}} - required: {{is_required}} - is flag:{{is_flag}}")
+    text_template: Template = Environment(loader=BaseLoader).from_string("{{name}}\n{{help_text}}\n{{argument_strings}}\ndefault: {{default_value}}\nrequired: {{is_required}}\nis flag:{{is_flag}}")
+    markdown_template: Template = Environment(loader=BaseLoader).from_string(ARG_DOC_MARKDOWN_TEMPLATE_FILE.read_text(encoding='utf-8', errors='ignore'))
+    html_template: Template = Environment(loader=BaseLoader).from_string(ARG_DOC_HTML_TEMPLATE_FILE.read_text(encoding='utf-8', errors='ignore'))
 
     def __init__(self, argument: Union["BaseAppArgParseAction", argparse.Action], app_meta_info: "MetaInfo") -> None:
         self.argument = argument
@@ -207,7 +129,7 @@ class CommandLineArgDoc:
 
         argument_strings = self.argument_strings
         template = self.single_line_text_template if single_line is True else self.text_template
-        return template.format(name=self.name,
+        return template.render(name=self.name,
                                help_text=help_text,
                                is_required=is_required,
                                is_flag=is_flag,
@@ -224,7 +146,7 @@ class CommandLineArgDoc:
 
         argument_strings = '\n'.join(f"- {arg}" for arg in self.argument_strings)
 
-        return self.markdown_template.format(name=self.name,
+        return self.markdown_template.render(name=self.name,
                                              help_text=help_text,
                                              is_required=is_required,
                                              is_flag=is_flag,
@@ -531,8 +453,11 @@ class GidQtApplication(QApplication):
         self._gui_thread_pool: ThreadPoolExecutor = None
 
     @property
+    def is_dev(self) -> bool:
+        return self.meta_info.is_dev
+
+    @property
     def name(self) -> str:
-        print(f"{self.meta_info.app_name=}")
         return self.meta_info.app_name
 
     @property
@@ -623,17 +548,20 @@ class GidQtApplication(QApplication):
         self.aboutQt()
 
     def _get_about_text(self) -> str:
-        sort_order = ["Name", "Author", "Link", "Version"]
+        template = Environment(loader=BaseLoader).from_string(ABOUT_TEMPLATE_FILE.read_text(encoding='utf-8', errors='ignore'))
+
         text_parts = {"Name": self.applicationDisplayName(),
-                      "Version": self.applicationVersion()}
-
-        if self.organizationName():
-            text_parts["Author"] = self.organizationName()
+                      "Author": self.organizationName(),
+                      "Version": self.applicationVersion(),
+                      "Dev Mode": "Yes" if self.is_dev is True else "No",
+                      "Operating System": self.meta_info.os,
+                      "Python Version": self.meta_info.python_version,
+                      "License": self.meta_info.app_license,
+                      "Summary": self.meta_info.summary,
+                      "Description": self.meta_info.description}
         if self.organizationDomain():
-            text_parts["Link"] = f'<a href="{self.organizationDomain()}">{self.organizationDomain()}</a>'
-
-        text_parts = dict(sorted(text_parts.items(), key=lambda x: sort_order.index(x[0])))
-        return '<br>'.join(f"<b>{k:<20}:</b>{v:>50}" for k, v in text_parts.items())
+            text_parts["link"] = f'<a href="{self.organizationDomain()}">{self.organizationDomain()}</a>'
+        return template.render(style=ABOUT_STYLESHEET_FILE.read_text(encoding='utf-8', errors='ignore'), data=text_parts)
 
     def show_about(self) -> None:
         title = f"About {self.applicationDisplayName()}"
@@ -784,12 +712,5 @@ class ApplicationBuilder:
 if __name__ == '__main__':
 
     pass
-
-    print("making application builder")
-    a = ApplicationBuilder()
-    print("building app")
-    b = a.build()
-    print("executing app")
-    b.start()
 
 # endregion[Main_Exec]

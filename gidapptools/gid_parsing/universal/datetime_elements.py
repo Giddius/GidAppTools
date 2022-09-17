@@ -121,5 +121,5 @@ def get_grammar_from_dt_format(dt_format: str) -> ppa.ParserElement:
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    print(f'{get_grammar_from_dt_format("%Y-%m-%d %H:%M:%S %Z")=}')
+    pass
 # endregion[Main_Exec]

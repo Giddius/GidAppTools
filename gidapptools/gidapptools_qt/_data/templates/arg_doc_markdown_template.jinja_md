@@ -1,0 +1,33 @@
+# {{name}}
+
+---
+
+# Description
+
+
+> {{help_text}}
+
+---
+
+# Arguments
+
+{{argument_strings}}
+
+---
+
+# Default
+
+{{default_value}}
+
+---
+
+# Required
+
+{{is_required}}
+
+---
+
+# Flag
+
+{{is_flag}}
+

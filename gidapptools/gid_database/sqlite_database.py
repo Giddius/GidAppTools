@@ -133,6 +133,5 @@ if APSW_AVAILABLE is True:
 
 
 if __name__ == '__main__':
-    x = GidSqliteDatabase(THIS_FILE_DIR.joinpath("blah.db"))
-    print(x._get_backup_name())
+    pass
 # endregion[Main_Exec]

@@ -60,7 +60,6 @@ class JsonOutputter:
         event = data.get("event")
         specific = {"event": data.get("event"), "specific": data.pop("specific")}
         file_name = _clean_event_name(event)
-        print(file_name)
         if self.file_stem_suffix is not None:
             file_name += f"_{self.file_stem_suffix}"
         file_name += '.json'

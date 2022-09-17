@@ -59,7 +59,5 @@ def all_importable_package_names(exclude_underscored: bool = True, exclude_std_l
 
 
 if __name__ == '__main__':
-    print(all_importable_package_names(exclude_std_lib=True, exclude_underscored=True))
-
-
+    pass
 # endregion[Main_Exec]

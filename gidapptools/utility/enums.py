@@ -101,6 +101,7 @@ class NamedMetaPath(BaseGidEnum):
     SITE_CONFIG = 'site_config_dir'
     TEMP = 'user_temp_dir'
     DB = 'database_dir'
+    DEBUG_DUMP = 'debug_dump_dir'
     _ONLY_FOR_TESTING = '_ONLY_FOR_TESTING'
 
     def __str__(self) -> str:
@@ -117,7 +118,6 @@ class EnvName(str, Enum):
 
 
 if __name__ == '__main__':
-    x = 'something'
-    print(str(NamedMetaPath.DATA))
+    pass
 
 # endregion[Main_Exec]

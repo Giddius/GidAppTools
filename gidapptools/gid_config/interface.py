@@ -284,7 +284,8 @@ def get_config(spec_path: "PATH_TYPE",
                changed_parameter: Union[Literal['size'], Literal['file_hash'], Literal["changed_time"]] = 'changed_time',
                extra_converter: Iterable[ConfigValueConverter] = None,
                empty_is_missing: bool = True,
-               preload_ini_file: bool = False):
+               preload_ini_file: bool = False) -> GidIniConfig:
+
     conversion_table = ConversionTable(extra_converter=extra_converter)
     spec = SpecFile(spec_path, loader=spec_loader or SpecLoader(), changed_parameter=changed_parameter)
     config = ConfigFile(config_path, parser=config_parser or BaseIniParser(), changed_parameter=changed_parameter, auto_write=config_auto_write)

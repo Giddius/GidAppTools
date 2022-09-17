@@ -137,6 +137,5 @@ _check_if_all_levels_are_in_LoggingLevel()
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    x = LoggingLevel("debug")
-    print(x)
+    pass
 # endregion[Main_Exec]

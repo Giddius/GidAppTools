@@ -9,7 +9,7 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import os
 from enum import unique
-from typing import Union, AnyStr, Literal
+from typing import Union, AnyStr, Literal, TYPE_CHECKING, Iterable
 from hashlib import md5, sha256, blake2b, blake2s, sha3_512
 from pathlib import Path
 from threading import RLock
@@ -21,6 +21,9 @@ from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_glo
 from gidapptools.vendored.atomic_writes import atomic_write
 from gidapptools.general_helper.conversion import human2bytes
 from gidapptools.general_helper.concurrency.locks import GLOBAL_RLOCK_MANAGER
+
+if TYPE_CHECKING:
+    from gidapptools.custom_types import PATH_TYPE
 
 # endregion[Imports]
 
@@ -64,9 +67,10 @@ class FileMixin(os.PathLike):
         NEVER = "never"
         ALL = "all"
 
-    def __init__(self, file_path: Path, changed_parameter: str = None, **kwargs) -> None:
+    def __init__(self, file_path: "PATH_TYPE", changed_parameter: str = None, missing_ok: bool = True, **kwargs) -> None:
         self.file_path = Path(file_path)
         self.changed_parameter = self.ChangeParameter.SIZE if changed_parameter is None else self.ChangeParameter(changed_parameter)
+        self.missing_ok = missing_ok
         self.read_mode: READ_TYPE = 'r'
         self.write_mode: WRITE_TYPE = 'w'
         self.last_size: int = None
@@ -74,7 +78,18 @@ class FileMixin(os.PathLike):
         self.last_changed_time: int = None
         self.changed_signal = get_signal(key=self.file_path)
         self.lock: RLock = GLOBAL_RLOCK_MANAGER.get_file_lock(self.file_path)
+        self._check_handle_not_existing()
         super().__init__(**kwargs)
+
+    @staticmethod
+    def _generate_name_from_path(in_file_path: "PATH_TYPE", suffixes_to_remove: Iterable[str] = None) -> str:
+        possible_suffixes_to_remove = tuple(suffixes_to_remove) if suffixes_to_remove is not None else tuple()
+        in_file_path = Path(in_file_path)
+        raw_name = in_file_path.stem
+        name = raw_name.strip()
+        for possible_suffix in possible_suffixes_to_remove:
+            name = name.removesuffix(possible_suffix)
+        return name.strip().strip("_")
 
     def set_changed_parameter(self, changed_parameter: Union["ChangeParameter", str]) -> None:
         if isinstance(changed_parameter, self.ChangeParameter):
@@ -82,18 +97,31 @@ class FileMixin(os.PathLike):
         else:
             self.changed_parameter = self.ChangeParameter(changed_parameter)
 
+    def _check_handle_not_existing(self) -> None:
+        with self.lock:
+            if self.file_path.exists() is True:
+                return
+            if self.missing_ok is True:
+                self.file_path.parent.mkdir(parents=True, exist_ok=True)
+                self.file_path.touch(exist_ok=True)
+                self._update_changed_data()
+
+            else:
+                raise FileNotFoundError(f"file for {self.__class__.__name__!r} -> {self.file_path.as_posix()!r} does exist.")
+
     @ property
     def file_name(self) -> str:
         return self.file_path.name
 
     @ property
     def size(self) -> int:
+        self._check_handle_not_existing()
         size = self.file_path.stat().st_size
         return size
 
     @ property
     def file_hash(self) -> str:
-
+        self._check_handle_not_existing()
         with self.file_path.open('rb') as f:
             if self.size <= self.file_hash_size_threshold:
 
@@ -105,6 +133,7 @@ class FileMixin(os.PathLike):
 
     @ property
     def changed_time(self) -> int:
+        self._check_handle_not_existing()
         return self.file_path.stat().st_mtime
 
     @ property
@@ -179,10 +208,8 @@ class FileMixin(os.PathLike):
         return kwargs
 
     def read(self):
+        self._check_handle_not_existing()
         with self.lock:
-            if self.file_path.exists() is False:
-                self.file_path.parent.mkdir(parents=True, exist_ok=True)
-                self.file_path.touch(exist_ok=True)
             self._update_changed_data()
             # pylint: disable=unspecified-encoding
             with self.file_path.open(**self._read_kwargs) as f:

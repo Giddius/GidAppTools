@@ -152,14 +152,17 @@ class SpecData:
 
 
 class SpecFile(FileMixin, SpecData):
+    _name_suffixes_to_remove: tuple[str] = ("_configspec", "_spec", "_config", "_config_spec", "_spec_config", "_specconfig")
+
     def __init__(self,
                  file_path: PATH_TYPE,
                  loader: SpecLoader = None,
                  changed_parameter: Union[Literal['size'], Literal['file_hash']] = 'size') -> None:
-        super().__init__(name=Path(file_path).stem.removesuffix("spec").removesuffix("config").removesuffix("_"),
+        super().__init__(name=self._generate_name_from_path(file_path, suffixes_to_remove=self._name_suffixes_to_remove),
                          loader=loader or SpecLoader(),
                          file_path=file_path,
-                         changed_parameter=changed_parameter)
+                         changed_parameter=changed_parameter,
+                         missing_ok=False)
         self._on_reload_targets: MethodEnabledWeakSet = MethodEnabledWeakSet()
 
     @property
@@ -209,13 +212,6 @@ class SpecFile(FileMixin, SpecData):
 
 # region[Main_Exec]
 if __name__ == '__main__':
-    spec_file_path = Path(r"D:\Dropbox\hobby\Modding\Programs\Github\My_Repos\GidAppTools\tests\gid_config_tests\data\basic_configspec.json")
-
-    x = SpecFile(spec_file_path).load()
-    print(x.get_spec_entry("first_section", "entry_one").default)
-    print(x.get_spec_entry("first_section", "entry_two").default)
-    print(x.get_spec_entry("first_section", "entry_three").default)
-    x.save()
-
+    pass
 
 # endregion[Main_Exec]

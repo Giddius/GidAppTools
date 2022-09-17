@@ -20,7 +20,7 @@ from gidapptools.general_helper.mixins.file_mixin import FileMixin
 
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
-    pass
+    from gidapptools.custom_types import PATH_TYPE
 
 # endregion[Imports]
 
@@ -162,17 +162,23 @@ class ConfigData:
 
 
 class ConfigFile(FileMixin, ConfigData):
+    _name_suffixes_to_remove: tuple[str] = ("_configspec", "_spec", "_config", "_config_spec", "_spec_config", "_specconfig")
 
     def __init__(self,
-                 file_path: Path,
+                 file_path: "PATH_TYPE",
                  parser: BaseIniParser,
                  changed_parameter: Union[Literal['size'], Literal['file_hash']] = 'size',
                  auto_write: bool = True,
+                 missing_ok: bool = True,
                  **kwargs) -> None:
 
         self.parser = parser
         self.auto_write = auto_write
-        super().__init__(name=Path(file_path).stem.removesuffix("config").removesuffix("_"), file_path=file_path, changed_parameter=changed_parameter, **kwargs)
+        super().__init__(name=self._generate_name_from_path(file_path, suffixes_to_remove=self._name_suffixes_to_remove),
+                         file_path=file_path,
+                         changed_parameter=changed_parameter,
+                         missing_ok=missing_ok,
+                         **kwargs)
         self._on_reload_targets: MethodEnabledWeakSet = MethodEnabledWeakSet()
 
     def _do_auto_write(self, success: bool) -> None:

@@ -113,23 +113,5 @@ class BaseIniGrammar:
 # region[Main_Exec]
 
 if __name__ == '__main__':
-    x = BaseIniGrammar()
-    y = """[debug]
-
-current_testing_channel = bot-testing
-
-
-
-
-[this]
-
-# a key comment
-that = 40
-something = blah
-[sosos]
-
-a_value_with_spaces = this is a test
-"""
-    print(list(x.get_grammar().scan_string(y)))
-
+    pass
 # endregion[Main_Exec]

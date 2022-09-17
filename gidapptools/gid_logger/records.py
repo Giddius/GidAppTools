@@ -63,8 +63,6 @@ class GidLogRecordFactory:
                  **kwargs):
         special_record = kwargs.pop("record_typus", None)
 
-        print(f"{special_record=}")
-
         if inspect.isclass(special_record):
             record_class = special_record
         else:

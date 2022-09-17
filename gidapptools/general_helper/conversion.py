@@ -441,7 +441,6 @@ def number_to_pretty(in_num: Union[int, float]) -> str:
 # region[Main_Exec]
 
 if __name__ == '__main__':
-    for i in TIMEUNITS:
-        print(i)
+    pass
 
 # endregion[Main_Exec]

@@ -73,11 +73,39 @@ class Ligatures:
     big_arrow_left = pp.Literal("<--").suppress()
 
 
+COMMA = BaseElements.comma
+COLON = BaseElements.colon
+SEMI_COLON = BaseElements.semi_colon
+PERIOD = BaseElements.period
+PIPE = BaseElements.pipe
+AT = BaseElements.at
+HYHPHEN = BaseElements.hyhphen
+OCTOTHORP = BaseElements.octothorp
+TILDE = BaseElements.tilde
+PLUS = BaseElements.plus
+MINUS = BaseElements.minus
+ASTERISK = BaseElements.asterisk
+EQUALS = BaseElements.equals
+FORWARD_SLASH = BaseElements.forward_slash
+BACK_SLASH = BaseElements.back_slash
+SINGLE_QUOTE = BaseElements.single_quote
+DOUBLE_QUOTE = BaseElements.double_quote
+ANY_QUOTE = BaseElements.any_quote
+PARENTHESES_OPEN = BaseElements.parentheses_open
+PARENTHESES_CLOSE = BaseElements.parentheses_close
+BRACKETS_OPEN = BaseElements.brackets_open
+BRACKETS_CLOSE = BaseElements.brackets_close
+BRACES_OPEN = BaseElements.braces_open
+BRACES_CLOSE = BaseElements.braces_close
+
+
+ARROW_RIGHT = Ligatures.arrow_right
+ARROW_LEFT = Ligatures.arrow_left
+BIG_ARROW_RIGHT = Ligatures.big_arrow_right
+BIG_ARROW_LEFT = Ligatures.big_arrow_left
+
 # region[Main_Exec]
 if __name__ == '__main__':
-    x = "-"
-    y = "\u2212"
-    print(y)
-    print(x == y)
+    pass
 
 # endregion[Main_Exec]
