@@ -12,7 +12,7 @@ from pathlib import Path
 from contextlib import contextmanager
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.gid_warning.experimental import experimental_function
+from gidapptools.gid_warning.experimental import mark_experimental
 
 # endregion[Imports]
 
@@ -33,7 +33,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-@experimental_function
+@mark_experimental
 @contextmanager
 def download_limit():
     start = process_time_ns()

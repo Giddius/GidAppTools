@@ -12,11 +12,11 @@ import json
 import inspect
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Mapping, TypeVar, Callable, Optional
+from typing import Any, Mapping, TypeVar, Callable, Optional, Iterable
 from pathlib import Path
 from datetime import datetime, timezone
 from importlib.metadata import PackageMetadata, metadata
-
+from itertools import pairwise
 # * Third Party Imports --------------------------------------------------------------------------------->
 import psutil
 from yarl import URL
@@ -26,7 +26,7 @@ from platformdirs import PlatformDirs
 from gidapptools.custom_types import PATH_TYPE
 from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.general_helper.date_time import DatetimeFmt
-
+from gidapptools.general_helper.general import iter_grouped
 # endregion[Imports]
 
 # region [TODO]
@@ -41,7 +41,7 @@ from gidapptools.general_helper.date_time import DatetimeFmt
 
 # region [Constants]
 
-THIS_FILE_DIR = Path(__file__).parent.absolute()
+THIS_FILE_DIR = Path(__file__).parent.resolve()
 
 # endregion[Constants]
 
@@ -59,6 +59,24 @@ class PackageMetadataDict(dict):
                              "obsoletes-dist"}
 
     get_fallback_keys: dict[str, tuple[str]] = {"maintainer": ("author",)}
+
+    @property
+    def all_urls(self) -> dict[str, str]:
+        _out = {}
+        for name_url_pair in self.get("project-url", []):
+            try:
+                name, url = (i.strip() for i in name_url_pair.split(","))
+                _out[name] = url
+            except ValueError:
+                continue
+
+        for url_key in ["Download-URL", "Home-page"]:
+            try:
+                _out[url_key] = self[url_key.casefold()]
+            except KeyError:
+                continue
+
+        return _out
 
     def add(self, k, v) -> None:
         k = k.casefold()

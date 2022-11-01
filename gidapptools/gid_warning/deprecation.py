@@ -51,6 +51,7 @@ def _replace_default_argument_w_NOTHING(func, arg_name: str, *args, **kwargs) ->
 
 
 def _make_deprication_warning(typus: DeprecationWarning, **kwargs) -> None:
+    func: FunctionType = kwargs["func"]
     if typus is DeprecationWarningTypus.ARGUMENT:
 
         needed = {"arg_name", "func_name", "func"}
@@ -64,12 +65,12 @@ def _make_deprication_warning(typus: DeprecationWarning, **kwargs) -> None:
         if kwargs.get('alternative_arg_name', None):
             message_parts.append(f"use the alternative {kwargs.get('alternative_arg_name')!r}")
         message = ', '.join(message_parts) + '.'
-    func: FunctionType = kwargs["func"]
+
     warn_explicit(message=message, category=DeprecationWarning, filename=func.__code__.co_filename, lineno=func.__code__.co_firstlineno, module=func.__module__)
     # warn(message=message, category=DeprecationWarning, stacklevel=3)
 
 
-def deprecated_argument(arg_name: str, alternative_arg_name: str = None, not_used:bool=True):
+def deprecated_argument(arg_name: str, alternative_arg_name: str = None, not_used: bool = True):
 
     def _wrapper(func):
         func_name = func.__qualname__ or func.__name__

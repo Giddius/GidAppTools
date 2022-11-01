@@ -78,6 +78,7 @@ class FileMixin(os.PathLike):
         self.last_changed_time: int = None
         self.changed_signal = get_signal(key=self.file_path)
         self.lock: RLock = GLOBAL_RLOCK_MANAGER.get_file_lock(self.file_path)
+        self.file_was_created: bool = False
         self._check_handle_not_existing()
         super().__init__(**kwargs)
 
@@ -105,6 +106,7 @@ class FileMixin(os.PathLike):
                 self.file_path.parent.mkdir(parents=True, exist_ok=True)
                 self.file_path.touch(exist_ok=True)
                 self._update_changed_data()
+                self.file_was_created = True
 
             else:
                 raise FileNotFoundError(f"file for {self.__class__.__name__!r} -> {self.file_path.as_posix()!r} does exist.")

@@ -89,6 +89,11 @@ class GidLogger(logging.Logger):
 
         return rv
 
+    def _log(self, level: int, msg: object, args: "logging._ArgsType", exc_info: "logging._ExcInfoType" = None, extra: Mapping[str, object] = None, stack_info: bool = False, stacklevel: int = 1) -> None:
+        if extra is not None and extra.get("is_timing_decorator", False) is True:
+            stacklevel += 0
+        return super()._log(level, msg, args, exc_info, extra, stack_info, stacklevel)
+
 
 def make_library_logger(in_name: str) -> logging.Logger:
     logger = logging.getLogger(in_name)
@@ -109,8 +114,14 @@ def switch_logger_klass(logger_klass: type[logging.Logger]):
 def _modify_logger_name(name: str) -> str:
     if name == "__main__":
         return 'main'
+    if name == "__logging_meta__":
+        return 'main.__logging_meta__'
     name = 'main.' + '.'.join(name.split('.')[1:])
     return name
+
+
+def get_meta_logger():
+    return get_logger("__logging_meta__")
 
 
 def get_logger(name: str) -> Union[logging.Logger, GidLogger]:
@@ -138,7 +149,8 @@ class WarningHandler:
         self.old_show_warnings_func = old_show_warnings_func
 
     def _error_fallback(self, error, message, category, filename, lineno, file=None, line=None) -> None:
-        print(f"error with '_show_warnings', error: {error!r}, message: {message!r}, category: {category!r}, filename: {filename!r}, lineno: {lineno!r}, file: {file!r}, line: {line!r}")
+        logger = get_meta_logger()
+        logger.error("error with '_show_warnings', error: %r, message: %r, category: %r, filename: %r, lineno: %r, file: %r, line: %r", error, message, category, filename, lineno, file, line, exc_info=True)
 
     def _show_warnings(self, message, category, filename, lineno, file=None, line=None):
         try:

@@ -79,7 +79,7 @@ class Color:
         new_values = (self.red, self.green, new_blue, self.alpha)
         return self.__class__(new_values, name=new_name)
 
-    def to_int_rgba(self) -> tuple(int):
+    def to_int_rgba(self) -> tuple[int]:
         ...
 
     def __repr__(self) -> str:

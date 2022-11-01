@@ -10,7 +10,7 @@ Soon.
 import re
 import inspect
 from string import punctuation, ascii_lowercase
-from typing import Union, Literal, Mapping, Callable, Iterable
+from typing import Union, Literal, Mapping, Callable, Iterable, Any, Optional
 from pathlib import Path
 from textwrap import dedent
 
@@ -19,7 +19,7 @@ import pyparsing as ppa
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import StringCase
-
+from gidapptools.gid_warning.experimental import mark_experimental
 # endregion[Imports]
 
 # region [TODO]
@@ -54,21 +54,20 @@ class StringCaseConverter:
     TITLE = StringCase.TITLE
     BLOCK_UPPER = StringCase.BLOCK_UPPER
 
-    _split_grammar: ppa.ParserElement = None
+    _split_grammar: Optional[ppa.ParserElement] = None
     split_pascal_case_regex = re.compile(r"(?<!\_)(\B[A-Z])")
     snake_case_to_pascal_case_regex = re.compile(r"(_|^)(\w)")
     _word_list_split_chars = {'-', '_', ' '}
     _word_list_split_regex = re.compile(r'|'.join(list(_word_list_split_chars) + [r"(?=[A-Z])"]))
 
-    _dispatch_table: dict[str, STRING_CASE_FUNC_TYPE] = None
-    _bad_chars: set[str] = None
+    _dispatch_table: Optional[dict[str, STRING_CASE_FUNC_TYPE]] = None
+    _bad_chars: Optional[set[str]] = None
 
     @classmethod
     @property
     def bad_chars(cls) -> set[str]:
         if cls._bad_chars is None:
-            bad_chars = {c for c in punctuation if c not in cls._word_list_split_chars}
-            cls._bad_chars = bad_chars
+            cls._bad_chars = {c for c in punctuation if c not in cls._word_list_split_chars}
         return cls._bad_chars
 
     @classmethod
@@ -84,7 +83,7 @@ class StringCaseConverter:
 
     @classmethod
     @property
-    def split_grammar(cls):
+    def split_grammar(cls) -> ppa.ParserElement:
         if cls._split_grammar is None:
             underscore = ppa.Literal('_').suppress()
             dash = ppa.Literal("-").suppress()
@@ -98,11 +97,11 @@ class StringCaseConverter:
         return cls._split_grammar
 
     @classmethod
-    def _to_word_list(cls, in_string: str) -> Iterable[str]:
+    def _to_word_list(cls, in_string: str) -> list[str]:
         """
         :param in_string: str:
         """
-        parts = cls.split_grammar.parse_string(in_string, parse_all=True)
+        parts: ppa.ParseResults = cls.split_grammar.parse_string(in_string, parse_all=True)
 
         return [word for word in parts if word]
 
@@ -183,7 +182,7 @@ class StringCaseConverter:
     def remove_bad_chars(cls, in_string: str) -> str:
         new_string = str(in_string)
         for char in cls.bad_chars:
-            new_string = new_string.replace(char, "")
+            new_string: str = new_string.replace(char, "")
 
         return new_string
 
@@ -488,6 +487,34 @@ def remove_chars(in_string: str, *chars) -> str:
 
     """
     return ''.join(char for char in in_string if char not in set(chars))
+
+
+def string_map_replace(in_string: str, replacement_map: Mapping[str, str]) -> str:
+    new_string = str(in_string)
+    for k, v in replacement_map.items():
+        new_string = new_string.replace(k, v)
+
+    return new_string
+
+
+class RegexMapReplacer:
+    # 3x slower than just replace loop
+    __slots__ = ("_replacement_map", "_pattern")
+
+    @mark_experimental()
+    def __init__(self, replacement_map: Mapping[str, str]) -> None:
+        self._replacement_map = replacement_map
+        self._pattern: re.Pattern = re.compile(r"|".join(rf"{k}" for k in self._replacement_map))
+
+    def _replacement_lookup(self, match: re.Match) -> str:
+        orig_text_part = match.group()
+        return self._replacement_map[orig_text_part]
+
+    def apply(self, text: str) -> str:
+        return self._pattern.sub(self._replacement_lookup, text)
+
+    def __call__(self, text: str) -> Any:
+        return self.apply(text=text)
 # region[Main_Exec]
 
 

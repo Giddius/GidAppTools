@@ -11,8 +11,10 @@ import sys
 import pkgutil
 import importlib
 import importlib.util
+import importlib.metadata
 from pathlib import Path
-
+from types import ModuleType
+from gidapptools.utility.helper import PackageMetadataDict
 # endregion[Imports]
 
 # region [TODO]
@@ -44,16 +46,28 @@ def is_importable(package_name: str) -> bool:
     return importlib.util.find_spec(name=package_name) is not None
 
 
-def all_importable_package_names(exclude_underscored: bool = True, exclude_std_lib: bool = False) -> tuple[str]:
+def meta_data_from_module(in_module: ModuleType) -> PackageMetadataDict:
+    module_metadata = importlib.metadata.metadata(in_module.__package__)
+    return PackageMetadataDict.from_meta_importlib_meta_data(module_metadata)
+
+
+def import_from_name(name: str) -> ModuleType:
+    module = importlib.import_module(name)
+    return module
+
+
+def all_importable_package_names(exclude_underscored: bool = True, exclude_std_lib: bool = False, exclude_main: bool = True) -> tuple[str]:
 
     def _check_exclude(in_name: str) -> bool:
         if exclude_underscored is True and in_name.startswith("_"):
             return False
         if exclude_std_lib is True and in_name in sys.stdlib_module_names:
             return False
+        if exclude_main is True and in_name == "__main__":
+            return False
         return True
 
-    return tuple(sorted([i for i in pkgutil.iter_modules() if _check_exclude(i.name)], key=lambda x: x.name.casefold()))
+    return tuple(sorted([i.name for i in pkgutil.iter_modules() if _check_exclude(i.name)], key=lambda x: x.casefold()))
 
 # region[Main_Exec]
 

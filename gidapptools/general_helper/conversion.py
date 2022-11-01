@@ -53,7 +53,7 @@ class FileSizeUnit:
         self._short_name = short_name
         self._long_name = long_name
         self.factor = factor
-        self.aliases = [] if aliases is None else aliases
+        self.aliases = [] if aliases is None else list(aliases)
         self.aliases += self._get_default_aliases()
         self.all_names = self._get_names()
         self.all_names_casefolded = {name.casefold() for name in self.all_names}
@@ -67,9 +67,11 @@ class FileSizeUnit:
         return f"{self._long_name}bytes"
 
     def _get_names(self) -> set[str]:
-        all_names = [self.short_name, self.long_name] + self.aliases
+        all_names: list[str] = [self.short_name, self.long_name]
+        all_names += self.aliases
         all_names += [name.removesuffix('s') for name in all_names]
         all_names += [name + 's' for name in all_names if not name.endswith('s')]
+
         return set(all_names)
 
     def _get_default_aliases(self) -> Iterable[str]:
@@ -146,12 +148,12 @@ class FileSizeReference:
         self._make_units()
 
     def _make_units(self) -> None:
-        self.units = []
+        units: list[FileSizeUnit] = []
 
         temp_unit_info = {s: 1 << (i + 1) * 10 for i, s in enumerate(FILE_SIZE_SYMBOL_DATA)}
         for key, value in temp_unit_info.items():
-            self.units.append(FileSizeUnit(short_name=key[0], long_name=key[1], factor=value))
-        self.units = tuple(sorted(self.units))
+            units.append(FileSizeUnit(short_name=key[0], long_name=key[1], factor=value))
+        self.units = tuple(sorted(units))
 
     @property
     def symbols(self) -> tuple[str]:
@@ -174,8 +176,7 @@ class FileSizeReference:
 FILE_SIZE_REFERENCE = FileSizeReference()
 
 
-@deprecated_argument(arg_name='annotate')
-def bytes2human(n: int, annotate: bool = True) -> str:
+def bytes2human(n: int) -> str:
     # http://code.activestate.com/recipes/578019
     # >>> bytes2human(10000)
     # '9.8K'

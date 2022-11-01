@@ -97,7 +97,8 @@ class SpecEntry:
                  "gui_visible",
                  "implemented",
                  "verbose_name",
-                 "_section")
+                 "_section",
+                 "initial_value")
 
     def __init__(self,
                  name: str,
@@ -106,7 +107,8 @@ class SpecEntry:
                  description: str = "",
                  verbose_name: str = MiscEnum.NOTHING,
                  implemented: bool = True,
-                 gui_visible: bool = True) -> None:
+                 gui_visible: bool = True,
+                 initial_value: str = MiscEnum.NOTHING) -> None:
         self.name = name
         self.converter = converter
         self.default = default
@@ -115,6 +117,7 @@ class SpecEntry:
         self.implemented = implemented
         self.gui_visible = gui_visible
         self._section: SpecSection = None
+        self.initial_value = initial_value
 
     @property
     def section(self) -> Optional[SpecSection]:

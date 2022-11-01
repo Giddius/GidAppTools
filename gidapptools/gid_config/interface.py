@@ -101,7 +101,12 @@ class ResolvedSection:
 class ResolvedEntry:
     __slots__ = ("section_name", "entry_name", "spec_entry", "converter", "raw_value")
 
-    def __init__(self, section_name: str, entry_name: str, spec_entry: SpecEntry, converter: ConfigValueConverter, raw_value: str = MiscEnum.NOTHING) -> None:
+    def __init__(self,
+                 section_name: str,
+                 entry_name: str,
+                 spec_entry: SpecEntry,
+                 converter: ConfigValueConverter,
+                 raw_value: str = MiscEnum.NOTHING) -> None:
         self.section_name = section_name
         self.entry_name = entry_name
         self.spec_entry = spec_entry
@@ -131,6 +136,13 @@ class ResolvedEntry:
     @property
     def default(self) -> str:
         return self.spec_entry.default
+
+    @property
+    def initial_value(self) -> Any:
+        if self.spec_entry.initial_value is MiscEnum.NOTHING:
+            return MiscEnum.NOTHING
+
+        return self.converter.to_python_value(self.spec_entry.initial_value)
 
     @property
     def value(self) -> Any:
@@ -204,8 +216,7 @@ class GidIniConfig:
         return self.conversion_table.get_converter(converter_data=converter_data)
 
     def get_entry_item(self, section_name: str, entry_name: str) -> ResolvedEntry:
-        self.spec.reload_if_changed()
-        self.config.reload_if_changed()
+
         try:
             return self._resolve_entry_cache[(section_name, entry_name)]
         except KeyError:
@@ -236,8 +247,7 @@ class GidIniConfig:
         spec_item = self.get_spec_item(section_name=section_name, entry_name=entry_name)
         converter = self.get_converter(spec_item.converter)
         self.config.set_value(section_name=section_name, entry_key=entry_name, entry_value=converter.to_config_value(value))
-        self.spec.reload_if_changed()
-        self.config.reload_if_changed()
+        self.reload_if_changed()
 
     def ensure_section(self, section_name: str) -> None:
         section = Section(section_name)
@@ -247,6 +257,10 @@ class GidIniConfig:
         existing = self.config.has_key(section_name=section_name, key_name=entry_name)
         if existing is False:
             self.set(section_name=section_name, entry_name=entry_name, value=value)
+
+    def reload_if_changed(self) -> None:
+        self.spec.reload_if_changed()
+        self.config.reload_if_changed()
 
     def reload(self) -> None:
         self.config.reload()
@@ -270,7 +284,11 @@ def preload_config(in_config: "GidIniConfig") -> None:
         if section.spec.dynamic_entries_allowed is False:
             for entry in section.entries:
                 try:
-                    in_config.set_if_not_exists(section.name, entry.entry_name, entry.value)
+                    if in_config.config.file_was_created is True and entry.initial_value is not MiscEnum.NOTHING:
+                        value = entry.initial_value
+                    else:
+                        value = entry.value
+                    in_config.set_if_not_exists(section.name, entry.entry_name, value)
                 except MissingDefaultValue:
                     continue
     in_config.config.save()

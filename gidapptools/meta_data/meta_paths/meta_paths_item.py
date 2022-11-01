@@ -45,9 +45,9 @@ _T = TypeVar("_T")
 class TempPathStorage(set):
 
     def discard_non_existing(self) -> None:
-        to_discard = tuple(i for i in self if i.exists() is False)
+        to_discard = [i for i in self if i.exists() is False]
 
-        for item in to_discard:
+        for item in list(to_discard):
             self.discard(item)
 
     def add(self, item: _T) -> None:

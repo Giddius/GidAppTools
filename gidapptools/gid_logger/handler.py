@@ -118,14 +118,10 @@ class GidBaseRotatingFileHandler(BaseRotatingHandler):
                  base_name: str,
                  log_folder: "PATH_TYPE",
                  file_name_template: Union[str, Any] = None,
-                 backup_folder: "PATH_TYPE" = MiscEnum.AUTO,
-                 rotate_on_start: bool = True,
-                 backup_amount_limit: int = 3) -> None:
+                 backup_amount_limit: int = 10) -> None:
         self.base_name = base_name
         self.file_name_template = TimestampFileNameTemplate(self.base_name) if file_name_template is None else file_name_template
         self.log_folder = Path(log_folder)
-        self.backup_folder = self.log_folder.joinpath("old_logs") if backup_folder is MiscEnum.AUTO else Path(backup_folder)
-        self.rotate_on_start = rotate_on_start
         self.backup_amount_limit = backup_amount_limit
         self.full_file_path: Path = self._construct_full_file_path()
         self.first_record_emited: bool = False
@@ -154,21 +150,17 @@ class GidBaseRotatingFileHandler(BaseRotatingHandler):
         return _out
 
     def _get_backup_logs(self) -> list[Path]:
-        if self.backup_folder.exists() is False:
-            return []
 
         def _is_old_backup(_in_file: Path) -> bool:
             return _in_file.is_file() and self.file_name_template.is_backup_log_file(_in_file)
 
-        _out = sorted((file for file in self.backup_folder.iterdir() if _is_old_backup(file)), key=lambda x: x.stat().st_mtime)
+        _out = sorted((file for file in self.log_folder.iterdir() if _is_old_backup(file)), key=lambda x: x.stat().st_mtime)
         return _out
 
     def on_start_rotation(self) -> None:
         try:
             self.acquire()
-            self.full_file_path.parent.mkdir(exist_ok=True, parents=True)
-            for file in self._get_old_logs():
-                self.move_file_to_backup_folder(file)
+            self.log_folder.mkdir(exist_ok=True, parents=True)
             self.remove_excess_backup_files()
 
         finally:
@@ -181,17 +173,6 @@ class GidBaseRotatingFileHandler(BaseRotatingHandler):
         while len(backup_logs) > self.backup_amount_limit:
             to_delete: Path = backup_logs.pop(0)
             to_delete.unlink(missing_ok=True)
-
-    def move_file_to_backup_folder(self, file: Path) -> None:
-        self.backup_folder.mkdir(parents=True, exist_ok=True)
-        number = 0
-        target_path = self.file_name_template.make_backup_file_path(file.name, self.backup_folder)
-
-        while target_path.exists() is True:
-            number += 1
-            name = f"{file.stem}_{number}{file.suffix}"
-            target_path = self.backup_folder.joinpath(name)
-        os.rename(src=file, dst=target_path)
 
     def shouldRollover(self, record: logging.LogRecord) -> bool:
         return False

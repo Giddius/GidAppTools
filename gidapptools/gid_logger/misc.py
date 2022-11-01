@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any
 from pathlib import Path
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.gid_logger.logger import get_logger
+from gidapptools.gid_logger.logger import get_logger, get_meta_logger
 
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
@@ -54,10 +54,16 @@ class QtMessageHandler(metaclass=ProhibitiveSingletonMeta):
 
     def __init__(self) -> None:
         self.msg_split_regex = re.compile(r"(?P<q_class>.*)\:\:(?P<q_method>.*)\:(?P<actual_message>.*)")
+        self.is_installed: bool = False
+        self._old_messagehandler = None
 
-    def install(self) -> "QtMessageHandler":
+    def install(self, overwrite_install: bool = False) -> "QtMessageHandler":
+        if self.is_installed is True and overwrite_install is False:
+            return self
         from PySide6.QtCore import qInstallMessageHandler
-        qInstallMessageHandler(self)
+        self._old_messagehandler = qInstallMessageHandler(self)
+        self.is_installed = True
+
         return self
 
     def mode_to_log_level(self, in_mode):
@@ -69,12 +75,21 @@ class QtMessageHandler(metaclass=ProhibitiveSingletonMeta):
         return logging.getLevelName(in_mode)
 
     def get_context(self, in_context: None):
-        frame = sys._getframe(2)
-        _context_data = {"fn": in_context.file or frame.f_code.co_filename,
-                         "func": in_context.function or frame.f_code.co_name,
-                         "lno": in_context.line or frame.f_lineno}
+        _logger = None
+        frame_count = 2
+        while _logger is None:
+            try:
+                frame = sys._getframe(frame_count)
+                if frame is None:
+                    raise RuntimeError(f"unable to get a frame for {in_context!r}")
 
-        _logger = get_logger(frame.f_globals["__name__"])
+                _context_data = {"fn": in_context.file or frame.f_code.co_filename,
+                                 "func": in_context.function or frame.f_code.co_name,
+                                 "lno": in_context.line or frame.f_lineno}
+
+                _logger = get_logger(frame.f_globals["__name__"])
+            except AttributeError:
+                frame_count = frame_count + 1
         return _context_data, _logger
 
     def modify_message(self, in_msg: str) -> str:
@@ -87,7 +102,12 @@ class QtMessageHandler(metaclass=ProhibitiveSingletonMeta):
         return in_msg, {"is_qt": True}
 
     def __call__(self, mode, context, message) -> Any:
-        context_data, logger = self.get_context(context)
+        try:
+            context_data, logger = self.get_context(context)
+        except Exception as e:
+            logger = get_meta_logger()
+            logger.error("encountered Error %r while trying to log QT-Message %r", e, message, exc_info=True)
+            return
         log_level = self.mode_to_log_level(mode)
         msg, extras = self.modify_message(message)
         record = logger.makeRecord(logger.name, log_level, msg=msg, extra=extras, exc_info=None, args=None, ** context_data)

@@ -37,7 +37,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-TIME_NS_FUNC_TYPE = Union[perf_counter_ns, process_time_ns, time_ns, thread_time_ns]
+TIME_NS_FUNC_TYPE = Callable[[], float]
 
 
 time_execution_path_locks: dict[Path, RLock] = {}
@@ -55,6 +55,7 @@ def get_time_execution_path_lock(path: Path) -> RLock:
 def time_execution(identifier: str = None,
                    time_ns_func: TIME_NS_FUNC_TYPE = perf_counter_ns,
                    output: Union[Callable, Path] = print,
+                   output_kwargs: dict[str, object] = None,
                    condition: Union[bool, Callable[[], bool]] = True,
                    as_seconds: bool = True,
                    decimal_places: Union[int, None] = None,
@@ -81,13 +82,15 @@ def time_execution(identifier: str = None,
                 with output.open('a', encoding='utf-8', errors='ignore') as f:
                     f.write(f"{identifier} took {full_time:f} {unit}{pretty}" + '\n')
         else:
-            output(f"{identifier} took {full_time:f} {unit}{pretty}")
+            output_kwargs = output_kwargs or {}
+            output(f"{identifier} took {full_time:f} {unit}{pretty}", **output_kwargs)
     else:
         yield
 
 
 def time_func(time_ns_func: TIME_NS_FUNC_TYPE = perf_counter_ns,
               output: Callable = print,
+              output_kwargs: dict[str, object] = None,
               use_qualname: bool = True,
               condition: Union[bool, Callable[[], bool]] = True,
               as_seconds: bool = True,
@@ -103,7 +106,7 @@ def time_func(time_ns_func: TIME_NS_FUNC_TYPE = perf_counter_ns,
 
         @wraps(func)
         def _wrapped(*args, **kwargs):
-            with time_execution(f"executing {func_name!r}", time_ns_func=time_ns_func, output=output, as_seconds=as_seconds, decimal_places=decimal_places, condition=True, also_pretty=also_pretty):
+            with time_execution(f"executing {func_name!r}", time_ns_func=time_ns_func, output=output, as_seconds=as_seconds, decimal_places=decimal_places, condition=True, also_pretty=also_pretty, output_kwargs=output_kwargs):
                 return func(*args, **kwargs)
 
         if _actual_condition:

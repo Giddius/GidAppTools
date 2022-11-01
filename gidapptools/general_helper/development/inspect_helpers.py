@@ -13,19 +13,44 @@ import json
 import inspect
 import pkgutil
 from types import ModuleType
-from typing import Any
+from typing import Any, Union, Optional
 from pathlib import Path
+from collections import namedtuple, OrderedDict
 from importlib import import_module
 from importlib.metadata import metadata, distributions
-
+from collections.abc import Iterable
+from sortedcontainers import SortedDict
+import importlib.util
+from importlib.abc import MetaPathFinder, PathEntryFinder
 # * Third Party Imports --------------------------------------------------------------------------------->
 import attrs
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.errors import MissingOptionalDependencyError
-
+from gidapptools.general_helper.development.misc import is_dunder_name
 with MissingOptionalDependencyError.try_import("gidapptools"):
     import isort
+
+try:
+    import rich
+    from rich.console import Console as RichConsole, ConsoleOptions, RenderResult
+    from rich.table import Table
+    from rich.rule import Rule
+    from rich.segment import Segment
+    from rich.tree import Tree
+    from rich.region import Region
+    from rich.panel import Panel
+    from rich.layout import Layout
+    from rich.columns import Columns
+    from rich.bar import Bar
+    from rich.style import Style
+    from rich.align import Align
+    from rich.containers import Renderables, Lines
+    RICH_IMPORTABLE = True
+
+except ImportError:
+    RICH_IMPORTABLE = False
+
 
 # endregion[Imports]
 
@@ -77,6 +102,28 @@ class SubModule:
         return cls(name=name, qualname=qualname, module_info=in_module_info, package=package)
 
     @property
+    def full_name(self) -> str:
+        return self.module.__name__
+
+    @property
+    def path(self) -> Optional[Path]:
+        try:
+            path = self.module.__file__
+            if path is not None:
+                return Path(path)
+        except AttributeError:
+            return None
+
+    @property
+    def is_top_module(self) -> bool:
+        return False
+
+    @property
+    def dunder_names(self) -> tuple[str]:
+        exclude_names = {"__builtins__"}
+        return tuple(name for name in dir(self.module) if is_dunder_name(name) is True and name not in exclude_names)
+
+    @property
     def doc(self) -> str:
         doc = self.module.__doc__
         if doc is None and self.path.suffix == ".pyd":
@@ -94,10 +141,6 @@ class SubModule:
         return dict(metadata(self.package))
 
     @property
-    def path(self) -> Path:
-        return Path(self.module.__file__)
-
-    @property
     def module(self) -> ModuleType:
         return import_module(self.qualname, self.package)
 
@@ -113,7 +156,7 @@ class SubModule:
         return isort.code(text, line_length=200).strip()
 
     @property
-    def member_names(self) -> list[str]:
+    def member_names(self) -> tuple[str]:
 
         def _check(_name: str, _obj: object) -> bool:
             return not any([
@@ -163,14 +206,6 @@ class SubModule:
                 case set():
                     return [_json_serialize(inst, field_name, i) for i in value]
 
-                case ModuleType():
-                    _out = {'name': value.__name__,
-                            "file": value.__file__,
-                            "package": value.__package__}
-                    if _out["file"] is not None:
-                        _out["file"] = Path(_out["file"]).as_posix()
-                    return _out
-
                 case str():
                     return value
 
@@ -194,12 +229,33 @@ class SubModule:
                 case "module_info":
                     return False
 
+                case "module":
+                    return False
+
             return True
+
+        def _result_sorting_key(name_value: tuple[str, object]) -> Optional[int]:
+            fixed_order = ("name",
+                           "qualname",
+                           "package",
+                           "doc")
+            try:
+                pos = fixed_order.index(name_value[0])
+            except ValueError:
+                if isinstance(name_value[1], str):
+                    pos = 1_000
+                elif isinstance(name_value[1], Path):
+                    pos = 2_000
+                elif isinstance(name_value[1], Iterable):
+                    pos = 3_000
+                else:
+                    pos = 10_000
+            return pos
 
         _out = {}
 
         attrs_attribute_names = [field.name for field in attrs.fields(self.__class__)]
-        extra_attribute_names = ["path", "doc", "module", "import_string", "all_members_import_string", "member_names"]
+        extra_attribute_names = ["path", "doc", "module", "import_string", "all_members_import_string", "member_names", "dunder_names"]
 
         attribute_names = attrs_attribute_names + extra_attribute_names
 
@@ -211,37 +267,104 @@ class SubModule:
                 continue
             serialized_value = _serialize(self, name, value)
             _out[name] = serialized_value
-        return _out
+        return {k: v for k, v in sorted(_out.items(), key=_result_sorting_key)}
 
 
-def get_all_sub_modules(in_module: ModuleType) -> dict[str, SubModule]:
-    _out = {}
-    for info in pkgutil.walk_packages(in_module.__path__, in_module.__package__ + '.'):
-        sub_module = SubModule.from_module_info(info)
-        _out[sub_module.name] = sub_module
-    return {k: v for k, v in sorted(_out.items(), key=lambda x: (x[0].startswith("_"), x[1].qualname, len(x[1].qualname)))}
+class TopModule(SubModule):
+
+    @property
+    def is_top_module(self) -> bool:
+        return True
+
+
+class PackageInfoData:
+
+    def __init__(self, module: ModuleType) -> None:
+        self._sub_modules_data: dict[str, "SubModule"] = dict()
+        self._top_module_data: "TopModule" = TopModule.from_module_info(pkgutil.ModuleInfo(pkgutil.find_loader(module.__name__), module.__name__, getattr(module, "__path__", None) is not None))
+
+    @property
+    def top_module_data(self) -> TopModule:
+        return self._top_module_data
+
+    @property
+    def name(self) -> str:
+        return self.top_module_data.full_name
+
+    def _insert_item(self, item: SubModule):
+        if item.name != item.full_name:
+            top_name = (self.name.rsplit(".", 1)[0] + ".") if "." in self.name else ""
+            new_key = item.full_name.replace(top_name, "")
+            self._sub_modules_data[new_key] = item
+        else:
+            self._sub_modules_data[item.name] = item
+
+    def append(self, item: "SubModule") -> None:
+        self._insert_item(item)
+        self._sort_sub_modules()
+
+    def add(self, items: Iterable["SubModule"]) -> None:
+        for item in items:
+            self._insert_item(item)
+        self._sort_sub_modules()
+
+    def _sort_key_func(self, in_item_tuple: tuple[str, "SubModule"]) -> tuple[bool, str, int]:
+        return (in_item_tuple[0].startswith("_"), in_item_tuple[1].qualname, len(in_item_tuple[1].qualname.split(".")))
+
+    def _sort_sub_modules(self) -> None:
+        self._sub_modules_data = dict(sorted(self._sub_modules_data.items(), key=self._sort_key_func))
+
+    def __iter__(self):
+        return iter([self.top_module_data] + list(self._sub_modules_data.values()))
+
+    def __getitem__(self, name: str) -> "SubModule":
+        if name == self.top_module_data.name:
+            return self.top_module_data
+
+        return self._sub_modules_data[name]
+
+    def to_dict(self, for_json: bool = False) -> list[dict[str, Any]]:
+        return [i.to_dict(for_json=for_json) for i in ([self.top_module_data] + list(self._sub_modules_data.values()))]
+
+    def __repr__(self) -> str:
+
+        return f"{self.__class__.__name__}({self.name!r}, sub_modules={list(self._sub_modules_data.keys())!r})"
+
+
+def get_all_sub_modules(in_module: ModuleType) -> PackageInfoData:
+    module_data = PackageInfoData(in_module)
+
+    try:
+        module_path = in_module.__path__
+        module_prefix = in_module.__package__ + "."
+
+        for info in pkgutil.walk_packages(module_path, module_prefix):
+            sub_module = SubModule.from_module_info(info)
+            module_data.append(sub_module)
+
+    except AttributeError:
+        pass
+    return module_data
+
+
+def get_all_sub_module_data(in_module: ModuleType, for_json: bool = False) -> list[dict[str, object]]:
+    return get_all_sub_modules(in_module).to_dict(for_json=for_json)
+
+
+def print_all_sub_module_data(in_module: ModuleType, no_rich: bool = False) -> None:
+
+    if no_rich is True or RICH_IMPORTABLE is False:
+        from pprint import pprint
+        pprint(get_all_sub_module_data(in_module=in_module))
+        return
+
+    console = RichConsole(soft_wrap=True)
+    console.print(get_all_sub_module_data(in_module))
 
 
 # region[Main_Exec]
 if __name__ == '__main__':
-
-    _out_data = {}
-    for i in distributions():
-        _out_data[i.name] = None
-        x = metadata(i.name)
-        try:
-            all_extra_keywords = {k: [] for k in x.get_all('Provides-Extra') if k not in {"test", "docs", "testing", "doc", "lint", "ipython", "testing-integration", "python2", "tests", "license"}}
-            all_requires_dist = tuple(i for i in x.get_all('Requires-Dist'))
-            for extra_name in all_extra_keywords:
-                re_pat = re.compile(rf"\bextra *\=\= *[\'\"]{extra_name}[\'\"]")
-                for req_dist in all_requires_dist:
-                    if re_pat.search(req_dist):
-                        all_extra_keywords[extra_name].append(req_dist.rsplit(";", 1)[0].strip())
-            _out_data[i.name] = all_extra_keywords
-        except TypeError:
-            continue
-    _out_data = {k: v for k, v in _out_data.items() if v}
-    with open("blah.json", "w", encoding='utf-8', errors='ignore') as f:
-        json.dump(_out_data, f, sort_keys=True, default=str, indent=4)
+    from PySide6 import QtWidgets
+    print_all_sub_module_data(QtWidgets)
 
 # endregion[Main_Exec]

@@ -117,8 +117,6 @@ class DecorateAbleList(list[T]):
 
 
 # region[Main_Exec]
-
-
 if __name__ == '__main__':
     pass
 

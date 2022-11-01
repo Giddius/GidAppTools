@@ -218,6 +218,32 @@ class TrailingCommentError(IniParsingError):
     ...
 
 
+class MinError(GidConfigError):
+
+    def __init__(self, value, min_value, converter, section_name: str = None, entry_name: str = None, config=None) -> None:
+        self.value = value
+        self.min_value = min_value
+        self.converter = converter
+        self.section_name = section_name
+        self.entry_name = entry_name
+        self.config = config
+        self.msg = f"Entry {self.entry_name!r} of section {self.section_name}, of config {self.config!r} has a value ({self.value!r}) that is less than the min_value({self.min_value!r}) of converter {self.converter!r}."
+        super().__init__(self.msg)
+
+
+class MaxError(GidConfigError):
+
+    def __init__(self, value, max_value, converter, section_name: str = None, entry_name: str = None, config=None) -> None:
+        self.value = value
+        self.max_value = max_value
+        self.converter = converter
+        self.section_name = section_name
+        self.entry_name = entry_name
+        self.config = config
+        self.msg = f"Entry {self.entry_name!r} of section {self.section_name}, of config {self.config!r} has a value ({self.value!r}) that is less than the max_value({self.max_value!r}) of converter {self.converter!r}."
+        super().__init__(self.msg)
+
+
 class KeyPathError(AdvancedDictError):
     def __init__(self, missing_key: Hashable, key_path: list[Hashable], last_key: Hashable = None) -> None:
         self.missing_key = missing_key

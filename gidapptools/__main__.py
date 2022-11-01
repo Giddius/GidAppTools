@@ -5,13 +5,9 @@ Soon.
 """
 
 # region [Imports]
-
-# * Standard Library Imports ---------------------------------------------------------------------------->
-import os
-import threading
-from typing import Union, TypeAlias
 from pathlib import Path
-import sys
+
+from gidapptools.cli_info import cli_show_info
 
 # endregion[Imports]
 
@@ -32,13 +28,9 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-PATH_TYPE: TypeAlias = Union[str, os.PathLike[str], Path]
-
-LOCK_TYPE: TypeAlias = Union[type[threading.Lock], type[threading.RLock]]
-
 # region[Main_Exec]
 
 if __name__ == '__main__':
-    pass
+    cli_show_info()
 
 # endregion[Main_Exec]

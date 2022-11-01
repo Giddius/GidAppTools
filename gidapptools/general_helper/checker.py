@@ -24,7 +24,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion[Constants]
 
 
-def is_hashable(obj: Any) -> bool:
+def is_hashable(obj: object) -> bool:
     try:
         hash(obj)
         return True

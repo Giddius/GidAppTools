@@ -9,14 +9,14 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 from typing import Any, Literal, Callable, Optional
 from pathlib import Path
-
+import inspect
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.errors import MissingOptionalDependencyError
 
 with MissingOptionalDependencyError.try_import("gidapptools"):
     from rich import inspect as rinspect
     from rich.console import Console as RichConsole
-
+    from rich import terminal_theme
 # endregion[Imports]
 
 # region [TODO]
@@ -78,24 +78,33 @@ def make_dprint(**console_kwargs) -> Callable:
 dprint = make_dprint()
 
 
-def obj_inspection(obj: object, out_dir: Path = None, out_type: Literal["txt", "html"] = 'html') -> None:
+def obj_inspection(obj: object, out_dir: Path = None, out_type: Literal["txt", "html"] = 'html', width: int = None, theme: terminal_theme.TerminalTheme = None, **rinspect_kwargs) -> None:
     console = RichConsole(soft_wrap=True, record=True)
-    rinspect(obj=obj, methods=True, help=True, console=console)
+    theme = theme or terminal_theme.MONOKAI
+    rinspect_kwargs = {"methods": True, "help": True, "private": True} | rinspect_kwargs
+    rinspect(obj=obj, console=console, **rinspect_kwargs)
     out_dir = Path.cwd() if out_dir is None else Path(out_dir)
-    try:
-        name = obj.__class__.__name__
-    except AttributeError:
 
+    name = obj.__qualname__ or obj.__name__
+    try:
+        name = obj.__qualname__ or obj.__name__
+    except AttributeError:
         name = obj.__name__
-    out_file = out_dir.joinpath(f"{name.casefold()}.{out_type}")
+
+    out_file = out_dir.joinpath(f"{name}.{out_type}")
     if out_type == "html":
-        console.save_html(out_file)
+        console.save_html(out_file, theme=theme)
     elif out_type == "txt":
         console.save_text(out_file)
 
 
-# region[Main_Exec]
+def is_dunder_name(in_name: str) -> bool:
+    return in_name.startswith("__") and in_name.endswith("__")
+
+
+    # region[Main_Exec]
 if __name__ == '__main__':
-    pass
+    from PySide6.QtWidgets import QMenu
+    obj_inspection(QMenu)
 
 # endregion[Main_Exec]

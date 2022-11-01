@@ -132,7 +132,7 @@ class SpecData:
             try:
                 return section[entry_name]
             except KeyError as e:
-                if section.dynamic_entries_allowed is True:
+                if section.dynamic_entries_allowed is True and entry_name is not None:
                     return self.loader.create_dynamic_entry(section=section, entry_name=entry_name)
                 else:
                     raise SpecDataMissingError(f"No entry with name {entry_name!r} in section {section_name!r} of {self!r}.") from e

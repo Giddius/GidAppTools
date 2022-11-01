@@ -8,7 +8,7 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 from typing import TYPE_CHECKING, Callable
-from hashlib import blake2b
+from hashlib import blake2b, md5, sha1
 from pathlib import Path
 
 # * Type-Checking Imports --------------------------------------------------------------------------------->
@@ -52,9 +52,16 @@ def file_hash(in_file: "PATH_TYPE", hash_algo: Callable = blake2b) -> str:
     return hash_algo(in_file.read_bytes(), usedforsecurity=False).hexdigest()
 
 
+def hash_to_int(in_hash: str) -> int:
+    return int(in_hash, base=16)
+
 # region[Main_Exec]
 
+
 if __name__ == '__main__':
-    pass
+    x = b"aaaaaaaaakdkdkdkdkkd"
+    y = sha1(x).hexdigest()
+    z = hash_to_int(y)
+    print(z)
 
 # endregion[Main_Exec]

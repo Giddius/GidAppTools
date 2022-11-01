@@ -8,17 +8,25 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union, TypeVar, Optional, TypeAlias, TypeGuard, get_args, get_origin, get_type_hints, Literal
 from pathlib import Path
+from functools import cached_property
 from datetime import datetime, timedelta
-
+import inspect
 # * Third Party Imports --------------------------------------------------------------------------------->
 from frozendict import frozendict
-
+from pprint import pprint
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.general_helper.conversion import bytes2human, human2bytes, str_to_bool, seconds2human, human2timedelta
 from gidapptools.general_helper.import_helper import is_importable
+import re
+from gidapptools.errors import MinError, MaxError
+try:
+    import rich
+    RICH_AVAILABLE = True
+except ImportError:
+    RICH_AVAILABLE = False
 
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
@@ -38,7 +46,9 @@ if TYPE_CHECKING:
 
 # region [Constants]
 PYSIDE6_AVAILABLE = is_importable("PySide6")
+YARL_AVAILABLE = is_importable("yarl")
 THIS_FILE_DIR = Path(__file__).parent.absolute()
+
 
 # endregion[Constants]
 
@@ -49,6 +59,7 @@ class ConfigValueConverter(ABC):
     value_typus: str = None
     value_typus_aliases: tuple[str] = tuple()
     named_arguments_options: frozendict[str, object] = frozendict()
+    dependencies: list[str] = None
 
     def __init__(self, conversion_table: "ConversionTable") -> None:
         self.conversion_table = conversion_table
@@ -65,6 +76,9 @@ class ConfigValueConverter(ABC):
     def decode(self):
         return self.to_python_value
 
+    def validate_value(self, value, entry_name: str, section_name: str, config) -> None:
+        ...
+
     @abstractmethod
     def to_config_value(self, value: Any) -> str:
         ...
@@ -78,28 +92,40 @@ class ConfigValueConverter(ABC):
 
 
 class IntegerConfigValueConverter(ConfigValueConverter):
-    __slots__ = ("minimum", "maximum")
+    __slots__ = ("minimum", "maximum", "on_min_error", "on_max_error")
     is_standard_converter: bool = True
     value_typus = "integer"
-    value_typus_aliases = ("integer",)
+    value_typus_aliases = ("int",)
     is_default: bool = True
 
-    def __init__(self, conversion_table: "ConversionTable", minimum: int = None, maximum: int = None) -> None:
+    def __init__(self, conversion_table: "ConversionTable", minimum: int = None, maximum: int = None, on_min_error: Literal["raise", "set_minimum"] = "raise", on_max_error: Literal["raise", "set_maximum"] = "raise") -> None:
         super().__init__(conversion_table)
         self.minimum = minimum
         self.maximum = maximum
+        self.on_min_error = on_min_error
+        self.on_max_error = on_max_error
 
     def to_config_value(self, value: int) -> str:
+        try:
+            self.validate_value(value, None, None, None)
+        except MinError:
+            if self.on_min_error == "raise":
+                raise
+            elif self.on_min_error == "set_minimum":
+                value = self.minimum
+
+        except MaxError:
+            if self.on_max_error == "raise":
+                raise
+            elif self.on_max_error == "set_maximum":
+                value = self.maximum
+
         if value is None:
             return ""
 
-        if self.minimum:
-            value = max(value, self.minimum)
-        if self.maximum:
-            value = min(value, self.maximum)
         return str(value)
 
-    def to_python_value(self, value: str) -> int:
+    def to_python_value(self, value: str) -> Union[int, None]:
         if value is None:
             return None
 
@@ -110,19 +136,29 @@ class IntegerConfigValueConverter(ConfigValueConverter):
             converted_value = min(converted_value, self.maximum)
         return converted_value
 
+    def validate_value(self, value: Optional[int], entry_name: str, section_name: str, config) -> None:
+        if value is None:
+            return
+
+        if self.minimum is not None and value < self.minimum:
+            raise MinError(value, self.minimum, converter=self, section_name=section_name, entry_name=entry_name, config=config)
+
+        if self.maximum is not None and value > self.maximum:
+            raise MaxError(value, self.maximum, converter=self, section_name=section_name, entry_name=entry_name, config=config)
+
 
 class FloatConfigValueConverter(ConfigValueConverter):
     __slots__ = tuple()
     is_standard_converter: bool = True
     value_typus = "float"
-    value_typus_aliases = ("floating_point",)
+    value_typus_aliases = ("floating_point", "double")
 
     def to_config_value(self, value: float) -> str:
         if value is None:
             return ""
         return str(value)
 
-    def to_python_value(self, value: str) -> float:
+    def to_python_value(self, value: str) -> Union[float, None]:
         if value is None:
             return None
         return float(value)
@@ -145,7 +181,7 @@ class BooleanConfigValueConverter(ConfigValueConverter):
         if value is False:
             return self.false_string_value
 
-    def to_python_value(self, value: str) -> int:
+    def to_python_value(self, value: str) -> Union[bool, None]:
         if value is None:
             return None
         return str_to_bool(str(value))
@@ -162,7 +198,7 @@ class StringConfigValueConverter(ConfigValueConverter):
             return ""
         return value
 
-    def to_python_value(self, value: str) -> str:
+    def to_python_value(self, value: str) -> Union[str, None]:
         if value is None:
             return None
         return value
@@ -178,7 +214,7 @@ class DateTimeConfigValueConverter(ConfigValueConverter):
             return ""
         return value.isoformat(timespec="seconds")
 
-    def to_python_value(self, value: str) -> datetime:
+    def to_python_value(self, value: str) -> Union[datetime, None]:
         if value is None:
             return None
         return datetime.fromisoformat(value)
@@ -194,7 +230,7 @@ class TimedeltaConfigValueConverter(ConfigValueConverter):
             return ""
         return seconds2human(value)
 
-    def to_python_value(self, value: str) -> timedelta:
+    def to_python_value(self, value: str) -> Union[timedelta, None]:
         if value is None:
             return None
         return human2timedelta(value)
@@ -204,7 +240,7 @@ class PathConfigValueConverter(ConfigValueConverter):
     __slots__ = ("resolve",)
     is_standard_converter: bool = True
     value_typus = "path"
-    value_typus_aliases = ("file_path", "folder_path", "file_system_path")
+    value_typus_aliases = ("fs_path",)
 
     def __init__(self, conversion_table: "ConversionTable", resolve: bool = False) -> None:
         super().__init__(conversion_table)
@@ -218,7 +254,7 @@ class PathConfigValueConverter(ConfigValueConverter):
             path = path.resolve()
         return path.as_posix()
 
-    def to_python_value(self, value: str) -> Path:
+    def to_python_value(self, value: str) -> Union[Path, None]:
         if value is None:
             return None
         path = Path(value)
@@ -237,11 +273,14 @@ class FileSizeConfigValueConverter(ConfigValueConverter):
             return ""
         return bytes2human(value)
 
-    def to_python_value(self, value: str) -> int:
+    def to_python_value(self, value: str) -> Union[int, None]:
         if value is None:
             return None
 
         return human2bytes(value)
+
+
+SUB_TYPUS_TYPE = TypeVar("SUB_TYPUS_TYPE")
 
 
 class ListConfigValueConverter(ConfigValueConverter):
@@ -260,7 +299,7 @@ class ListConfigValueConverter(ConfigValueConverter):
         sub_converter: "ConfigValueConverter" = self.conversion_table.converters[self.sub_typus](self.conversion_table)
         return f"{self.split_char} ".join(sub_converter.to_config_value(item) for item in value)
 
-    def to_python_value(self, value: str) -> list:
+    def to_python_value(self, value: str) -> Union[list[SUB_TYPUS_TYPE], None]:
         if value is None:
             return None
         sub_converter: "ConfigValueConverter" = self.conversion_table.converters[self.sub_typus](self.conversion_table)
@@ -274,17 +313,38 @@ if PYSIDE6_AVAILABLE is True:
         __slots__ = tuple()
         is_standard_converter: bool = True
         value_typus = "qcolor"
+        dependencies: list[str] = ["PySide6"]
 
         def to_config_value(self, value: Any, **named_arguments) -> str:
             if value is None:
                 return ""
             return ', '.join(str(i) for i in value.getRgb())
 
-        def to_python_value(self, value: str, **named_arguments) -> Any:
+        def to_python_value(self, value: str, **named_arguments) -> Union[QColor, None]:
             if value is None:
                 return None
             r, g, b, a = (int(i.strip()) for i in value.split(',') if i.strip())
             return QColor(r, g, b, a)
+
+
+if YARL_AVAILABLE is True:
+    from yarl import URL
+
+    class URLValueConverter(ConfigValueConverter):
+        __slots__ = tuple()
+        is_standard_converter: bool = True
+        value_typus = "url"
+        dependencies: list[str] = ["yarl"]
+
+        def to_config_value(self, value: Union[URL, None]) -> str:
+            if value is None:
+                return ""
+            return value.human_repr()
+
+        def to_python_value(self, value: Union[str, None]) -> Union[URL, None]:
+            if value is None:
+                return None
+            return URL(value)
 
 
 def get_standard_converter() -> tuple[type["ConfigValueConverter"]]:

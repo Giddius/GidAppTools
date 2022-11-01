@@ -42,13 +42,14 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 class BusySpinnerWidget(QLabel):
     default_gif_name: str = "busy_spinner_4.gif"
     default_spinner_size: tuple[int, int] = (75, 75)
+    _stop_signal = Signal(Future)
 
     def __init__(self, parent: QWidget = None, spinner_gif: Union[QMovie, str, Path, StoredGif] = None, spinner_size: QSize = None):
         super().__init__(parent)
         self.spinner_size = spinner_size or QSize(*self.default_spinner_size)
         self.spinner_gif_item, self.spinner_gif = self.setup_spinner_gif(spinner_gif=spinner_gif)
         self.setAlignment(Qt.AlignCenter)
-
+        self._stop_signal.connect(self.stop)
         self.running: bool = False
 
     @property
@@ -85,7 +86,6 @@ class BusySpinnerWidget(QLabel):
 
 
 class BusyPushButton(QPushButton):
-    _stop_signal = Signal(Future)
 
     def __init__(self,
                  parent: QWidget = None,
@@ -105,7 +105,7 @@ class BusyPushButton(QPushButton):
         self.layout.addWidget(self.busy_spinner_widget)
         self.set_text(text)
         self.busy_spinner_widget.setVisible(False)
-        self._stop_signal.connect(self.stop_spinner)
+        self.busy_spinner_widget._stop_signal.connect(self.stop_spinner)
 
     @property
     def layout(self) -> QVBoxLayout:
@@ -151,7 +151,7 @@ class BusyPushButton(QPushButton):
     def start_spinner_while_future(self, future: Future):
         self.start_spinner()
 
-        future.add_done_callback(self._stop_signal.emit)
+        future.add_done_callback(self.busy_spinner_widget._stop_signal.emit)
 
     def start_spinner_with_stop_signal(self, stop_signal: Signal):
         self.start_spinner()
