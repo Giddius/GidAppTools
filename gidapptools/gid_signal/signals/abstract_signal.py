@@ -10,7 +10,7 @@ Soon.
 import asyncio
 import inspect
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Hashable, Union
+from typing import Any, Union, Callable, Hashable
 from pathlib import Path
 from weakref import WeakSet, WeakMethod, ref
 

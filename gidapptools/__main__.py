@@ -5,8 +5,11 @@ Soon.
 """
 
 # region [Imports]
+
+# * Standard Library Imports ---------------------------------------------------------------------------->
 from pathlib import Path
 
+# * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.cli_info import cli_show_info
 
 # endregion[Imports]

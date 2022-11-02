@@ -17,7 +17,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 # * Third Party Imports --------------------------------------------------------------------------------->
 from yarl import URL
-from jinja2 import Template, BaseLoader, Environment, FileSystemLoader
+from jinja2 import Template, BaseLoader, Environment
 from rich.console import Console as RichConsole
 
 # * Qt Imports --------------------------------------------------------------------------------------->
@@ -32,11 +32,12 @@ from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.gid_utility.version_item import VersionItem
 from gidapptools.general_helper.class_helper import make_repr
 from gidapptools.general_helper.string_helper import StringCase, StringCaseConverter
+from gidapptools.gidapptools_qt._data.templates import ABOUT_TEMPLATE_FILE, ABOUT_STYLESHEET_FILE, ARG_DOC_HTML_TEMPLATE_FILE, ARG_DOC_MARKDOWN_TEMPLATE_FILE
 from gidapptools.gidapptools_qt.basics.sys_tray import GidBaseSysTray
 from gidapptools.gidapptools_qt.basics.main_window import GidBaseMainWindow
 from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
-from gidapptools.gidapptools_qt.resources.placeholder import QT_PLACEHOLDER_IMAGE, QT_DEFAULT_APP_ICON_IMAGE
-from gidapptools.gidapptools_qt._data.templates import ARG_DOC_HTML_TEMPLATE_FILE, ARG_DOC_MARKDOWN_TEMPLATE_FILE, ABOUT_STYLESHEET_FILE, ABOUT_TEMPLATE_FILE
+from gidapptools.gidapptools_qt.resources.placeholder import QT_DEFAULT_APP_ICON_IMAGE
+
 # * Local Imports --------------------------------------------------------------------------------------->
 from gidapptools import get_meta_info
 

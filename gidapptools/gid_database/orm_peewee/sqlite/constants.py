@@ -6,10 +6,11 @@ Soon.
 
 # region [Imports]
 
+# * Standard Library Imports ---------------------------------------------------------------------------->
 from pathlib import Path
-import os
+
+# * Third Party Imports --------------------------------------------------------------------------------->
 from frozendict import frozendict
-from gidapptools.general_helper.conversion import human2bytes, bytes2human
 
 # endregion[Imports]
 

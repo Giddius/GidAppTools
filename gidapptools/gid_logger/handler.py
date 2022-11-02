@@ -7,7 +7,6 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
-import os
 import re
 import logging
 from abc import ABC, abstractmethod
@@ -18,7 +17,6 @@ from collections import deque
 from logging.handlers import BaseRotatingHandler
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.general_helper.conversion import human2bytes
 from gidapptools.general_helper.regex.datetime_regex import datetime_format_to_regex
 

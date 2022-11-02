@@ -11,7 +11,6 @@ import os
 import threading
 from typing import Union, TypeAlias
 from pathlib import Path
-import sys
 
 # endregion[Imports]
 

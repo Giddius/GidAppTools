@@ -9,7 +9,7 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import os
 from enum import unique
-from typing import Union, AnyStr, Literal, TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Union, AnyStr, Literal, Iterable
 from hashlib import md5, sha256, blake2b, blake2s, sha3_512
 from pathlib import Path
 from threading import RLock
@@ -22,6 +22,7 @@ from gidapptools.vendored.atomic_writes import atomic_write
 from gidapptools.general_helper.conversion import human2bytes
 from gidapptools.general_helper.concurrency.locks import GLOBAL_RLOCK_MANAGER
 
+# * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.custom_types import PATH_TYPE
 

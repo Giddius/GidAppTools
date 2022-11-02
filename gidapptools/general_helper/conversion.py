@@ -24,7 +24,6 @@ import pyparsing.common as ppc
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.errors import FlagConflictError
 from gidapptools.data.conversion_data import RAW_TIMEUNITS, STRING_TRUE_VALUES, STRING_FALSE_VALUES, FILE_SIZE_SYMBOL_DATA, NANOSECONDS_IN_SECOND
-from gidapptools.gid_warning.deprecation import deprecated_argument
 
 # endregion[Imports]
 

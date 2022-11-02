@@ -8,11 +8,12 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import asyncio
-from typing import Callable, Union
-from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor
 from time import sleep
+from typing import Union, Callable
+from pathlib import Path
 from functools import partial
+from concurrent.futures import ThreadPoolExecutor
+
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.utility.helper import get_qualname_or_name
 

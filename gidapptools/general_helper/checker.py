@@ -2,7 +2,6 @@
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
-from typing import Any
 from pathlib import Path
 
 # endregion[Imports]

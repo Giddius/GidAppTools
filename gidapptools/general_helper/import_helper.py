@@ -12,9 +12,12 @@ import pkgutil
 import importlib
 import importlib.util
 import importlib.metadata
-from pathlib import Path
 from types import ModuleType
+from pathlib import Path
+
+# * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.utility.helper import PackageMetadataDict
+
 # endregion[Imports]
 
 # region [TODO]

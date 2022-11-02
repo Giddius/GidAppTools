@@ -8,7 +8,7 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 from typing import TYPE_CHECKING, Callable
-from hashlib import blake2b, md5, sha1
+from hashlib import sha1, blake2b
 from pathlib import Path
 
 # * Type-Checking Imports --------------------------------------------------------------------------------->

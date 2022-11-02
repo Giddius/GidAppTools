@@ -17,8 +17,8 @@ from contextlib import contextmanager
 if TYPE_CHECKING:
     from gidapptools.general_helper.date_time import DateTimeFrame
     from gidapptools.gid_config.parser.config_data import ConfigData
-    from gidapptools.meta_data.meta_paths.meta_paths_item import NamedMetaPath
     from gidapptools.gid_config.conversion.spec_item import SpecEntry
+    from gidapptools.meta_data.meta_paths.meta_paths_item import NamedMetaPath
 
 # endregion[Imports]
 
