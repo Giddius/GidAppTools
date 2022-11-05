@@ -11,14 +11,14 @@ readme = { file = "README.rst", content-type = "text/x-rst" }
 dynamic = ['version', 'description']
 requires-python = ">=3.9"
 dependencies = [
-    "attrs==22.1.0",
-    "frozendict==2.3.2",
-    "platformdirs==2.5.2",
-    "psutil==5.9.2",
-    "pyparsing==3.0.9",
-    "tzlocal==4.2",
-    "yarl==1.8.1",
-    "typing-extensions>=4.3",
+    "attrs~=22.1",
+    "frozendict~=2.3",
+    "platformdirs~=2.5",
+    "psutil~=5.9",
+    "pyparsing~=3.0",
+    "tzlocal~=4.2",
+    "yarl~=1.8",
+    "typing-extensions~=4.4",
 ]
 
 [project.urls]
@@ -30,12 +30,12 @@ gidapptools-info = "gidapptools.cli_info:cli_show_info"
 
 [project.optional-dependencies]
 all = [
-    "PySide6~=6.3.2",
-    "peewee~=3.15.0",
-    "cython~=0.29.0",
-    "rich~=12.5.0",
-    "jinja2~=3.1.0",
-    "python-dateutil==2.8.2",
+    "PySide6~=6.3",
+    "peewee~=3.15",
+    "cython~=0.29",
+    "rich~=12.6",
+    "jinja2~=3.1",
+    "python-dateutil~=2.8",
 ]
 pyside = ["PySide6~=6.3.2", "jinja2~=3.1.0"]
 orm = ["peewee~=3.15.0"]
