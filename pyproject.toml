@@ -29,6 +29,11 @@ gidapptools-info = "gidapptools.cli_info:cli_show_info"
 
 
 [project.optional-dependencies]
+
+pyside = ["PySide6~=6.4", "jinja2~=3.1"]
+orm = ["peewee~=3.15"]
+rich = ["rich~=12.6"]
+parsing = ["python-dateutil==2.8"]
 all = [
     "PySide6~=6.4",
     "peewee~=3.15",
@@ -37,11 +42,6 @@ all = [
     "jinja2~=3.1",
     "python-dateutil~=2.8",
 ]
-pyside = ["PySide6~=6.3.2", "jinja2~=3.1.0"]
-orm = ["peewee~=3.15.0"]
-rich = ["rich~=12.6"]
-parsing = ["python-dateutil==2.8.2"]
-
 [tool.flit.sdist]
 exclude = [
     "misc",
