@@ -33,14 +33,14 @@ gidapptools-info = "gidapptools.cli_info:cli_show_info"
 pyside = ["PySide6~=6.4", "jinja2~=3.1"]
 orm = ["peewee~=3.15"]
 rich = ["rich~=12.6"]
-parsing = ["python-dateutil==2.8"]
+parsing = ["python-dateutil>=2.8.1"]
 all = [
     "PySide6~=6.4",
     "peewee~=3.15",
     "cython~=0.29",
     "rich~=12.6",
     "jinja2~=3.1",
-    "python-dateutil~=2.8",
+    "python-dateutil>=2.8.1",
 ]
 [tool.flit.sdist]
 exclude = [
