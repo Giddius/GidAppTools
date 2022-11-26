@@ -16,7 +16,7 @@ from functools import total_ordering
 import attr
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.errors import DateTimeFrameTimezoneError
+from gidapptools.errors import DateTimeFrameTimezoneError, NotUtcDatetimeError
 
 # endregion[Imports]
 
@@ -114,10 +114,34 @@ class DateTimeFrame:
 
     def __hash__(self) -> int:
         return hash(self.start) + hash(self.end) + hash(self.delta)
+
+
+ZERO_TIMEDELTA = timedelta()
+
+
+def calculate_utc_offset(utc_datetime: datetime, local_datetime: datetime, offset_class: type[timezone] = timezone):
+    if utc_datetime.tzinfo.tzname(None) != "UTC" and utc_datetime.tzinfo != timezone.utc and utc_datetime.tzinfo.utcoffset(None) != ZERO_TIMEDELTA:
+        raise NotUtcDatetimeError(utc_datetime)
+    difference_seconds = (local_datetime.replace(tzinfo=timezone.utc) - utc_datetime)
+
+    difference_seconds = difference_seconds.total_seconds()
+    offset_timedelta = timedelta(seconds=int(difference_seconds))
+    offset_hours = offset_timedelta.total_seconds() / (60 * 60)
+
+    offset_hours = int(offset_hours)
+    prefix = "" if offset_hours < 0 else "+"
+
+    name = prefix + str(offset_hours)
+    return offset_class(offset=offset_timedelta, name=name)
+
 # region[Main_Exec]
 
 
 if __name__ == '__main__':
-    pass
+    from tzlocal import get_localzone
+    from dateutil.tz import UTC
+    x = calculate_utc_offset(datetime.now(tz=UTC), datetime.now())
+    print(x)
+
 
 # endregion[Main_Exec]

@@ -10,7 +10,7 @@ Soon.
 import os
 from typing import TYPE_CHECKING, Any, Union, Literal, Hashable, Iterable, Optional
 from pathlib import Path
-from datetime import timezone
+from datetime import timezone, datetime
 from contextlib import contextmanager
 
 # * Type-Checking Imports --------------------------------------------------------------------------------->
@@ -275,6 +275,14 @@ class DateTimeFrameTimezoneError(GidAppToolsBaseError):
         self.start_tz = start_tz
         self.end_tz = end_tz
         self.message = message + f", {start_tz=}, {end_tz=}."
+        super().__init__(self.message)
+
+
+class NotUtcDatetimeError(GidAppToolsBaseError):
+    def __init__(self, datetime_obj: datetime) -> None:
+        self.datetime_obj = datetime_obj
+        self.actual_timezone = datetime_obj.tzinfo
+        self.message = f"{self.datetime_obj!r} has to be of timezone {timezone.utc!r}, not {self.actual_timezone!r}"
         super().__init__(self.message)
 
 
