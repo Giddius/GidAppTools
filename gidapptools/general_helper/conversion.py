@@ -23,7 +23,7 @@ import pyparsing.common as ppc
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.errors import FlagConflictError
-from gidapptools.data.conversion_data import RAW_TIMEUNITS, STRING_TRUE_VALUES, STRING_FALSE_VALUES, FILE_SIZE_SYMBOL_DATA, NANOSECONDS_IN_SECOND
+from gidapptools.data.conversion_data import RAW_TIMEUNITS, STRING_TRUE_VALUES, STRING_FALSE_VALUES, FILE_SIZE_SYMBOL_DATA, NANOSECONDS_IN_SECOND, MICROSECONDS_IN_SECOND
 
 # endregion[Imports]
 
@@ -220,8 +220,15 @@ def human2bytes(in_text: str, strict: bool = False) -> int:
         raise ValueError(f"Unable to parse input string {in_text!r}.")
 
 
-def ns_to_s(nano_seconds: int, decimal_places: int = None) -> Union[int, float]:
+def ns_to_s(nano_seconds: Union[int, float], decimal_places: int = None) -> Union[int, float]:
     seconds = nano_seconds / NANOSECONDS_IN_SECOND
+    if decimal_places is None:
+        return seconds
+    return round(seconds, decimal_places)
+
+
+def ms_to_s(micro_seconds: Union[int, float], decimal_places: int = None) -> Union[int, float]:
+    seconds = micro_seconds / MICROSECONDS_IN_SECOND
     if decimal_places is None:
         return seconds
     return round(seconds, decimal_places)

@@ -1,5 +1,5 @@
 NANOSECONDS_IN_SECOND: int = 1_000_000_000
-
+MICROSECONDS_IN_SECOND: int = 1_000_000
 
 RAW_STRING_TRUE_VALUES = {'yes',
                           'y',
