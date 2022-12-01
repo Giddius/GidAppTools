@@ -238,7 +238,7 @@ def ms_to_s(micro_seconds: Union[int, float], decimal_places: int = None) -> Uni
 class TimeUnit:
     name: str = attr.ib()
     symbol: str = attr.ib()
-    factor: int = attr.ib()
+    factor: float = attr.ib()
     aliases: tuple[str] = attr.ib(converter=tuple)
     plural: str = attr.ib()
 
