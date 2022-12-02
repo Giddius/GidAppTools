@@ -9,7 +9,7 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 from enum import Enum
 from pathlib import Path
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, tzinfo
 from functools import total_ordering
 
 # * Third Party Imports --------------------------------------------------------------------------------->
@@ -138,10 +138,9 @@ def calculate_utc_offset(utc_datetime: datetime, local_datetime: datetime, offse
 
 
 if __name__ == '__main__':
-    from tzlocal import get_localzone
     from dateutil.tz import UTC
-    x = calculate_utc_offset(datetime.now(tz=UTC), datetime.now())
-    print(x)
+    now = datetime.now()
+    print(now.utcoffset().total_seconds() == 0)
 
 
 # endregion[Main_Exec]

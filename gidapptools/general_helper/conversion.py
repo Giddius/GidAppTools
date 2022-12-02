@@ -234,6 +234,18 @@ def ms_to_s(micro_seconds: Union[int, float], decimal_places: int = None) -> Uni
     return round(seconds, decimal_places)
 
 
+def timedelta_to_stopwatch_format(t: Union[float, timedelta]) -> str:
+    """
+    Get a friendly timestamp represented as a string.
+    """
+    try:
+        all_seconds = t.total_seconds()
+    except AttributeError:
+        all_seconds = t
+    hours, minutes, seconds = int(all_seconds / 3600), int(all_seconds / 60 % 60), all_seconds % 60
+    return f"{hours:02d}:{minutes:02d}:{seconds:05.2f}"
+
+
 @attr.s(auto_attribs=True, auto_detect=True, frozen=True, slots=True, weakref_slot=True)
 class TimeUnit:
     name: str = attr.ib()
