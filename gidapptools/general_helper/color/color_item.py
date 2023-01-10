@@ -26,7 +26,7 @@ try:
 except ImportError:
     PYSIDE6_AVAILABLE = False
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -36,13 +36,13 @@ except ImportError:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 INT_OR_FLOAT = Union[int, float]
 
@@ -63,6 +63,19 @@ def _alpha_converter(alpha: Union[int, float] = None) -> float:
         return 1.0
 
     return float(alpha)
+
+
+def rgb_to_hex(r, g, b):
+    parts = []
+    for part in [r, g, b]:
+        if isinstance(part, float):
+            part = int(255 * part)
+        parts.append(part)
+    return '#' + ''.join(f"{p:X}"for p in parts)
+
+
+def rgb_float_to_rgb_int(in_rgb_float: tuple[float, float, float]) -> tuple[int, int, int]:
+    return tuple(int(255 * i) for i in in_rgb_float)
 
 
 class ColorTypus(Enum):
@@ -92,6 +105,17 @@ class BaseColor(ABC):
     @abstractmethod
     def as_hsv(self, include_alpha: bool = True, alpha_as_int: bool = False) -> COLOR_FLOAT_TYPE:
         ...
+
+    def as_hex(self, include_alpha: bool = True) -> str:
+        _rgb = self.as_rgb_int(include_alpha=include_alpha, alpha_as_int=True)
+        print(f"{_rgb=}")
+        _hex = rgb_to_hex(*_rgb[:3])
+        print(f"{_hex=}")
+        if include_alpha is True and len(_rgb) == 4:
+            _hex += f"{_rgb[-1]:X}"
+            print(f"{_hex=}")
+
+        return _hex
 
     @cached_property
     def qcolor(self) -> Optional["QColor"]:
@@ -305,6 +329,10 @@ class ColorRegistry:
         return self.color_factory(value=value, typus=typus, name=name, aliases=aliases)
 
     def get_color_by_name(self, name: str) -> "RGBColor":
+        if len(self.colors_by_name) == 0:
+            for _p_color in get_webcolors_data():
+                Color(**_p_color, typus=Color.color_typus.RGB)
+
         return self.colors_by_name[name.casefold()]
 
 
@@ -312,7 +340,7 @@ Color = ColorRegistry()
 for p_color in get_webcolors_data():
     Color(**p_color, typus=Color.color_typus.RGB)
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

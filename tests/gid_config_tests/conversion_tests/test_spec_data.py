@@ -9,7 +9,7 @@ import json
 from gidapptools.gid_config.conversion.spec_data import SpecFile, SpecEntry, SpecSection, ConverterSpecData, SpecDataMissingError
 
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [Constants]
 

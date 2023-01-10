@@ -10,7 +10,7 @@ Soon.
 from typing import Type
 from pathlib import Path
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -20,13 +20,13 @@ from pathlib import Path
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def implements_protocol(proto: Type):
@@ -45,9 +45,9 @@ def implements_protocol(proto: Type):
     return _deco
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

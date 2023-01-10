@@ -16,7 +16,7 @@ from weakref import WeakValueDictionary
 if TYPE_CHECKING:
     from gidapptools.gid_signal.signals.abstract_signal import AbstractSignal
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -31,13 +31,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(os.path.dirname(__file__)).absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class SignalRegistry(WeakValueDictionary):
@@ -67,8 +67,8 @@ class SignalRegistry(WeakValueDictionary):
 signal_registry = SignalRegistry()
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

@@ -26,7 +26,7 @@ from gidapptools.general_helper.concurrency.locks import GLOBAL_RLOCK_MANAGER
 if TYPE_CHECKING:
     from gidapptools.custom_types import PATH_TYPE
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -36,14 +36,14 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 get_dummy_profile_decorator_in_globals()
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 READ_TYPE = Union[Literal["r"], Literal["rb"]]
@@ -229,9 +229,9 @@ class FileMixin(os.PathLike):
 
     def __str__(self) -> str:
         return self.__fspath__()
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

@@ -14,7 +14,7 @@ from contextlib import contextmanager
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_warning.experimental import mark_experimental
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -24,26 +24,17 @@ from gidapptools.gid_warning.experimental import mark_experimental
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
-@mark_experimental
-@contextmanager
-def download_limit():
-    start = process_time_ns()
-    yield
-    if (duration := (process_time_ns() - start) / 1_000_000_000) < 1:
-        sleep(1 - duration)
-
-
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

@@ -15,7 +15,7 @@ from pathlib import Path
 if TYPE_CHECKING:
     from gidapptools.custom_types import PATH_TYPE
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -25,13 +25,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 # FILE_HASH_INCREMENTAL_THRESHOLD: int = 104857600  # 100mb
@@ -55,7 +55,7 @@ def file_hash(in_file: "PATH_TYPE", hash_algo: Callable = blake2b) -> str:
 def hash_to_int(in_hash: str) -> int:
     return int(in_hash, base=16)
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
@@ -64,4 +64,4 @@ if __name__ == '__main__':
     z = hash_to_int(y)
     print(z)
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

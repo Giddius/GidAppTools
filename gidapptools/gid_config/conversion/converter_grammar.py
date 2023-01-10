@@ -18,7 +18,7 @@ from pyparsing import common as ppc
 from gidapptools.errors import InvalidConverterValue
 from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_globals
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -28,13 +28,13 @@ from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_glo
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 get_dummy_profile_decorator_in_globals()
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 REPLACE_WORDS = {"$comma$": ",",
@@ -96,7 +96,7 @@ def parse_specification(raw_specification: str) -> ConverterSpecData:
         raise InvalidConverterValue(f"{raw_specification!r} is not a valid converter specification") from error
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

@@ -32,7 +32,7 @@ try:
 except ImportError:
     RICH_IMPORTABLE = False
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -42,13 +42,13 @@ except ImportError:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class ClassNameFinder(ast.NodeVisitor):
@@ -342,9 +342,9 @@ def print_all_sub_module_data(in_module: ModuleType, no_rich: bool = False) -> N
     console.print(get_all_sub_module_data(in_module))
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     from PySide6 import QtWidgets
     print_all_sub_module_data(QtWidgets)
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

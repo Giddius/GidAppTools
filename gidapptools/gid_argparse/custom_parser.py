@@ -29,7 +29,7 @@ from gidapptools.general_helper.import_helper import import_from_name, meta_data
 if TYPE_CHECKING:
     ...
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -39,13 +39,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def url_sorter(in_name_and_url: tuple[str, str]):
@@ -164,7 +164,7 @@ class GidArgumentParser(argparse.ArgumentParser):
 
         init_kwargs = init_kwargs | kwargs
         return cls(**init_kwargs)
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
@@ -172,4 +172,4 @@ if __name__ == '__main__':
     y = meta_data_from_module(x)
     pprint(y)
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

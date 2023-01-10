@@ -16,7 +16,7 @@ from threading import RLock
 from PySide6.QtGui import QIcon, QImage, QMovie, QPixmap
 from PySide6.QtCore import Qt, QFile, QSize, QByteArray
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -26,13 +26,13 @@ from PySide6.QtCore import Qt, QFile, QSize, QByteArray
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def make_ressource_name(in_item_name: str, in_section_name: str = None) -> str:
@@ -166,10 +166,10 @@ class AllResourceItemsMeta(type):
             return cls.placeholder_image
         raise AttributeError(f"{cls.__name__} has not attribute {name!r}")
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

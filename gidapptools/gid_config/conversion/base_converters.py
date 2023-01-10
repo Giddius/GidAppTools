@@ -29,7 +29,7 @@ except ImportError:
 if TYPE_CHECKING:
     from gidapptools.gid_config.conversion.conversion_table import ConversionTable
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 PYSIDE6_AVAILABLE = is_importable("PySide6")
@@ -47,7 +47,7 @@ YARL_AVAILABLE = is_importable("yarl")
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class ConfigValueConverter(ABC):
@@ -348,8 +348,8 @@ def get_standard_converter() -> tuple[type["ConfigValueConverter"]]:
     return tuple(sc for sc in ConfigValueConverter.__subclasses__() if sc.is_standard_converter is True)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

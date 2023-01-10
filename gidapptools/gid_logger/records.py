@@ -18,7 +18,7 @@ from pathlib import Path
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_logger.enums import LoggingLevel
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -28,7 +28,7 @@ from gidapptools.gid_logger.enums import LoggingLevel
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
@@ -37,7 +37,7 @@ logging.basicConfig()
 log = logging.getLogger(__name__)
 
 log.setLevel(LoggingLevel.DEBUG)
-# endregion[Constants]
+# endregion [Constants]
 
 
 class GidLogRecordFactory:
@@ -119,8 +119,8 @@ class GidBaseLogRecord(logging.LogRecord):
 
 LOG_RECORD_TYPES = Union[logging.LogRecord, GidBaseLogRecord]
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

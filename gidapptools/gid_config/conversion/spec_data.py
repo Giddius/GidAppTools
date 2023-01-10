@@ -25,7 +25,7 @@ from gidapptools.gid_config.conversion.converter_grammar import ConverterSpecDat
 if TYPE_CHECKING:
     pass
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -35,13 +35,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 get_dummy_profile_decorator_in_globals()
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class SpecLoader:
@@ -210,8 +210,8 @@ class SpecFile(FileMixin, SpecData):
         return f'{self.__class__.__name__}(name={self.name!r}, file_path={self.file_path.as_posix()!r})'
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

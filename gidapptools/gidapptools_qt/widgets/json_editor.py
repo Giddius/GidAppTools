@@ -15,7 +15,7 @@ import PySide6
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QGridLayout
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -25,13 +25,13 @@ from PySide6.QtWidgets import QWidget, QGridLayout
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class JsonEditorWidget(QWidget):
@@ -44,9 +44,9 @@ class JsonEditorWidget(QWidget):
         return super().layout()
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

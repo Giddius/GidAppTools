@@ -11,7 +11,7 @@ from pathlib import Path
 from warnings import warn, warn_explicit
 from functools import wraps
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -21,13 +21,13 @@ from functools import wraps
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def mark_experimental(extra_message: str = ""):
@@ -45,10 +45,10 @@ def mark_experimental(extra_message: str = ""):
         return _wrapped
     return _wrapper
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

@@ -14,7 +14,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import QLabel, QDialog, QLineEdit, QVBoxLayout
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -24,13 +24,13 @@ from PySide6.QtWidgets import QLabel, QDialog, QLineEdit, QVBoxLayout
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class AppInfoDialog(QDialog):
@@ -71,9 +71,9 @@ class AppInfoDialog(QDialog):
             self.verticalLayout.addWidget(data)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

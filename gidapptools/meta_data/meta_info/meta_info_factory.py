@@ -21,7 +21,7 @@ from gidapptools.general_helper.conversion import str_to_bool
 from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -31,13 +31,13 @@ from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFacto
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class License:
@@ -169,10 +169,10 @@ class MetaInfoFactory(AbstractMetaFactory):
         return instance
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

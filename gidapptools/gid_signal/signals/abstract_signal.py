@@ -17,7 +17,7 @@ from weakref import WeakSet, WeakMethod, ref
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.utility.helper import get_qualname_or_name
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -27,13 +27,13 @@ from gidapptools.utility.helper import get_qualname_or_name
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class AdaptableWeakSet(WeakSet):
@@ -110,8 +110,8 @@ class AbstractSignal(ABC):
         return f"{self.__class__.__name__}-{self.key}(targets={self.targets!r})"
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

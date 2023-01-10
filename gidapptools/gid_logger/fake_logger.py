@@ -25,7 +25,7 @@ from rich.measure import measure_renderables
 from rich.protocol import is_renderable
 from rich.containers import Renderables
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -35,13 +35,13 @@ from rich.containers import Renderables
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 CONSOLE = RichConsole(soft_wrap=True)
 
@@ -225,8 +225,8 @@ class FakeLogger:
 
 fake_logger = FakeLogger(as_panel=False, dynamic_panel_title="all", default_justify=None)
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

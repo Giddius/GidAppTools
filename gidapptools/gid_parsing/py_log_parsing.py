@@ -18,7 +18,7 @@ from gidapptools.gid_parsing.tokens.base_tokens import BaseTokenWithPos
 from gidapptools.gid_parsing.universal.datetime_elements import get_grammar_from_dt_format
 from gidapptools.gid_parsing.universal.character_elements import Ligatures, BaseElements
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -28,13 +28,13 @@ from gidapptools.gid_parsing.universal.character_elements import Ligatures, Base
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class LineNumberToken(BaseTokenWithPos):
@@ -111,10 +111,10 @@ class GeneralGrammar:
         return self.___grammar___.parse_string(text, parse_all=True).as_dict()
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

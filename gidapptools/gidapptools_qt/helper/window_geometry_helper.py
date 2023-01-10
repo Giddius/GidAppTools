@@ -23,7 +23,7 @@ else:
 if TYPE_CHECKING:
     ...
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -33,13 +33,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def move_to_center_of_screen(widget: QWidget, screen: QScreen = None) -> None:
@@ -51,9 +51,9 @@ def move_to_center_of_screen(widget: QWidget, screen: QScreen = None) -> None:
     widget.setGeometry(widget_geometry)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

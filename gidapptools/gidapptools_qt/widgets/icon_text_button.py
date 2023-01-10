@@ -17,7 +17,7 @@ from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtCore import Qt, QSize
 from PySide6.QtWidgets import QLabel, QBoxLayout, QHBoxLayout, QPushButton, QVBoxLayout, QApplication
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -27,13 +27,13 @@ from PySide6.QtWidgets import QLabel, QBoxLayout, QHBoxLayout, QPushButton, QVBo
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class ImageTextButton(QPushButton):
@@ -108,7 +108,7 @@ class ImageTextButton(QPushButton):
     @property
     def layout(self) -> QBoxLayout:
         return super().layout()
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
@@ -117,4 +117,4 @@ if __name__ == '__main__':
     w.show()
     sys.exit(app.exec())
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

@@ -27,7 +27,7 @@ from gidapptools.utility.enums import OperatingSystem
 if TYPE_CHECKING:
     from gidapptools.custom_types import PATH_TYPE
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -37,13 +37,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def get_all_drives(also_non_physical: bool = False) -> tuple[Path]:
@@ -133,7 +133,7 @@ def open_folder_in_explorer(in_folder: Union[str, os.PathLike]) -> None:
             raise RuntimeError(f"Not able to open folder {in_folder.as_posix()!r}, because no known procedure for Operating System {operating_system!s}.")
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

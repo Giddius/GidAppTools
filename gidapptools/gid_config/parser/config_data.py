@@ -22,7 +22,7 @@ from gidapptools.general_helper.mixins.file_mixin import FileMixin
 if TYPE_CHECKING:
     from gidapptools.custom_types import PATH_TYPE
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -32,13 +32,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 get_dummy_profile_decorator_in_globals()
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class ConfigData:
@@ -253,10 +253,10 @@ class ConfigFile(FileMixin, ConfigData):
         with self.lock:
             content = self.read()
             self._sections = {section.name: section for section in self.parser.parse(content)}
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

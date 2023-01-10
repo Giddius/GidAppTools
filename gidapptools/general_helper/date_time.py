@@ -18,7 +18,7 @@ import attr
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.errors import DateTimeFrameTimezoneError, NotUtcDatetimeError
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -28,13 +28,13 @@ from gidapptools.errors import DateTimeFrameTimezoneError, NotUtcDatetimeError
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 # def seconds2human()
@@ -134,7 +134,7 @@ def calculate_utc_offset(utc_datetime: datetime, local_datetime: datetime, offse
     name = prefix + str(offset_hours)
     return offset_class(offset=offset_timedelta, name=name)
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
@@ -143,4 +143,4 @@ if __name__ == '__main__':
     print(now.utcoffset().total_seconds() == 0)
 
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

@@ -17,7 +17,7 @@ from PySide6.QtGui import QFont, QColor, QTextCharFormat, QSyntaxHighlighter
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtWidgets import QWidget, QTextEdit, QGridLayout
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -27,13 +27,13 @@ from PySide6.QtWidgets import QWidget, QTextEdit, QGridLayout
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class StreamCaptureSignaler(QObject):
@@ -198,8 +198,8 @@ class StdStreamWidget(QWidget):
         return super().show()
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from gidapptools.custom_types import PATH_TYPE
     from gidapptools.gid_logger.records import LOG_RECORD_TYPES
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -35,13 +35,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 DEFAULT_MAX_BYTES = human2bytes("5 mb")
@@ -233,9 +233,9 @@ class GidStoringHandler(logging.Handler):
         for store in self.table.values():
             _out += len(store)
         return _out
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

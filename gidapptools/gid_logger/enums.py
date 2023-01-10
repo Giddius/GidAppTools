@@ -14,7 +14,7 @@ from enum import Enum
 from typing import Any, Callable, Optional
 from pathlib import Path
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -24,13 +24,13 @@ from pathlib import Path
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def _add_new_logging_level(name: str, value: int) -> None:
@@ -135,7 +135,7 @@ class LoggingLevel(int, Enum):
 _check_if_all_levels_are_in_LoggingLevel()
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

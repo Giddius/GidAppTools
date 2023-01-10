@@ -26,7 +26,7 @@ from gidapptools.general_helper.string_helper import StringCase, StringCaseConve
 if TYPE_CHECKING:
     from gidapptools.gid_logger.records import LOG_RECORD_TYPES
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -36,13 +36,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def get_all_func_names(file: Path, recursive: bool = True):
@@ -440,10 +440,10 @@ class GidLoggingFormatter(logging.Formatter):
             text = text + self.format_stack(record.stack_info)
         return text
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

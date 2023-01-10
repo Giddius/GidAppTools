@@ -19,7 +19,7 @@ from gidapptools.errors import KeyPathError, NotMappingError, AdvancedDictError,
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.general_helper.checker import is_hashable
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -29,13 +29,13 @@ from gidapptools.general_helper.checker import is_hashable
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def replace_dict_keys(in_dict: dict, *replacement_pairs: tuple[Hashable, Hashable]) -> dict:
@@ -394,7 +394,7 @@ class SafeMergeDict(UserDict):
         return self
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

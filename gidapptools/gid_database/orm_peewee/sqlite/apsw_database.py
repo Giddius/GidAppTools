@@ -38,7 +38,7 @@ from gidapptools.gid_database.orm_peewee.sqlite.pragma_info import PragmaInfo
 if TYPE_CHECKING:
     from gidapptools.custom_types import PATH_TYPE
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -48,14 +48,14 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
-# endregion[Constants]
+# endregion [Constants]
 
 # region [Types]
 
@@ -387,7 +387,7 @@ class GidAPSWDatabase(APSWDatabase):
         return f"{self.__class__.__name__}(database_name={self.db_file_name!r}, setup_status={self.setup_status.name!r})"
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
 
     def run_setup(db):
@@ -401,4 +401,4 @@ if __name__ == '__main__':
     pp(x.pragma_info.pragma_data)
 
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

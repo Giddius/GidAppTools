@@ -20,7 +20,7 @@ from dateutil.tz import gettz
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_parsing.tokens.base_tokens import BaseTokenWithPos
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -30,13 +30,13 @@ from gidapptools.gid_parsing.tokens.base_tokens import BaseTokenWithPos
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def microsecond_parse_action(tokens):
@@ -119,7 +119,7 @@ def get_grammar_from_dt_format(dt_format: str) -> ppa.ParserElement:
     return ppa.locatedExpr(reduce(add, parts)).set_parse_action(DateTimeToken.from_parse_action)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

@@ -11,14 +11,14 @@ import os
 from time import perf_counter_ns
 from typing import Union, Callable
 from pathlib import Path
-from functools import wraps
+from functools import wraps, partial
 from threading import RLock
 from contextlib import contextmanager
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.conversion import seconds2human
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -28,13 +28,13 @@ from gidapptools.general_helper.conversion import seconds2human
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 TIME_NS_FUNC_TYPE = Callable[[], float]
@@ -54,7 +54,7 @@ def get_time_execution_path_lock(path: Path) -> RLock:
 @contextmanager
 def time_execution(identifier: str = None,
                    time_ns_func: TIME_NS_FUNC_TYPE = perf_counter_ns,
-                   output: Union[Callable, Path] = print,
+                   output: Union[Callable, Path] = partial(print, flush=True),
                    output_kwargs: dict[str, object] = None,
                    condition: Union[bool, Callable[[], bool]] = True,
                    as_seconds: bool = True,
@@ -89,7 +89,7 @@ def time_execution(identifier: str = None,
 
 
 def time_func(time_ns_func: TIME_NS_FUNC_TYPE = perf_counter_ns,
-              output: Callable = print,
+              output: Callable = partial(print, flush=True),
               output_kwargs: dict[str, object] = None,
               use_qualname: bool = True,
               condition: Union[bool, Callable[[], bool]] = True,
@@ -154,8 +154,8 @@ def get_dummy_profile_decorator_in_globals():
     #     setattr(mod, "profile", profile)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

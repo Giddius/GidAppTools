@@ -27,7 +27,7 @@ from gidapptools.general_helper.dict_helper import SafeMergeDict
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -37,13 +37,13 @@ from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFacto
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 META_ITEMS_TYPE = Any
@@ -197,9 +197,9 @@ def get_meta_paths() -> MetaPaths:
     return app_meta['meta_paths']
 
 
-    # region[Main_Exec]
+    # region [Main_Exec]
 if __name__ == '__main__':
     from faked_pack_src import call_and_return
     call_and_return(setup_meta_data)
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

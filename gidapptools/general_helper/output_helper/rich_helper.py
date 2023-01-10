@@ -29,7 +29,7 @@ with MissingOptionalDependencyError.try_import("gidapptools"):
     from rich.console import Console as RichConsole
     from rich.terminal_theme import TerminalTheme
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -39,13 +39,13 @@ with MissingOptionalDependencyError.try_import("gidapptools"):
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 MY_TERMINAL_THEME = TerminalTheme(
     (40, 40, 40),
@@ -153,9 +153,9 @@ def inspect_object_with_html(obj: object,
             sleep(0.5)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 if __name__ == '__main__':
 
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

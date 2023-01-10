@@ -8,7 +8,7 @@ from gidapptools.general_helper.timing import time_execution
 from pathlib import Path
 from gidapptools.gid_config.interface import get_config, ResolvedSection, ResolvedEntry, MissingDefaultValue
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [Constants]
 

@@ -14,7 +14,7 @@ from pathlib import Path
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.data.json import THIS_FILE_DIR as JSON_DATA_DIR
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -24,13 +24,13 @@ from gidapptools.data.json import THIS_FILE_DIR as JSON_DATA_DIR
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 WEBCOLORS_JSON = JSON_DATA_DIR.joinpath("webcolors.json")
-# endregion[Constants]
+# endregion [Constants]
 
 
 def get_webcolors_data() -> list[dict[str:Any]]:
@@ -43,10 +43,10 @@ def get_webcolors_data() -> list[dict[str:Any]]:
         new_item_data["value"] = (item_data.get("rgb").get('r'), item_data.get("rgb").get('g'), item_data.get("rgb").get('b'), 1.0)
         _out.append(new_item_data)
     return _out
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

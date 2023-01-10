@@ -9,7 +9,7 @@ from gidapptools.gid_config.conversion.conversion_table import ConversionTable, 
 from gidapptools.errors import UnconvertableTypusError
 from gidapptools.gid_config.conversion.base_converters import (StringConfigValueConverter, IntegerConfigValueConverter, FloatConfigValueConverter, PathConfigValueConverter,
                                                                ListConfigValueConverter, DateTimeConfigValueConverter, TimedeltaConfigValueConverter, BooleanConfigValueConverter)
-# endregion[Imports]
+# endregion [Imports]
 
 # region [Constants]
 

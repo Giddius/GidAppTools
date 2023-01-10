@@ -15,7 +15,7 @@ from tempfile import gettempdir
 from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.utility.helper import PathLibAppDirs
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -25,13 +25,13 @@ from gidapptools.utility.helper import PathLibAppDirs
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class GidAppDirs(PathLibAppDirs):
@@ -80,8 +80,8 @@ class GidAppDirs(PathLibAppDirs):
         return inst.as_path_dict()
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

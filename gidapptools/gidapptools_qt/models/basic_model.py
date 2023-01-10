@@ -12,9 +12,9 @@ from pathlib import Path
 
 # * Qt Imports --------------------------------------------------------------------------------------->
 import PySide6
-from PySide6.QtCore import Qt, QAbstractTableModel
+from PySide6.QtCore import Qt, QAbstractTableModel, QModelIndex, QPersistentModelIndex, QObject
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -24,20 +24,20 @@ from PySide6.QtCore import Qt, QAbstractTableModel
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
-PYSIDE_INDEX_TYPE = Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex]
+PYSIDE_INDEX_TYPE = Union[QModelIndex, QPersistentModelIndex]
 
 
 class BasicTableModel(QAbstractTableModel):
 
-    def __init__(self, parent: Optional[PySide6.QtCore.QObject] = None) -> None:
+    def __init__(self, parent: Optional[QObject] = None) -> None:
         super().__init__(parent=parent)
         self.data_dispatch: dict[Qt.ItemDataRole:Callable[[PYSIDE_INDEX_TYPE], Any]] = {}
         self.header_dispatch: dict[Qt.ItemDataRole:Callable[[int, Qt.Orientation], Any]] = {}
@@ -60,10 +60,10 @@ class BasicTableModel(QAbstractTableModel):
             return 0
         return len(self.content)
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

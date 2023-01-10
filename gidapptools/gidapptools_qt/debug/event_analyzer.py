@@ -19,7 +19,7 @@ from collections import defaultdict
 from PySide6.QtGui import QMouseEvent, QPaintEvent, QResizeEvent, QStatusTipEvent, QPlatformSurfaceEvent, QInputMethodQueryEvent
 from PySide6.QtCore import QEvent, QChildEvent, QDynamicPropertyChangeEvent
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -29,13 +29,13 @@ from PySide6.QtCore import QEvent, QChildEvent, QDynamicPropertyChangeEvent
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class JsonOutputter:
@@ -188,8 +188,8 @@ class EventAnalyzer:
             self.output(text_or_data)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

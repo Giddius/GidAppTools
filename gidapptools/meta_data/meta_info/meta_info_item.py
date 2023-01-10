@@ -34,7 +34,7 @@ from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 if TYPE_CHECKING:
     from gidapptools.meta_data.meta_info.meta_info_factory import License
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -45,14 +45,14 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
-# endregion[Constants]
+# endregion [Constants]
 
 def url_converter(in_url: Optional[str]) -> Optional[URL]:
     if in_url is None:
@@ -166,7 +166,7 @@ def ManualMetaInfoItem(app_name: str = None,
             kwargs.pop(k)
     return MetaInfo(**kwargs)
 
-    # region[Main_Exec]
+    # region [Main_Exec]
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

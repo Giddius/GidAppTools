@@ -29,7 +29,7 @@ from gidapptools.gid_logger.formatter import GidLoggingFormatter, get_all_func_n
 if TYPE_CHECKING:
     from gidapptools.gid_logger.records import LOG_RECORD_TYPES
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -39,13 +39,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class GidLogger(logging.Logger):
@@ -89,7 +89,7 @@ class GidLogger(logging.Logger):
 
         return rv
 
-    def _log(self, level: int, msg: object, args: "logging._ArgsType", exc_info: "logging._ExcInfoType" = None, extra: Mapping[str, object] = None, stack_info: bool = False, stacklevel: int = 1) -> None:
+    def _log(self, level: int, msg: object, args: "logging._ArgsType", exc_info: "logging._ExcInfoType" = None, extra: Mapping[str, object] = None, stack_info: bool = False, stacklevel: int = 2) -> None:
         if extra is not None and extra.get("is_timing_decorator", False) is True:
             stacklevel += 0
         return super()._log(level, msg, args, exc_info, extra, stack_info, stacklevel)
@@ -275,10 +275,10 @@ def setup_main_logger_with_file_logging(name: str,
 
 def get_main_logger():
     return get_logger("__main__")
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

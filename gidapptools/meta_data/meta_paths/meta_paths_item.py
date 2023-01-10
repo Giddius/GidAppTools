@@ -12,6 +12,7 @@ import logging
 from pprint import pformat
 from typing import Any, Union, TypeVar, Callable, Optional
 from pathlib import Path
+from threading import Lock, RLock
 from tempfile import mkdtemp
 from contextlib import contextmanager
 
@@ -21,7 +22,7 @@ from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.utility.helper import make_pretty
 from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -31,24 +32,33 @@ from gidapptools.abstract_classes.abstract_meta_item import AbstractMetaItem
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 log = logging.getLogger(__name__)
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 _T = TypeVar("_T")
 
 
 class TempPathStorage(set):
 
-    def discard_non_existing(self) -> None:
-        to_discard = [i for i in self if i.exists() is False]
+    @property
+    def discard_lock(self) -> RLock:
+        try:
+            return self._discard_lock
+        except AttributeError:
+            self._discard_lock = RLock()
+            return self._discard_lock
 
-        for item in list(to_discard):
-            self.discard(item)
+    def discard_non_existing(self) -> None:
+        with self.discard_lock:
+            to_discard = [i for i in self if i.exists() is False]
+
+            for item in list(to_discard):
+                self.discard(item)
 
     def add(self, item: _T) -> None:
         self.discard_non_existing()
@@ -127,9 +137,10 @@ class MetaPaths(AbstractMetaItem):
         if name is not None:
             _number = 0
             temp_dir = self._generate_named_temp_dir_path(name, suffix=suffix, number=_number)
-            while exists_ok is False and temp_dir.exists():
-                _number += 1
-                temp_dir = self._generate_named_temp_dir_path(name, suffix=suffix, number=_number)
+            if exists_ok is False:
+                while temp_dir.exists():
+                    _number += 1
+                    temp_dir = self._generate_named_temp_dir_path(name, suffix=suffix, number=_number)
 
         else:
             temp_dir = Path(mkdtemp(dir=self.temp_dir, suffix=suffix))
@@ -181,7 +192,7 @@ class MetaPaths(AbstractMetaItem):
         # TODO: find a way to clean shit up, but completely, also add optional kwarg that also removes the author folder
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

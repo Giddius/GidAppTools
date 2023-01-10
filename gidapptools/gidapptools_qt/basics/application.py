@@ -45,7 +45,7 @@ from gidapptools import get_meta_info
 if TYPE_CHECKING:
     from gidapptools.gidapptools_qt.resources.resources_helper import PixmapResourceItem
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -55,13 +55,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]-uz1
+# endregion [Constants]-uz1
 
 
 class AppArgParserResult:
@@ -709,9 +709,9 @@ class ApplicationBuilder:
         return application
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
 
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

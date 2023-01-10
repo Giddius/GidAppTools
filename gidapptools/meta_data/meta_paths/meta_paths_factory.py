@@ -20,7 +20,7 @@ from gidapptools.meta_data.meta_paths.meta_paths_item import MetaPaths
 from gidapptools.abstract_classes.abstract_meta_factory import AbstractMetaFactory
 from gidapptools.meta_data.meta_paths.appdirs_implementations import GidAppDirs
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -30,13 +30,13 @@ from gidapptools.meta_data.meta_paths.appdirs_implementations import GidAppDirs
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class MetaPathsFactory(AbstractMetaFactory):
@@ -49,8 +49,8 @@ class MetaPathsFactory(AbstractMetaFactory):
         self.code_base_dir = Path(self.config_kwargs.get('init_path')).parent
 
     def get_path_dict(self) -> dict[NamedMetaPath, Optional[Path]]:
-        defaults = {'app_name': os.getenv(EnvName.APP_NAME),
-                    'app_author': os.getenv(EnvName.APP_AUTHOR)}
+        defaults = {'app_name': os.getenv(EnvName.APP_NAME.value),
+                    'app_author': os.getenv(EnvName.APP_AUTHOR.value)}
         _kwargs = self.config_kwargs.get_kwargs_for(self.appdirs_class.get_path_dict_direct, defaults)
         if _kwargs.get('app_name') is None:
             raise AppNameMissingError()
@@ -79,10 +79,10 @@ class MetaPathsFactory(AbstractMetaFactory):
         return instance
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

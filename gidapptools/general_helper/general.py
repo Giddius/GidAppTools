@@ -17,7 +17,7 @@ from itertools import tee, filterfalse
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import MiscEnum
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -27,13 +27,13 @@ from gidapptools.general_helper.enums import MiscEnum
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 T = TypeVar("T")
 _DEFAULT_TYPE = TypeVar("_DEFAULT_TYPE", object, None)
@@ -150,7 +150,7 @@ def iter_grouped(in_iterable: Iterable[T], group_size: int = 2) -> Generator[tup
     if len(collected) != 0:
         yield tuple(collected)
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
@@ -167,4 +167,4 @@ if __name__ == '__main__':
             print(xx)
 
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

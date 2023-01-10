@@ -13,7 +13,7 @@ from pathlib import Path
 # * Third Party Imports --------------------------------------------------------------------------------->
 from frozendict import frozendict
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -23,13 +23,13 @@ from frozendict import frozendict
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 DATETIME_FORMAT_REGEX_MAPPING: frozendict[str, str] = frozendict(**{r"%Y": r"(?P<year>\d{4})",
                                                                     r"%m": r"(?P<month>[01]?\d)",
@@ -47,10 +47,10 @@ def datetime_format_to_regex(in_format: str, flags: re.RegexFlag) -> re.Pattern:
         pattern_string = pattern_string.replace(k, v)
     return re.compile(pattern_string, flags)
 
-    # region[Main_Exec]
+    # region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

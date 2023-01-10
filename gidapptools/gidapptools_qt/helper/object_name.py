@@ -12,7 +12,7 @@ from pathlib import Path
 # * Qt Imports --------------------------------------------------------------------------------------->
 from PySide6.QtCore import QObject
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -22,13 +22,13 @@ from PySide6.QtCore import QObject
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def set_std_object_name(obj: QObject):
@@ -36,9 +36,9 @@ def set_std_object_name(obj: QObject):
     obj.setObjectName(name)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

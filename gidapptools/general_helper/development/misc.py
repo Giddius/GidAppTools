@@ -18,7 +18,7 @@ with MissingOptionalDependencyError.try_import("gidapptools"):
     from rich import terminal_theme
     from rich.console import Console as RichConsole
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -28,13 +28,13 @@ with MissingOptionalDependencyError.try_import("gidapptools"):
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def make_dprint(**console_kwargs) -> Callable:
@@ -103,9 +103,9 @@ def is_dunder_name(in_name: str) -> bool:
     return in_name.startswith("__") and in_name.endswith("__")
 
 
-    # region[Main_Exec]
+    # region [Main_Exec]
 if __name__ == '__main__':
     from PySide6.QtWidgets import QMenu
     obj_inspection(QMenu)
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

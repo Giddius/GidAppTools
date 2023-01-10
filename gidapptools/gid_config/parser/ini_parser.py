@@ -18,7 +18,7 @@ from gidapptools.errors import TrailingCommentError
 from gidapptools.gid_config.parser.tokens import Entry, Token, Comment, Section, TokenFactory
 from gidapptools.gid_config.parser.grammar import BaseIniGrammar
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -28,13 +28,13 @@ from gidapptools.gid_config.parser.grammar import BaseIniGrammar
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class BaseIniParser:
@@ -150,9 +150,9 @@ class BaseIniParser:
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}'
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

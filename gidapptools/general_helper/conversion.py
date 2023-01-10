@@ -25,7 +25,7 @@ import pyparsing.common as ppc
 from gidapptools.errors import FlagConflictError
 from gidapptools.data.conversion_data import RAW_TIMEUNITS, STRING_TRUE_VALUES, STRING_FALSE_VALUES, FILE_SIZE_SYMBOL_DATA, NANOSECONDS_IN_SECOND, MICROSECONDS_IN_SECOND
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -35,13 +35,13 @@ from gidapptools.data.conversion_data import RAW_TIMEUNITS, STRING_TRUE_VALUES, 
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 @total_ordering
@@ -354,7 +354,7 @@ def seconds2human(in_seconds: Union[int, float, timedelta],
     if as_list_result is True:
         return results
     if as_dict_result is True:
-        return{k: v for k, v in result.items() if k not in sub_min_units}
+        return {k: v for k, v in result.items() if k not in sub_min_units}
 
     if not results:
         _unit = _time_units.smallest_unit if min_unit is None else min_unit
@@ -457,9 +457,9 @@ def number_to_pretty(in_num: Union[int, float]) -> str:
     return f"{in_num:,}"
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

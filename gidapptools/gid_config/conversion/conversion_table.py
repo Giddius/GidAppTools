@@ -18,7 +18,7 @@ from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_glo
 from gidapptools.gid_config.conversion.base_converters import ConfigValueConverter, get_standard_converter
 from gidapptools.gid_config.conversion.converter_grammar import ConverterSpecData
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -28,13 +28,13 @@ from gidapptools.gid_config.conversion.converter_grammar import ConverterSpecDat
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 get_dummy_profile_decorator_in_globals()
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class ConversionTable:
@@ -81,8 +81,8 @@ class ConversionTable:
         self._resolved_converters = None
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

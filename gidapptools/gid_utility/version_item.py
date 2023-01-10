@@ -15,7 +15,7 @@ from functools import total_ordering
 # * Third Party Imports --------------------------------------------------------------------------------->
 import attr
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -25,13 +25,13 @@ import attr
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 __all__ = ["VersionItem"]
@@ -112,10 +112,10 @@ class VersionItem:
             return False
         return NotImplemented
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

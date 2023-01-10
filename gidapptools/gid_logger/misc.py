@@ -20,7 +20,7 @@ from gidapptools.gid_logger.logger import get_logger, get_meta_logger
 if TYPE_CHECKING:
     from gidapptools.gid_logger.records import LOG_RECORD_TYPES
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -30,13 +30,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class ProhibitiveSingletonMeta(type):
@@ -115,8 +115,8 @@ class QtMessageHandler(metaclass=ProhibitiveSingletonMeta):
         self.received_records.append(record)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

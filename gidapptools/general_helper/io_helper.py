@@ -14,7 +14,7 @@ from pathlib import Path
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.custom_types import PATH_TYPE
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -24,13 +24,13 @@ from gidapptools.custom_types import PATH_TYPE
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def amount_lines_in_file(in_file: PATH_TYPE):
@@ -89,8 +89,8 @@ def escalating_find_file(file_name: str, directory: Union[str, os.PathLike], cas
     return escalating_find_file(file_name=file_name, directory=directory.parent, case_sensitive=case_sensitive)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

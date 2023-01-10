@@ -18,7 +18,7 @@ from PySide6.QtWidgets import QWidget, QApplication
 if TYPE_CHECKING:
     pass
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -28,13 +28,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class ApplicationInfoWidget(QWidget):
@@ -43,8 +43,8 @@ class ApplicationInfoWidget(QWidget):
         self.app = app
         super().__init__(parent)
 
-        # region[Main_Exec]
+        # region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

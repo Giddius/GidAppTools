@@ -17,7 +17,7 @@ from gidapptools.general_helper.conversion import ns_to_s, number_to_pretty
 if TYPE_CHECKING:
     ...
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -27,13 +27,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def print_profile_hook(db, stmt: str, time_taken: int):
@@ -41,10 +41,10 @@ def print_profile_hook(db, stmt: str, time_taken: int):
     time_taken = ns_to_s(time_taken)
     time_taken = number_to_pretty(time_taken) + " s"
     print(f"Executed {stmt!r} in {time_taken}", flush=True)
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

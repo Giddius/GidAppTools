@@ -16,7 +16,7 @@ from multiprocessing import Process
 if TYPE_CHECKING:
     from gidapptools.custom_types import PATH_TYPE
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -26,13 +26,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def compress_file(source: "PATH_TYPE", target: "PATH_TYPE", suffix: str = '.zip'):
@@ -50,8 +50,8 @@ def compress_in_process(source: "PATH_TYPE", target: "PATH_TYPE", suffix: str = 
     return process
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

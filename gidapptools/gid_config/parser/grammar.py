@@ -15,7 +15,7 @@ import pyparsing as pp
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_config.parser.tokens import TokenFactory
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -25,13 +25,13 @@ from gidapptools.gid_config.parser.tokens import TokenFactory
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class BaseIniGrammar:
@@ -110,8 +110,8 @@ class BaseIniGrammar:
         return all_elements.set_parse_action(self.token_factory.parse_action)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

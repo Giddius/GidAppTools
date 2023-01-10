@@ -24,7 +24,7 @@ from gidapptools.gid_logger.logger import get_main_logger
 from gidapptools.general_helper.conversion import bytes2human
 from gidapptools.gid_parsing.py_log_parsing import GeneralGrammar
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -34,7 +34,7 @@ from gidapptools.gid_parsing.py_log_parsing import GeneralGrammar
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
@@ -42,7 +42,7 @@ from gidapptools.gid_parsing.py_log_parsing import GeneralGrammar
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class AppLogHighlighter(QSyntaxHighlighter):
@@ -323,10 +323,10 @@ class StoredAppLogViewer(QWidget):
         if self.timer_id is not None:
             self.killTimer(self.timer_id)
         event.accept()
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

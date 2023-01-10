@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from gidapptools.gid_config.conversion.spec_item import SpecEntry
     from gidapptools.meta_data.meta_paths.meta_paths_item import NamedMetaPath
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -30,13 +30,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class GidAppToolsBaseError(Exception):
@@ -359,9 +359,9 @@ class AppNameMissingError(BaseMetaPathsError):
         super().__init__(self.message)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

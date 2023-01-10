@@ -19,7 +19,7 @@ from gidapptools.utility.helper import get_qualname_or_name
 
 from .abstract_signal import AbstractSignal
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -29,13 +29,13 @@ from .abstract_signal import AbstractSignal
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def run_delayed(delay: Union[int, float], emit_func: Callable):
@@ -82,7 +82,7 @@ class GidSignal(AbstractSignal):
             asyncio.create_task(task, name=task_name)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

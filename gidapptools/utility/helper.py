@@ -27,7 +27,7 @@ from gidapptools.custom_types import PATH_TYPE
 from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.general_helper.date_time import DatetimeFmt
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -37,13 +37,13 @@ from gidapptools.general_helper.date_time import DatetimeFmt
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.resolve()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class PackageMetadataDict(dict):
@@ -274,7 +274,7 @@ def get_main_module_path() -> Path:
     return Path(main_module.__file__).resolve()
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

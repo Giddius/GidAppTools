@@ -21,7 +21,7 @@ import pyparsing as ppa
 from gidapptools.general_helper.enums import StringCase
 from gidapptools.gid_warning.experimental import mark_experimental
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -30,14 +30,14 @@ from gidapptools.gid_warning.experimental import mark_experimental
 
 # region [Logging]
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
-# endregion[Constants]
+# endregion [Constants]
 
 STRING_CASE_FUNC_TYPE = Callable[[Iterable[str]], str]
 
@@ -516,9 +516,9 @@ class RegexMapReplacer:
 
     def __call__(self, text: str) -> Any:
         return self.apply(text=text)
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

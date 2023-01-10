@@ -15,7 +15,7 @@ from pathlib import Path
 from threading import Lock
 from contextlib import contextmanager
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -25,13 +25,13 @@ from contextlib import contextmanager
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 log = logging.getLogger(__name__)
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class AbstractThreadsafePool(ABC):
@@ -115,8 +115,8 @@ class DecorateAbleList(list[T]):
         return item
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

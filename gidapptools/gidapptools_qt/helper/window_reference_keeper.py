@@ -15,7 +15,7 @@ from PySide6.QtGui import Qt, QCloseEvent
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QApplication
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -25,13 +25,13 @@ from PySide6.QtWidgets import QWidget, QApplication
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class SecondaryWindow(QWidget):
@@ -86,8 +86,8 @@ class WindowReferenceKeeper:
             self._open_windows = [w for w in self._open_windows if w.is_closed is False]
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

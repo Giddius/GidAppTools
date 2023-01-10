@@ -10,15 +10,23 @@ Soon.
 import sys
 import pkgutil
 import importlib
+import os
 import importlib.util
 import importlib.metadata
 from types import ModuleType
 from pathlib import Path
+from typing import Union, Iterable, Mapping
+
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.utility.helper import PackageMetadataDict
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -28,13 +36,13 @@ from gidapptools.utility.helper import PackageMetadataDict
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 def is_importable(package_name: str) -> bool:
@@ -59,6 +67,16 @@ def import_from_name(name: str) -> ModuleType:
     return module
 
 
+def import_from_file_path(file_path: Union[str, os.PathLike, Path]) -> ModuleType:
+    file_path = Path(file_path).resolve()
+    spec = importlib.util.spec_from_file_location(file_path.stem, file_path)
+    _module = importlib.util.module_from_spec(spec)
+
+    spec.loader.exec_module(_module)
+
+    return _module
+
+
 def all_importable_package_names(exclude_underscored: bool = True, exclude_std_lib: bool = False, exclude_main: bool = True) -> tuple[str]:
 
     def _check_exclude(in_name: str) -> bool:
@@ -72,9 +90,9 @@ def all_importable_package_names(exclude_underscored: bool = True, exclude_std_l
 
     return tuple(sorted([i.name for i in pkgutil.iter_modules() if _check_exclude(i.name)], key=lambda x: x.casefold()))
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

@@ -14,7 +14,7 @@ from PySide6.QtGui import QPalette, QMouseEvent, QDesktopServices
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QLabel, QApplication
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -24,13 +24,13 @@ from PySide6.QtWidgets import QLabel, QApplication
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class HyperlinkLabel(QLabel):
@@ -72,10 +72,10 @@ class HyperlinkLabel(QLabel):
             self._open_link()
         else:
             super().mousePressEvent(ev)
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

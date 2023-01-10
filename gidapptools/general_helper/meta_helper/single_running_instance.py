@@ -19,7 +19,7 @@ import psutil
 from gidapptools.errors import ApplicationInstanceAlreadyRunningError
 from gidapptools.custom_types import PATH_TYPE
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -29,13 +29,13 @@ from gidapptools.custom_types import PATH_TYPE
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 @attrs.define(frozen=True, slots=True)
@@ -105,8 +105,8 @@ class SingleRunningInstanceRestrictor:
         self.release()
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

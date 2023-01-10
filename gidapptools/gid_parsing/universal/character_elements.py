@@ -12,7 +12,7 @@ from pathlib import Path
 # * Third Party Imports --------------------------------------------------------------------------------->
 import pyparsing as pp
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -22,13 +22,13 @@ import pyparsing as pp
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class BaseElements:
@@ -104,8 +104,8 @@ ARROW_LEFT = Ligatures.arrow_left
 BIG_ARROW_RIGHT = Ligatures.big_arrow_right
 BIG_ARROW_LEFT = Ligatures.big_arrow_left
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

@@ -20,7 +20,7 @@ from PySide6.QtWidgets import QLabel, QWidget, QPushButton, QSizePolicy, QVBoxLa
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.data.gifs import StoredGif, get_gif
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -30,13 +30,13 @@ from gidapptools.data.gifs import StoredGif, get_gif
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class BusySpinnerWidget(QLabel):
@@ -158,11 +158,11 @@ class BusyPushButton(QPushButton):
         stop_signal.connect(self.stop_spinner)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     app = QApplication()
     x = BusySpinnerWidget()
     x.show()
     app.exec()
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

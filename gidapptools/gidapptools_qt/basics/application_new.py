@@ -20,7 +20,7 @@ from PySide6.QtWidgets import QApplication
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_utility.version_item import VersionItem
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -30,13 +30,13 @@ from gidapptools.gid_utility.version_item import VersionItem
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class ApplicationInfo(Protocol):
@@ -59,10 +59,10 @@ class GidBaseApplication(QApplication):
     def setup(self,
               application_core_info: "ApplicationCoreInfo") -> "GidBaseApplication":
         ...
-# region[Main_Exec]
+# region [Main_Exec]
 
 
 if __name__ == '__main__':
     pass
 
-# endregion[Main_Exec]
+# endregion [Main_Exec]

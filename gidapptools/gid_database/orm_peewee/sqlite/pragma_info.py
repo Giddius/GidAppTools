@@ -22,7 +22,7 @@ else:
 if TYPE_CHECKING:
     from gidapptools.gid_database.orm_peewee.sqlite.apsw_database import GidAPSWDatabase
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -32,13 +32,13 @@ if TYPE_CHECKING:
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 x = {'analysis_limit': 100000,
      'application_id': 0,
@@ -208,7 +208,7 @@ class PragmaInfo:
             self._pragma_data[pragma_name] = value
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]

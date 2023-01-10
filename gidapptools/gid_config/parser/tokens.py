@@ -16,7 +16,7 @@ from weakref import ProxyType, proxy
 # * Third Party Imports --------------------------------------------------------------------------------->
 import pyparsing as pp
 
-# endregion[Imports]
+# endregion [Imports]
 
 # region [TODO]
 
@@ -26,13 +26,13 @@ import pyparsing as pp
 # region [Logging]
 
 
-# endregion[Logging]
+# endregion [Logging]
 
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-# endregion[Constants]
+# endregion [Constants]
 
 
 class Token:
@@ -163,8 +163,8 @@ class TokenFactory:
         return token_class(*tokens)
 
 
-# region[Main_Exec]
+# region [Main_Exec]
 
 if __name__ == '__main__':
     pass
-# endregion[Main_Exec]
+# endregion [Main_Exec]
