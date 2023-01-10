@@ -26,5 +26,5 @@ Links
 ==================
 
 Full Documentation
-   `giddius.github.io/GidAppTools <https://giddius.github.io/GidAppTools>`_
+   `giddius.github.io/GidAppTools <https://giddius.github.io/GidAppTools/>`_
 
