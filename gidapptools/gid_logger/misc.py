@@ -51,6 +51,9 @@ class ProhibitiveSingletonMeta(type):
 
 class QtMessageHandler(metaclass=ProhibitiveSingletonMeta):
     received_records: list["LOG_RECORD_TYPES"] = []
+    __slots__ = ("msg_split_regex",
+                 "is_installed",
+                 "_old_messagehandler")
 
     def __init__(self) -> None:
         self.msg_split_regex = re.compile(r"(?P<q_class>.*)\:\:(?P<q_method>.*)\:(?P<actual_message>.*)")

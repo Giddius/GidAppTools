@@ -43,8 +43,7 @@ STRING_CASE_FUNC_TYPE = Callable[[Iterable[str]], str]
 
 
 # TODO: Rewrite as normal class/Module-Singleton
-class StringCaseConverter:
-    """ """
+class _StringCaseConverter:
     SNAKE = StringCase.SNAKE
     SCREAMING_SNAKE = StringCase.SCREAMING_SNAKE
     CAMEL = StringCase.CAMEL
@@ -55,37 +54,45 @@ class StringCaseConverter:
     TITLE = StringCase.TITLE
     BLOCK_UPPER = StringCase.BLOCK_UPPER
 
-    _split_grammar: Optional[ppa.ParserElement] = None
     split_pascal_case_regex = re.compile(r"(?<!\_)(\B[A-Z])")
     snake_case_to_pascal_case_regex = re.compile(r"(_|^)(\w)")
-    _word_list_split_chars = {'-', '_', ' '}
-    _word_list_split_regex = re.compile(r'|'.join(list(_word_list_split_chars) + [r"(?=[A-Z])"]))
+    _word_list_split_chars = frozenset({'-', '_', ' '})
 
-    _dispatch_table: Optional[dict[str, STRING_CASE_FUNC_TYPE]] = None
-    _bad_chars: Optional[set[str]] = None
+    __slots__ = ("_split_grammar", "_word_list_split_regex", "_dispatch_table", "_bad_chars")
 
-    @classmethod
+    def __init__(self) -> None:
+        self._split_grammar: Optional[ppa.ParserElement] = None
+
+        self._word_list_split_regex = None
+
+        self._dispatch_table: Optional[dict[str, STRING_CASE_FUNC_TYPE]] = None
+        self._bad_chars: Optional[frozenset[str]] = None
+
     @property
-    def bad_chars(cls) -> set[str]:
-        if cls._bad_chars is None:
-            cls._bad_chars = {c for c in punctuation if c not in cls._word_list_split_chars}
-        return cls._bad_chars
+    def bad_chars(self) -> set[str]:
+        if self._bad_chars is None:
+            self._bad_chars = frozenset({c for c in punctuation if c not in self._word_list_split_chars})
+        return self._bad_chars
 
-    @classmethod
     @property
-    def dispatch_table(cls) -> dict[StringCase, STRING_CASE_FUNC_TYPE]:
-        if cls._dispatch_table is None:
-            cls._dispatch_table = {}
-            for meth_name, meth_obj in inspect.getmembers(cls):
+    def word_list_split_regex(self) -> re.Pattern:
+        if self._word_list_split_regex is None:
+            self._word_list_split_regex = re.compile(r'|'.join(list(self._word_list_split_chars) + [r"(?=[A-Z])"]))
+        return self._word_list_split_regex
+
+    @property
+    def dispatch_table(self) -> dict[StringCase, STRING_CASE_FUNC_TYPE]:
+        if self._dispatch_table is None:
+            self._dispatch_table = {}
+            for meth_name, meth_obj in inspect.getmembers(self):
                 if meth_name.startswith('_to_') and meth_name.endswith('_case'):
                     key_name = meth_name.removeprefix('_to_').removesuffix('_case')
-                    cls._dispatch_table[StringCase(key_name)] = meth_obj
-        return cls._dispatch_table
+                    self._dispatch_table[StringCase(key_name)] = meth_obj
+        return self._dispatch_table
 
-    @classmethod
     @property
-    def split_grammar(cls) -> ppa.ParserElement:
-        if cls._split_grammar is None:
+    def split_grammar(self) -> ppa.ParserElement:
+        if self._split_grammar is None:
             underscore = ppa.Literal('_').suppress()
             dash = ppa.Literal("-").suppress()
             all_upper_word = ppa.Regex(r"[A-Z]+(?![a-z])")
@@ -94,15 +101,14 @@ class StringCaseConverter:
             number = ppa.Word(ppa.nums)
             words = (title_word | all_upper_word | all_lower_word | number).set_parse_action(lambda x: x[0].casefold())
             grammar = words | underscore | dash
-            cls._split_grammar = ppa.OneOrMore(grammar)
-        return cls._split_grammar
+            self._split_grammar = ppa.OneOrMore(grammar)
+        return self._split_grammar
 
-    @classmethod
-    def _to_word_list(cls, in_string: str) -> list[str]:
+    def _to_word_list(self, in_string: str) -> list[str]:
         """
         :param in_string: str:
         """
-        parts: ppa.ParseResults = cls.split_grammar.parse_string(in_string, parse_all=True)
+        parts: ppa.ParseResults = self.split_grammar.parse_string(in_string, parse_all=True)
 
         return [word for word in parts if word]
 
@@ -179,16 +185,14 @@ class StringCaseConverter:
         """
         return ' '.join(word.upper() for word in word_list)
 
-    @classmethod
-    def remove_bad_chars(cls, in_string: str) -> str:
+    def remove_bad_chars(self, in_string: str) -> str:
         new_string = str(in_string)
-        for char in cls.bad_chars:
+        for char in self.bad_chars:
             new_string: str = new_string.replace(char, "")
 
         return new_string
 
-    @classmethod
-    def convert_to(cls, in_string: str, target_case: Union[str, StringCase], clean_in_string: bool = False) -> str:
+    def convert_to(self, in_string: str, target_case: Union[str, StringCase], clean_in_string: bool = False) -> str:
         """
 
         :param in_string: str:
@@ -196,14 +200,15 @@ class StringCaseConverter:
 
         """
         if clean_in_string is True:
-            in_string = cls.remove_bad_chars(in_string)
+            in_string = self.remove_bad_chars(in_string)
         target_case = StringCase(target_case) if isinstance(target_case, str) else target_case
-        word_list = cls._to_word_list(in_string)
-        return cls.dispatch_table.get(target_case)(word_list)
+        word_list = self._to_word_list(in_string)
+        return self.dispatch_table.get(target_case)(word_list)
 
 
-_ = StringCaseConverter.dispatch_table
-_ = StringCaseConverter.split_grammar
+StringCaseConverter = _StringCaseConverter()
+# _ = StringCaseConverter.dispatch_table
+# _ = StringCaseConverter.split_grammar
 
 
 def replace_by_dict(in_string: str, in_dict: dict[str, str]) -> str:
@@ -253,7 +258,13 @@ def clean_whitespace(in_text: str, replace_newline: bool = False) -> str:
     return cleaned_text
 
 
-def shorten_string(in_text: str, max_length: int, shorten_side: Literal["right", "left"] = "right", placeholder: str = '...', clean_before: bool = True, ensure_space_around_placeholder: bool = False, split_on: str = r'\s|\n') -> str:
+def shorten_string(in_text: str,
+                   max_length: int,
+                   shorten_side: Literal["right", "left"] = "right",
+                   placeholder: str = '...',
+                   clean_before: bool = True,
+                   ensure_space_around_placeholder: bool = False,
+                   split_on: str = r'\s|\n') -> str:
     """
 
     :param in_text: str:
@@ -289,7 +300,10 @@ def shorten_string(in_text: str, max_length: int, shorten_side: Literal["right",
     return new_text[:last_space_position[-1].span()[0]].strip() + placeholder if shorten_side == 'right' else placeholder + new_text[last_space_position[0].span()[0]:].strip()
 
 
-def split_quotes_aware(text: str, split_chars: Iterable[str] = None, quote_chars: Iterable[str] = None, strip_parts: bool = True) -> list[str]:
+def split_quotes_aware(text: str,
+                       split_chars: Iterable[str] = None,
+                       quote_chars: Iterable[str] = None,
+                       strip_parts: bool = True) -> list[str]:
     """Splits a string on but not if the separator char is inside of quotes.
 
     :param text: The string to split.
@@ -301,9 +315,6 @@ def split_quotes_aware(text: str, split_chars: Iterable[str] = None, quote_chars
     :param strip_parts: If each found substrin should be striped of preceding and trailing whitespace in the result. Defaults to True.
     :type strip_parts: bool
     :param text: str:
-    :param split_chars: Iterable[str]:  (Default value = None)
-    :param quote_chars: Iterable[str]:  (Default value = None)
-    :param strip_parts: bool:  (Default value = True)
     :returns: The found sub-parts.
     :rtype: list[str]
 
@@ -499,7 +510,9 @@ def string_map_replace(in_string: str, replacement_map: Mapping[str, str]) -> st
 
 
 class RegexMapReplacer:
-    # 3x slower than just replace loop
+    """
+    3x slower than just replace loop
+    """
     __slots__ = ("_replacement_map", "_pattern")
 
     @mark_experimental()
@@ -516,6 +529,7 @@ class RegexMapReplacer:
 
     def __call__(self, text: str) -> Any:
         return self.apply(text=text)
+
 # region [Main_Exec]
 
 

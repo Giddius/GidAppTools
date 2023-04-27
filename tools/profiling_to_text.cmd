@@ -34,7 +34,7 @@ SET CLEANED_FILE_NAME=%INFILEBASE%_%INEXTENSION%
 set BASE_OUTPUT_FOLDER=%OLDHOME_FOLDER%reports
 set SUB_OUTPUT_FOLDER=%BASE_OUTPUT_FOLDER%\%CLEANED_FILE_NAME%\text_profiling
 mkdir %SUB_OUTPUT_FOLDER%
-python -m cProfile -s cumtime %FULLINPATH% > %SUB_OUTPUT_FOLDER%\[%_years%-%_months%-%_days%_%_hours%-%_minutes%-%_seconds%]_%CLEANED_FILE_NAME%.txt
+python -m cProfile %FULLINPATH% > %SUB_OUTPUT_FOLDER%\[%_years%-%_months%-%_days%_%_hours%-%_minutes%-%_seconds%]_%CLEANED_FILE_NAME%.txt
 
 
 

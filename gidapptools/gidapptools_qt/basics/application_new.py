@@ -8,7 +8,7 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import sys
-from typing import Union, Iterable, Optional, Protocol
+from typing import Union, Iterable, Optional, Protocol, TYPE_CHECKING
 from pathlib import Path
 
 # * Third Party Imports --------------------------------------------------------------------------------->
@@ -19,6 +19,13 @@ from PySide6.QtWidgets import QApplication
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_utility.version_item import VersionItem
+import sys
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+if TYPE_CHECKING:
+    from gidapptools.meta_data.meta_info.meta_info_item import MetaInfo
 
 # endregion [Imports]
 
@@ -56,8 +63,15 @@ class GidBaseApplication(QApplication):
     def is_ready(cls) -> bool:
         return cls.startingUp() is False and cls.instance().is_setup is True
 
+    def setup_from_meta_info(self,
+                             meta_info: "MetaInfo") -> Self:
+        ...
+
     def setup(self,
-              application_core_info: "ApplicationCoreInfo") -> "GidBaseApplication":
+              app_name: str = None,
+              app_author: str = None,
+              version: Union[str, "VersionItem"] = None,
+              url: Union[URL, str] = None) -> Self:
         ...
 # region [Main_Exec]
 

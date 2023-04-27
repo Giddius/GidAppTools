@@ -10,6 +10,7 @@ Soon.
 import os
 from typing import ClassVar
 from pathlib import Path
+import sys
 
 # * Third Party Imports --------------------------------------------------------------------------------->
 import attrs
@@ -18,7 +19,11 @@ import psutil
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.errors import ApplicationInstanceAlreadyRunningError
 from gidapptools.custom_types import PATH_TYPE
-
+import sys
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 # endregion [Imports]
 
 # region [TODO]
@@ -46,7 +51,25 @@ class LockFileData:
 
     @property
     def is_running(self) -> bool:
-        return psutil.pid_exists(self.pid)
+        try:
+            process = psutil.Process(self.pid)
+
+            if process.is_running() is False:
+                return False
+
+            process_environ = process.environ()
+
+            process_app_name = process_environ.get("SINGLE_PROCESS_APP_NAME", None)
+            if process_app_name is None:
+                return False
+
+            if process_app_name != self.app_name:
+                return False
+
+            return True
+
+        except psutil.NoSuchProcess:
+            return False
 
     @classmethod
     def from_file(cls, file_path: PATH_TYPE) -> "LockFileData":
@@ -82,6 +105,7 @@ class SingleRunningInstanceRestrictor:
     def store_in_lock_file(self) -> None:
         self.lock_file_path.parent.mkdir(exist_ok=True, parents=True)
         self.lock_file_path.write_text(self._current_process_lock_file_data.to_text())
+        os.environ["SINGLE_PROCESS_APP_NAME"] = self._app_name
 
     def on_other_instance_running(self):
         other_instance_data = self.get_existing_lock_file_data()
@@ -90,16 +114,21 @@ class SingleRunningInstanceRestrictor:
     def aquire(self):
         if self.lock_file_exists is True:
             existing_instance_data = self.get_existing_lock_file_data()
+
             if existing_instance_data.is_running is True and existing_instance_data.app_name == self._app_name:
                 self.on_other_instance_running()
+            else:
+                self.lock_file_path.unlink(missing_ok=True)
+                self.store_in_lock_file()
         else:
             self.store_in_lock_file()
 
     def release(self):
         self.lock_file_path.unlink(missing_ok=True)
 
-    def __enter__(self) -> None:
+    def __enter__(self) -> Self:
         self.aquire()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.release()

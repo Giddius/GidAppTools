@@ -98,10 +98,11 @@ class CategoryPicture(QFrame):
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         self.setFrameStyle(QFrame.Sunken | QFrame.Panel)
-        self.clicked.emit(self.category_page_number)
+
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         self.setFrameStyle(self.base_style)
+        self.clicked.emit(self.category_page_number)
 
     @property
     def layout(self) -> QVBoxLayout:

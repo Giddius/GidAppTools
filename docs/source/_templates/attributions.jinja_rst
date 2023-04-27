@@ -1,0 +1,19 @@
+Attributions
+=============
+
+
+{% for category_name, items in data.items() %}
+
+================================================
+{{ category_name }}
+================================================
+
+{% for item in items %}
+
+{{ item.title }}
+    `{{ item.url_name }} <{{ item.url }}>`__
+    {{ item.text or "" }}
+
+{% endfor %}
+
+{% endfor %}

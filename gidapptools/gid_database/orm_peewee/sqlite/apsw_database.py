@@ -33,6 +33,7 @@ from playhouse.apsw_ext import APSWDatabase
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_database.orm_peewee.sqlite.constants import MEMORY_DB_PATH, STD_DEFAULT_PRAGMAS, STD_DEFAULT_EXTENSIONS
 from gidapptools.gid_database.orm_peewee.sqlite.pragma_info import PragmaInfo
+from gidapptools.gid_logger.logger import get_logger
 
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
@@ -53,7 +54,7 @@ if TYPE_CHECKING:
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
-
+log = get_logger(__name__)
 
 # endregion [Constants]
 
@@ -329,7 +330,7 @@ class GidAPSWDatabase(APSWDatabase):
                 self.db_path.unlink(missing_ok=True)
 
     def _set_page_size(self):
-        print("setting page size")
+        log.debug("setting page size")
         wal_mode = False
         conn: apsw.Connection = self.connection()
         journal_mode = conn.execute("PRAGMA journal_mode;").fetchone()[0]

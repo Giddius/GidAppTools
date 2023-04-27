@@ -140,3 +140,4 @@ dmypy.json
 /tests/reports
 gidapptools/gid_scribe/markdown/document.py
 /all_dependencies.json
+/project_web_interface.html

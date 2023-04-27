@@ -9,6 +9,7 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 from pathlib import Path
 from threading import Lock, RLock
+from weakref import WeakValueDictionary
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.custom_types import LOCK_TYPE, PATH_TYPE
@@ -33,11 +34,14 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 
 class FileLocksManager:
+    __slots__ = ("_lock_type",
+                 "_interaction_lock",
+                 "_file_locks")
 
     def __init__(self, lock_type: LOCK_TYPE):
         self._lock_type = lock_type
         self._interaction_lock: Lock = Lock()
-        self._file_locks: dict[Path, LOCK_TYPE] = {}
+        self._file_locks: WeakValueDictionary[Path, LOCK_TYPE] = WeakValueDictionary()
 
     def _handle_file_path(self, file_path: PATH_TYPE) -> Path:
         return Path(file_path).resolve()

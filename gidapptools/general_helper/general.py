@@ -14,6 +14,7 @@ from logging import Logger
 from pathlib import Path
 from itertools import tee, filterfalse
 
+
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import MiscEnum
 
@@ -124,8 +125,8 @@ def is_frozen() -> bool:
     return getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
 
 
-def get_all_available_loggers(logger: Logger) -> tuple[str]:
-    manager = logger.manager
+def get_all_available_loggers(logger: Logger = None) -> tuple[str]:
+    manager = logger.manager if logger is not None else Logger.manager
     names = set(manager.loggerDict)
     return tuple(sorted(names, key=len))
 
@@ -154,17 +155,18 @@ def iter_grouped(in_iterable: Iterable[T], group_size: int = 2) -> Generator[tup
 
 
 if __name__ == '__main__':
-    from gidapptools.general_helper.timing import time_execution
+    # from gidapptools.general_helper.timing import time_execution
 
-    def checker(in_num: int) -> bool:
-        return len(in_num) == 2
+    # def checker(in_num: int) -> bool:
+    #     return len(in_num) == 2
 
-    t = [str(random.randint(0, 1_000)) for _ in range(10_000)]
+    # t = [str(random.randint(0, 1_000)) for _ in range(10_000)]
 
-    with time_execution(also_pretty=True):
-        a, b = split_iter(t, checker, Generator)
-        for xx in a:
-            print(xx)
-
+    # with time_execution(also_pretty=True):
+    #     a, b = split_iter(t, checker, Generator)
+    #     for xx in a:
+    #         print(xx)
+    for l in get_all_available_loggers():
+        print(l)
 
 # endregion [Main_Exec]

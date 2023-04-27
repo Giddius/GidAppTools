@@ -13,6 +13,7 @@ from pathlib import Path
 
 # * Third Party Imports --------------------------------------------------------------------------------->
 from frozendict import frozendict
+from gidapptools.gid_logger.logger import get_logger
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -37,6 +38,7 @@ if TYPE_CHECKING:
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
+log = get_logger(__name__)
 
 # endregion [Constants]
 
@@ -184,6 +186,7 @@ class PragmaInfo:
         self._pragma_data = self._get_pragma_data()
         self._compile_options = self._get_compile_options()
         self._module_list = self._get_module_list()
+        log.info("finished filling %r with data", self)
         return self
 
     def reset(self) -> Self:
@@ -191,7 +194,7 @@ class PragmaInfo:
         self._pragma_data = None
         self._compile_options = None
         self._module_list = None
-
+        log.info("reset %r", self)
         return self
 
     def __getitem__(self, key: str) -> Union[str, int]:
@@ -206,6 +209,9 @@ class PragmaInfo:
     def on_pragma_set(self, pragma_name: str, value: Union[str, int, None]) -> None:
         if pragma_name in self.pragma_data:
             self._pragma_data[pragma_name] = value
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(database={self.database!r})'
 
 
 # region [Main_Exec]

@@ -36,6 +36,12 @@ class BlockingEvent(Event):
         super().__init__()
         self.set()
 
+    def activate_blocking(self) -> None:
+        self.clear()
+
+    def clear_blocking(self) -> None:
+        self.set()
+
     def __enter__(self) -> None:
         self.clear()
 

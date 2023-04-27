@@ -21,7 +21,7 @@ from tempfile import TemporaryDirectory
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.errors import MissingOptionalDependencyError
-
+from gidapptools.gid_logger.logger import get_logger
 with MissingOptionalDependencyError.try_import("gidapptools"):
     from rich import inspect as rinspect
     from rich.tree import Tree
@@ -44,7 +44,7 @@ with MissingOptionalDependencyError.try_import("gidapptools"):
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
-
+log = get_logger(__name__)
 # endregion [Constants]
 
 MY_TERMINAL_THEME = TerminalTheme(
@@ -131,7 +131,7 @@ def inspect_object_with_html(obj: object,
         try:
             title = _make_title(obj)
         except Exception as e:
-            print(e)
+            log.error(e, exc_info=True)
             title = None
         rinspect(obj=obj,
                  title=title,

@@ -18,8 +18,8 @@ from functools import cached_property
 import attr
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.general_helper.color.preset_colors.web_colors import get_webcolors_data
-
+from gidapptools.gidcolor.preset_colors.web_colors import _load_webcolors_data
+import numpy as np
 try:
     from PySide6.QtGui import QColor
     PYSIDE6_AVAILABLE = True
@@ -108,12 +108,9 @@ class BaseColor(ABC):
 
     def as_hex(self, include_alpha: bool = True) -> str:
         _rgb = self.as_rgb_int(include_alpha=include_alpha, alpha_as_int=True)
-        print(f"{_rgb=}")
         _hex = rgb_to_hex(*_rgb[:3])
-        print(f"{_hex=}")
         if include_alpha is True and len(_rgb) == 4:
             _hex += f"{_rgb[-1]:X}"
-            print(f"{_hex=}")
 
         return _hex
 
@@ -152,6 +149,12 @@ class RGBColor(BaseColor):
 
     name: str = attr.ib(default=None)
     aliases: Iterable[str] = attr.ib(factory=set, converter=attr.converters.default_if_none(factory=set))
+
+    np_value: "np.ndarray" = attr.ib()
+
+    @np_value.default
+    def _np_value_default(self):
+        return np.asfarray(self.as_rgb_float(True, False), dtype=np.float32)
 
     def as_rgb_float(self, include_alpha: bool = True, alpha_as_int: bool = False) -> COLOR_FLOAT_TYPE:
         _out = list(self)[:-1]
@@ -201,6 +204,12 @@ class HLSColor(BaseColor):
     name: str = attr.ib(default=None)
     aliases: Iterable[str] = attr.ib(factory=set, converter=attr.converters.default_if_none(factory=set))
 
+    np_value: np.ndarray = attr.ib()
+
+    @np_value.default
+    def _np_value_default(self):
+        return np.asfarray(self.as_rgb_float(True, False), dtype=np.float32)
+
     def as_hls(self, include_alpha: bool = True, alpha_as_int: bool = False) -> COLOR_FLOAT_TYPE:
         _out = list(self)[:-1]
         if include_alpha is True:
@@ -248,6 +257,11 @@ class HSVColor(BaseColor):
 
     name: str = attr.ib(default=None)
     aliases: Iterable[str] = attr.ib(factory=set, converter=attr.converters.default_if_none(factory=set))
+    np_value: np.ndarray = attr.ib()
+
+    @np_value.default
+    def _np_value_default(self):
+        return np.asfarray(self.as_rgb_float(True, False), dtype=np.float32)
 
     def as_hsv(self, include_alpha: bool = True, alpha_as_int: bool = False) -> COLOR_FLOAT_TYPE:
         _out = list(self)[:-1]
@@ -330,17 +344,27 @@ class ColorRegistry:
 
     def get_color_by_name(self, name: str) -> "RGBColor":
         if len(self.colors_by_name) == 0:
-            for _p_color in get_webcolors_data():
+            for _p_color in _load_webcolors_data():
                 Color(**_p_color, typus=Color.color_typus.RGB)
 
         return self.colors_by_name[name.casefold()]
 
 
+xyx = []
 Color = ColorRegistry()
-for p_color in get_webcolors_data():
-    Color(**p_color, typus=Color.color_typus.RGB)
+for p_color in _load_webcolors_data():
+    xyx.append(Color.color_factory(**p_color, typus=Color.color_typus.RGB))
 
 # region [Main_Exec]
 if __name__ == '__main__':
-    pass
+    from pympler.asizeof import asizeof
+    from gidapptools.general_helper.conversion import bytes2human
+    import inspect
+    print(f"{bytes2human(asizeof(xyx[0]))=}")
+    print(f"{bytes2human(asizeof(xyx[0].np_value))=}")
+    print(f"{xyx[0].np_value=}")
+
+    print(f"{RGBColor.f_code}")
+
+
 # endregion [Main_Exec]

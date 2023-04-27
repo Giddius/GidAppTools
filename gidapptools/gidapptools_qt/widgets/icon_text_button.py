@@ -59,7 +59,7 @@ class ImageTextButton(QPushButton):
         return Qt.Horizontal
 
     @property
-    def text(self) -> Optional[str]:
+    def label_text(self) -> Optional[str]:
         return self.text_label.text()
 
     @property
@@ -67,14 +67,14 @@ class ImageTextButton(QPushButton):
         return QIcon(self.icon_label.pixmap())
 
     def _get_correct_image_size(self) -> QSize:
-        if not self.text:
+        if not self.label_text:
 
             return self.sizeHint()
 
         fm = self.text_label.fontMetrics()
         widths = []
         heights = []
-        for line in self.text.splitlines():
+        for line in self.label_text.splitlines():
             br = fm.boundingRect(line)
             widths.append(br.width())
             heights.append(br.height())

@@ -92,6 +92,10 @@ class AbstractLoggingStyleSection:
     default_width: int = 0
     default_text: str = str(None)
 
+    __slots__ = ("position",
+                 "width",
+                 "alignment")
+
     def __init__(self,
                  position: int = None,
                  width: int = None,
@@ -137,6 +141,10 @@ class TimeSection(AbstractLoggingStyleSection):
     default_msec_format = '.{msec:03.0f}'
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.LEFT
 
+    __slots__ = ("time_zone",
+                 "time_format",
+                 "msec_format")
+
     def __init__(self,
                  position: int = None,
                  time_zone: timezone = None,
@@ -177,8 +185,10 @@ class TimeSection(AbstractLoggingStyleSection):
 
 class LevelSection(AbstractLoggingStyleSection):
     default_case: StringCase = StringCase.UPPER
-    default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.CENTER
-    default_width: int = max(len(i) for i in LoggingLevel._member_names_) + 4
+    default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.LEFT_EXTRA_PADDED_ONCE
+    default_width: int = max(len(i) for i in LoggingLevel._member_names_) + 2
+    __slots__ = ("case",
+                 "_formated_value_cache")
 
     def __init__(self,
                  position: int = None,
@@ -193,19 +203,33 @@ class LevelSection(AbstractLoggingStyleSection):
         else:
             self.case = case
 
+        self._formated_value_cache: dict[str, str] = {}
+
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
-        level_name = StringCaseConverter.convert_to(record.levelname, self.case)
         try:
-            if record.extras.get("is_qt", False) is True:
-                level_name = StringCaseConverter.convert_to("Qt", self.case) + level_name
-        except AttributeError:
-            pass
-        return level_name
+            is_qt = record.extras["is_qt"]
+
+        except (AttributeError, KeyError):
+            is_qt = False
+
+        raw_level_name = record.levelname
+
+        if is_qt is True:
+            raw_level_name = "Qt_" + raw_level_name
+
+        try:
+            return self._formated_value_cache[raw_level_name]
+        except KeyError:
+            formated_level_name = StringCaseConverter.convert_to(raw_level_name, self.case)
+            self._formated_value_cache[raw_level_name] = formated_level_name
+
+            return formated_level_name
 
 
 class ThreadSection(AbstractLoggingStyleSection):
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.CENTER
     default_width: int = 20
+    __slots__ = tuple()
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
         return record.threadName
@@ -214,6 +238,7 @@ class ThreadSection(AbstractLoggingStyleSection):
 class LineNumberSection(AbstractLoggingStyleSection):
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.CENTER
     default_width: int = 5
+    __slots__ = tuple()
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
         return record.lineno
@@ -221,6 +246,8 @@ class LineNumberSection(AbstractLoggingStyleSection):
 
 class PathSection(AbstractLoggingStyleSection):
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.LEFT
+    __slots__ = ("with_extension",
+                 "_width_cache")
 
     def __init__(self,
                  position: int = None,
@@ -251,6 +278,7 @@ class PathSection(AbstractLoggingStyleSection):
 
 class LoggerNameSection(AbstractLoggingStyleSection):
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.LEFT
+    __slots__ = ("_width_cache",)
 
     def __init__(self,
                  position: int = None,
@@ -274,6 +302,7 @@ class FunctionNameSection(AbstractLoggingStyleSection):
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.LEFT
     default_width: int = int(os.getenv("MAX_FUNC_NAME_LEN", "10"))
     default_text: str = "-"
+    __slots__ = ("_width_cache",)
 
     def __init__(self) -> None:
         super().__init__(width=self.width_from_env)
@@ -293,6 +322,7 @@ class FunctionNameSection(AbstractLoggingStyleSection):
 
 
 class ExtrasSection(AbstractLoggingStyleSection):
+    __slots__ = tuple()
 
     def __init__(self) -> None:
         super().__init__(width=100)
@@ -307,12 +337,13 @@ class ExtrasSection(AbstractLoggingStyleSection):
 
 
 class PackageNameSection(AbstractLoggingStyleSection):
+    __slots__ = tuple()
 
     def __init__(self,
                  position: int = None,
                  width: int = None,
                  alignment: Union[LoggingSectionAlignment, str] = None) -> None:
-        super().__init__(position, width or 10, alignment)
+        super().__init__(position, width or 12, alignment)
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
 
@@ -331,6 +362,11 @@ class PackageNameSection(AbstractLoggingStyleSection):
 class AbstractSectionLoggingStyle(ABC):
     default_separator: str = " | "
     default_message_start_indicator: str = ' ||--> '
+    __slots__ = ("sections",
+                 "sorted_sections",
+                 "separator",
+                 "message_start_indicator",
+                 "message_section")
 
     def __init__(self, sections: Iterable[Union[str, AbstractLoggingStyleSection]], separator: str = None, message_start_indicator: str = None, message_section: AbstractLoggingStyleSection = None):
         self.sections = self._handle_sections(sections)
@@ -379,6 +415,7 @@ class AbstractSectionLoggingStyle(ABC):
 
 
 class GidSectionLoggingStyle(AbstractSectionLoggingStyle):
+    __slots__ = tuple()
 
     def validate(self) -> None:
         if any(isinstance(i, AbstractLoggingStyleSection) is False for i in self.sections):
@@ -426,8 +463,23 @@ class GidLoggingFormatter(logging.Formatter):
                 record.exc_text = self.formatException(ei=record.exc_info)
         return record
 
+    def modify_meta_record(self, record: "LOG_RECORD_TYPES") -> "LOG_RECORD_TYPES":
+
+        if getattr(record, "is_meta", False) is False:
+            return record
+
+        record.name = "__META__"
+        record.module = "-"
+        record.funcName = "-"
+        record.lineno = "-"
+        extras = getattr(record, "extras", {})
+        extras["module"] = "-"
+        record.extras = extras
+        return record
+
     def format(self, record: "LOG_RECORD_TYPES") -> str:
         record = self.set_time(record=record)
+        record = self.modify_meta_record(record)
         text = self.format_message(record=record)
         record = self.format_exception(record=record)
         if record.exc_text:

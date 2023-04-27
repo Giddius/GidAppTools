@@ -217,7 +217,7 @@ OUTDATE_PACKAGES_HTML_TEMPLATE: str = r"""
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Outdated Packages</title>
+    <title>Outdated Packages of {{ project_name }}</title>
     <link rel="stylesheet" href="https://unpkg.com/mvp.css@1.12/mvp.css">
     <style type="text/css">
     {{ style_text }}
@@ -226,7 +226,7 @@ OUTDATE_PACKAGES_HTML_TEMPLATE: str = r"""
 
 <body>
 <main>
-    <h1>Outdated Packages</h1>
+    <h1>Outdated Packages of {{ project_name }}</h1>
 
 {% for data in [important_data, non_important_data] %}
     <h2>{{ data.name }}</h2>
@@ -298,8 +298,29 @@ def get_outdated_packages(c):
     jinja_env.globals["style_text"] = OUTDATE_PACKAGES_STYLE_TEXT
     template = jinja_env.from_string(OUTDATE_PACKAGES_HTML_TEMPLATE)
     with output_file.open("w", encoding='utf-8', errors='ignore') as f:
-        f.write(template.render(important_data={"name": "Important Packages", "packages": [i for i in data if i["is_important"] is True]}, non_important_data={"name": "Non-Important Packages", "packages": [i for i in data if i["is_important"] is False]}))
+        f.write(template.render(project_name=project.base_folder.stem, important_data={"name": "Important Packages", "packages": [i for i in data if i["is_important"] is True]}, non_important_data={"name": "Non-Important Packages", "packages": [i for i in data if i["is_important"] is False]}))
 
-    text_output_file.write_text('\n'.join(f"pip install -U {i['name']}" for i in data), encoding='utf-8', errors='ignore')
+    text_output_file.write_text('\n'.join(f"{i['name']}=={i['latest_version']}" for i in data), encoding='utf-8', errors='ignore')
 
     c.run(f'"{str(output_file)}"')
+
+
+@task()
+def copy_vscode_snippet(c: Context):
+
+    import pyperclip
+
+    text = pyperclip.paste()
+    name = "--PLACEHOLDER--"
+
+    prefix = "--PLACEHOLDER--"
+
+    snippet_name = name.strip()
+    snippet_dict = {"body": text.splitlines(),
+                    "description": "",
+                    "prefix": prefix}
+
+    snippet_json_string = json.dumps({snippet_name: snippet_dict}).strip().removeprefix("{").removesuffix("}")
+
+    pyperclip.copy(snippet_json_string)
+    print("copied to clipboard")

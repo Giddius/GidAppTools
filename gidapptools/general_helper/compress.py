@@ -44,8 +44,8 @@ def compress_file(source: "PATH_TYPE", target: "PATH_TYPE", suffix: str = '.zip'
         zippy.write(source, source.name)
 
 
-def compress_in_process(source: "PATH_TYPE", target: "PATH_TYPE", suffix: str = '.zip'):
-    process = Process(daemon=False, target=compress_file, kwargs={"source": source, "target": target})
+def compress_in_process(source: "PATH_TYPE", target: "PATH_TYPE", suffix: str = '.zip') -> Process:
+    process = Process(daemon=False, target=compress_file, kwargs={"source": source, "target": target, "suffix": suffix})
     process.start()
     return process
 

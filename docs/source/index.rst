@@ -19,9 +19,12 @@ Welcome to gidapptools's documentation!
 
 
 
-Indices and tables
-==================
+.. toctree::
+   :hidden:
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+   /attributions
+
+
+
+
+

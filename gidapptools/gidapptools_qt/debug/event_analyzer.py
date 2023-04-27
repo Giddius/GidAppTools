@@ -14,6 +14,7 @@ from typing import Any, Union, Callable, Iterable, Optional
 from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
+from gidapptools.gid_logger.logger import get_logger
 
 # * Qt Imports --------------------------------------------------------------------------------------->
 from PySide6.QtGui import QMouseEvent, QPaintEvent, QResizeEvent, QStatusTipEvent, QPlatformSurfaceEvent, QInputMethodQueryEvent
@@ -34,7 +35,7 @@ from PySide6.QtCore import QEvent, QChildEvent, QDynamicPropertyChangeEvent
 # region [Constants]
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
-
+log = get_logger(__name__)
 # endregion [Constants]
 
 
@@ -81,12 +82,12 @@ def _data_getter_class_name(obj: object) -> str:
         if inspect.isclass(obj):
             return obj.__name__
     except Exception as e:
-        print(e)
+        log.error(e, exc_info=True)
 
     try:
         return obj.__class__.__name__
     except Exception as e:
-        print(e)
+        log.error(e, exc_info=True)
 
     return "Not able to determine class Name".upper()
 

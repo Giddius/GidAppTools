@@ -42,6 +42,8 @@ log.setLevel(LoggingLevel.DEBUG)
 
 class GidLogRecordFactory:
     activation_lock = threading.RLock()
+    __slots__ = ("special_records_registry",
+                 "original_factory")
 
     def __init__(self) -> None:
         self.special_records_registry: dict[str, logging.LogRecord] = {}

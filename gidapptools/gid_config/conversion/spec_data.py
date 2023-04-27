@@ -9,6 +9,7 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import json
 from typing import TYPE_CHECKING, Union, Literal, Callable, Optional
+from types import ModuleType
 from pathlib import Path
 from threading import RLock
 
@@ -20,7 +21,7 @@ from gidapptools.general_helper.class_helper import MethodEnabledWeakSet
 from gidapptools.gid_config.conversion.spec_item import SpecEntry, SpecSection
 from gidapptools.general_helper.mixins.file_mixin import FileMixin
 from gidapptools.gid_config.conversion.converter_grammar import ConverterSpecData, parse_specification
-
+import orjson
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     pass
@@ -154,6 +155,8 @@ class SpecData:
 class SpecFile(FileMixin, SpecData):
     _name_suffixes_to_remove: tuple[str] = ("_configspec", "_spec", "_config", "_config_spec", "_spec_config", "_specconfig")
 
+    json_load_func: Callable[[str], dict[str, object]] = orjson.loads
+
     def __init__(self,
                  file_path: PATH_TYPE,
                  loader: SpecLoader = None,
@@ -195,7 +198,8 @@ class SpecFile(FileMixin, SpecData):
 
     def load(self) -> "SpecFile":
         with self.lock:
-            self.load_data(json.loads(self.read()))
+
+            self.load_data(self.json_load_func(self.read()))
 
         return self
 

@@ -1,7 +1,7 @@
 import pytest
 from pytest import param
 from typing import Union, Literal, Mapping, Any, Optional
-from gidapptools.general_helper.conversion import seconds2human, human2timedelta, ns_to_s, str_to_bool, human2bytes, bytes2human, number_to_pretty
+from gidapptools.general_helper.conversion import seconds2human, human2timedelta, ns_to_s, str_to_bool, human2bytes, bytes2human, number_to_pretty, timedelta_to_stopwatch_format
 from collections import namedtuple
 import random
 from datetime import timedelta, datetime
@@ -173,7 +173,8 @@ bytes2human_param_basic = [param(1, None, "1 b", id="exatly_one_byte"),
                            param(1024, None, "1.0 Kb", id="exactly_one_kilo_byte"),
                            param(52_428_800, None, "50.0 Mb", id="50_mega_bytes")]
 
-bytes2human_param_advanced = [param(12.5, TypeError, "", id="float TypeError")]
+bytes2human_param_advanced = [param(12.5, TypeError, "", id="float TypeError"),
+                              param(-1024, None, "-1.0 Kb", id="negative exactly_one_kilo_byte")]
 
 
 @ pytest.mark.parametrize("in_bytes, error, expected", bytes2human_param_basic + bytes2human_param_advanced)
@@ -198,3 +199,13 @@ def test_number_to_pretty():
     assert number_to_pretty(0.1) == "0.1"
 
     assert number_to_pretty(100_000_000) == "100,000,000"
+
+
+timedelta_to_stopwatch_format_param = [param(14.5, "00:00:14.50", id="small_float"),
+                                       param(timedelta(hours=14, minutes=35, seconds=10), "14:35:10.00", id="medium_timedelta")]
+
+
+@ pytest.mark.parametrize("in_delta, expected_result", timedelta_to_stopwatch_format_param)
+def test_timedelta_to_stopwatch_format(in_delta: Union[float, timedelta], expected_result: str):
+
+    assert timedelta_to_stopwatch_format(in_delta) == expected_result

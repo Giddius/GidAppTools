@@ -61,3 +61,28 @@ html_static_path = ['_static']
 
 
 html_css_files = ["css/extra_style.css"]
+
+
+import json
+from pathlib import Path
+import jinja2
+THIS_FILE_DIR = Path(__file__).parent.absolute()
+
+
+def create_attributions():
+    atttributions_data_file = THIS_FILE_DIR.joinpath("_data", "attributions.json")
+
+    with atttributions_data_file.open("r", encoding='utf-8', errors='ignore') as f:
+        data = json.load(f)
+
+    atttributions_template_file = THIS_FILE_DIR.joinpath("_templates", "attributions.jinja_rst")
+
+    jinja_env = jinja2.Environment(loader=jinja2.BaseLoader())
+    template = jinja_env.from_string(atttributions_template_file.read_text(encoding='utf-8', errors='ignore'))
+
+    output_file = THIS_FILE_DIR.joinpath("attributions.rst")
+
+    output_file.write_text(template.render(data=data), encoding='utf-8', errors='ignore')
+
+
+create_attributions()

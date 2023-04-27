@@ -59,7 +59,6 @@ asdasd
 asd
 \n"""
 
-print(f"'{FILE_HELPER_FILE_CONTENT_3}'")
 
 FILE_HELPER_FILE_CONTENT_4 = """
 
@@ -101,3 +100,6 @@ def file_helper_file_4() -> Path:
         path = Path(temp_folder, "file_helper_file_4.txt")
         path.write_text(FILE_HELPER_FILE_CONTENT_4, encoding='utf-8', errors='ignore')
         yield path
+
+
+BLAH_BLAH = 4

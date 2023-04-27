@@ -177,32 +177,31 @@ FILE_SIZE_REFERENCE = FileSizeReference()
 
 def bytes2human(n: int) -> str:
     # http://code.activestate.com/recipes/578019
-    # >>> bytes2human(10000)
-    # '9.8K'
-    # >>> bytes2human(100001221)
-    # '95.4M'
-    # if annotate is not None:
 
-    # symbols = ('Kb', 'Mb', 'Gb', 'Tb', 'Pb', 'Eb', 'Zb', 'Yb')
-    # prefix = {s: 1 << (i + 1) * 10 for i, s in enumerate(symbols)}
-
+    is_negative = n < 0
+    sign_prefix = ""
+    if is_negative:
+        n = n * (-1)
+        sign_prefix = "-"
     for unit in reversed(FILE_SIZE_REFERENCE.units):
         if n >= unit:
             _out = float(n) / unit
 
-            _out = f'{_out:.1f} {unit}'
+            _out = f'{sign_prefix}{_out:.1f} {unit}'
             return _out
     _out = n
 
-    return f"{_out} b"
+    return f"{sign_prefix}{_out} b"
 
 
 def human2bytes(in_text: str, strict: bool = False) -> int:
+
     def _clean_name(name: str) -> str:
         name = name.strip()
         name = name.casefold()
         name = white_space_regex.sub(' ', name)
         return name
+
     if in_text.strip() == "0" and strict is False:
         return ""
     white_space_regex = re.compile(r"\s{2,}")
@@ -234,18 +233,6 @@ def ms_to_s(micro_seconds: Union[int, float], decimal_places: int = None) -> Uni
     return round(seconds, decimal_places)
 
 
-def timedelta_to_stopwatch_format(t: Union[float, timedelta]) -> str:
-    """
-    Get a friendly timestamp represented as a string.
-    """
-    try:
-        all_seconds = t.total_seconds()
-    except AttributeError:
-        all_seconds = t
-    hours, minutes, seconds = int(all_seconds / 3600), int(all_seconds / 60 % 60), all_seconds % 60
-    return f"{hours:02d}:{minutes:02d}:{seconds:05.2f}"
-
-
 @attr.s(auto_attribs=True, auto_detect=True, frozen=True, slots=True, weakref_slot=True)
 class TimeUnit:
     name: str = attr.ib()
@@ -259,7 +246,7 @@ class TimeUnit:
         return self.name + "s"
 
     def convert_seconds(self, in_seconds: int) -> int:
-        return in_seconds / self.factor
+        return int(in_seconds / self.factor)
 
     def convert_with_rest(self, in_seconds: int) -> tuple[int, int]:
         _amount, _rest = divmod(in_seconds, self.factor)
@@ -276,11 +263,18 @@ class TimeUnit:
 
 TIMEUNITS = sorted([TimeUnit(*item) for item in RAW_TIMEUNITS], key=lambda x: x.factor, reverse=True)
 
+TIMEUNIT_NAME_MAP = {t.name.casefold(): t for t in TIMEUNITS}
+
 
 class TimeUnits:
+    __slots__ = ("_with_year",
+                 "units",
+                 "name_dict",
+                 "symbol_dict",
+                 "alias_dict",
+                 "full_dict")
 
     def __init__(self, with_year: bool = True) -> None:
-        self._units = sorted(TIMEUNITS.copy(), key=lambda x: -x.factor)
         self._with_year = with_year
         self.units = self._get_units()
         self.name_dict: dict[str, TimeUnit] = {item.name.casefold(): item for item in self.units} | {item.plural.casefold(): item for item in self.units}
@@ -288,14 +282,15 @@ class TimeUnits:
         self.alias_dict: dict[str, TimeUnit] = self._get_alias_dict()
         self.full_dict: dict[str, TimeUnit] = self.name_dict | self.symbol_dict | self.alias_dict
 
-    @cached_property
+    @property
     def smallest_unit(self) -> TimeUnit:
         return self.units[-1]
 
     def _get_units(self):
+        _all_units = sorted(TIMEUNITS.copy(), key=lambda x: -x.factor)
         if self._with_year is False:
-            return [u for u in self._units.copy() if u.name != 'year']
-        return self._units.copy()
+            return [u for u in _all_units if u.name != 'year']
+        return _all_units
 
     def _get_alias_dict(self) -> dict[str, TimeUnit]:
         _out = {}
@@ -320,6 +315,23 @@ class TimeUnits:
 
 _time_units_without_year = TimeUnits(False)
 _time_units_with_year = TimeUnits(True)
+
+
+def timedelta_to_stopwatch_format(t: Union[float, timedelta]) -> str:
+    """
+    Get a friendly timestamp represented as a string.
+    """
+    try:
+        all_seconds = t.total_seconds()
+    except AttributeError:
+        all_seconds = t
+
+    hour_unit = TIMEUNIT_NAME_MAP["hour"]
+    minute_unit = TIMEUNIT_NAME_MAP["minute"]
+    second_unit = TIMEUNIT_NAME_MAP["second"]
+
+    hours, minutes, seconds = hour_unit.convert_seconds(all_seconds), minute_unit.convert_seconds(all_seconds) % int(hour_unit.factor / minute_unit.factor), all_seconds % int(minute_unit.factor / second_unit.factor)
+    return f"{hours:02d}:{minutes:02d}:{seconds:05.2f}"
 
 
 def seconds2human(in_seconds: Union[int, float, timedelta],
@@ -454,12 +466,13 @@ def str_to_bool(in_string: str, strict: bool = False) -> bool:
 
 
 def number_to_pretty(in_num: Union[int, float]) -> str:
+
     return f"{in_num:,}"
 
 
 # region [Main_Exec]
 
 if __name__ == '__main__':
-    pass
+    ...
 
 # endregion [Main_Exec]

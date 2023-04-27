@@ -26,7 +26,7 @@ DEFAULT_APP_ICON_IMAGE = StoredImage(IMAGES_DIR.joinpath("default_app_icon.png")
 
 @cache
 def get_image(name: str) -> StoredImage:
-    cleaned_name = name.rsplit(".", 1)
+    cleaned_name = name.rsplit(".", 1)[0]
     for dirname, folderlist, filelist in os.walk(IMAGES_DIR):
         for file in filelist:
             if file.rsplit(".", 1)[-1] in StoredImage.allowed_extensions and file.casefold().rsplit(".", 1)[0] == cleaned_name:
@@ -34,4 +34,4 @@ def get_image(name: str) -> StoredImage:
                 image = StoredImage(path)
 
                 return image
-    raise FileNotFoundError(f"No gif with name {name!r} found.")
+    raise FileNotFoundError(f"No image with name {name!r} found.")

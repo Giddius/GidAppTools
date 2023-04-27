@@ -299,7 +299,7 @@ def get_config(spec_path: "PATH_TYPE",
                spec_loader: SpecLoader = None,
                config_parser: BaseIniParser = None,
                config_auto_write: bool = True,
-               changed_parameter: Union[Literal['size'], Literal['file_hash'], Literal["changed_time"]] = 'changed_time',
+               changed_parameter: Union[Literal['size'], Literal['file_hash'], Literal["mtime"], Literal["never"], Literal["always"], Literal["all"]] = 'mtime',
                extra_converter: Iterable[ConfigValueConverter] = None,
                empty_is_missing: bool = True,
                preload_ini_file: bool = False) -> GidIniConfig:

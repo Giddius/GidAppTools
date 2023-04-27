@@ -11,14 +11,13 @@ readme = { file = "README.rst", content-type = "text/x-rst" }
 dynamic = ['version', 'description']
 requires-python = ">=3.9"
 dependencies = [
-    "attrs~=22.1",
-    "frozendict~=2.3",
-    "platformdirs~=2.6",
-    "psutil~=5.9",
-    "pyparsing~=3.0",
-    "tzlocal~=4.2",
-    "yarl~=1.8",
-    "typing-extensions~=4.4",
+    "attrs>=22.1",
+    "frozendict>=2.3",
+    "platformdirs>=2.6",
+    "psutil>=5.9",
+    "pyparsing>=3.0",
+    "tzlocal>=4.2",
+    "yarl>=1.8",
 ]
 
 [project.urls]
@@ -30,23 +29,23 @@ gidapptools-info = "gidapptools.cli_info:cli_show_info"
 
 [project.optional-dependencies]
 
-pyside = ["PySide6~=6.4", "pyqtgraph~=0.13", "jinja2~=3.1"]
-orm = ["peewee~=3.15", "apsw~=3.39"]
-rich = ["rich~=12.6"]
-parsing = ["python-dateutil~=2.8"]
-image = ["Pillow~=9.4", "scipy~=1.10", "numpy~=1.24"]
+pyside = ["PySide6>=6.4", "pyqtgraph>=0.13", "jinja2>=3.1"]
+orm = ["peewee>=3.15", "apsw>=3.39"]
+rich = ["rich>=13.1"]
+parsing = ["python-dateutil>=2.8"]
+image = ["Pillow>=9.4", "scipy>=1.10", "numpy>=1.24"]
 all = [
-    "PySide6~=6.4",
-    "peewee~=3.15",
-    "cython~=0.29",
-    "rich~=12.6",
-    "jinja2~=3.1",
-    "python-dateutil~=2.8",
-    "apsw~=3.39",
-    "Pillow~=9.4",
-    "scipy~=1.10",
-    "numpy~=1.24",
-    "pyqtgraph~=0.13",
+    "PySide6>=6.4",
+    "peewee>=3.15",
+    "cython>=0.29",
+    "rich>=13.1",
+    "jinja2>=3.1",
+    "python-dateutil>=2.8",
+    "apsw>=3.39",
+    "Pillow>=9.4",
+    "scipy>=1.10",
+    "numpy>=1.24",
+    "pyqtgraph>=0.13",
 ]
 [tool.flit.sdist]
 exclude = [
@@ -104,7 +103,8 @@ ignore_init_module_imports = false
 
 
 [tool.pytest.ini_options]
-addopts = "-rA -vv --durations=0 --capture=tee-sys --show-capture=all --color=auto --code-highlight=yes --cov=gidapptools --cov-report html --html-report=./tools/reports/pytest_report --title='PYTEST REPORT'"
+addopts = "-rA -vv --durations=10 --capture=tee-sys --show-capture=all --color=auto --code-highlight=yes --cov=gidapptools --cov-report html --html-report=./tools/reports/pytest_report --title='PYTEST REPORT'"
+norecursedirs = "manual_*"
 
 [tool.coverage.report]
 omit = ["**/__init__.py"]
@@ -114,3 +114,7 @@ exclude_lines = ["if __name__ == .__main__.:", "def __rich__", "def __repr__"]
 directory = "tools/reports/coverage/html"
 
 [tool.mypy]
+
+
+[tool.ruff]
+ignore = ["E501", "E402", "E731"]

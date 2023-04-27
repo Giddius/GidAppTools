@@ -132,8 +132,12 @@ class SubModule:
     @property
     def all_members_import_string(self) -> str:
         text = f"from {self.qualname} import ({', '.join(self.member_names)})"
+        try:
+            return isort.code(text, line_length=200).strip()
+        except Exception as e:
+            print(f"Encountered exception {e!r}")
 
-        return isort.code(text, line_length=200).strip()
+            return text.strip()
 
     @property
     def member_names(self) -> tuple[str]:
@@ -339,12 +343,13 @@ def print_all_sub_module_data(in_module: ModuleType, no_rich: bool = False) -> N
         return
 
     console = RichConsole(soft_wrap=True)
-    console.print(get_all_sub_module_data(in_module))
+    console.print_json(data=get_all_sub_module_data(in_module), default=str)
 
 
 # region [Main_Exec]
 if __name__ == '__main__':
     from PySide6 import QtWidgets
-    print_all_sub_module_data(QtWidgets)
+    import importlib.resources
+    print_all_sub_module_data(importlib.resources)
 
 # endregion [Main_Exec]

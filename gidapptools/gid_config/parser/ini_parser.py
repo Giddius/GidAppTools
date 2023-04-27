@@ -17,7 +17,7 @@ import pyparsing as pp
 from gidapptools.errors import TrailingCommentError
 from gidapptools.gid_config.parser.tokens import Entry, Token, Comment, Section, TokenFactory
 from gidapptools.gid_config.parser.grammar import BaseIniGrammar
-
+from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_globals
 # endregion [Imports]
 
 # region [TODO]
@@ -31,7 +31,7 @@ from gidapptools.gid_config.parser.grammar import BaseIniGrammar
 # endregion [Logging]
 
 # region [Constants]
-
+get_dummy_profile_decorator_in_globals()
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion [Constants]

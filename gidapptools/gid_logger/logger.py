@@ -13,18 +13,26 @@ import sys
 import queue
 import atexit
 import logging
+import traceback
 import warnings
-from typing import TYPE_CHECKING, Any, Union, Mapping, Callable, Iterable
+from typing import TYPE_CHECKING, Any, Union, Mapping, Callable, Iterable, Optional, TextIO, TypeAlias
 from pathlib import Path
+from types import ModuleType
 from weakref import WeakValueDictionary
 from contextlib import contextmanager
 from logging.handlers import QueueHandler, QueueListener
-
+import importlib
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_logger.enums import LoggingLevel
 from gidapptools.gid_logger.handler import GidBaseStreamHandler, GidBaseRotatingFileHandler
 from gidapptools.gid_logger.formatter import GidLoggingFormatter, get_all_func_names, get_all_module_names
+from gidapptools.general_helper.conversion import str_to_bool
 
+import sys
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.gid_logger.records import LOG_RECORD_TYPES
@@ -48,7 +56,13 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion [Constants]
 
 
+def is_dev() -> bool:
+    is_dev_string = os.getenv("IS_DEV", '0').casefold()
+    return str_to_bool(is_dev_string, strict=True) or sys.flags.dev_mode
+
+
 class GidLogger(logging.Logger):
+    main_pack_name: str = None
 
     def __init__(self, name: str, level: "logging._Level" = logging.NOTSET) -> None:
         super().__init__(name, level)
@@ -81,7 +95,7 @@ class GidLogger(logging.Logger):
                    func: str = None,
                    extra: Mapping[str, object] = None,
                    sinfo: str = None) -> "LOG_RECORD_TYPES":
-        rv = super().makeRecord(name, level, fn, lno, msg, args=args, exc_info=exc_info, func=func, extra=None, sinfo=sinfo)
+        rv = super().makeRecord(name, level, fn, lno, msg, args=args, exc_info=exc_info, func=func, extra=extra, sinfo=sinfo)
         if not hasattr(rv, "extras"):
             setattr(rv, "extras", {})
         if extra is not None:
@@ -92,6 +106,15 @@ class GidLogger(logging.Logger):
     def _log(self, level: int, msg: object, args: "logging._ArgsType", exc_info: "logging._ExcInfoType" = None, extra: Mapping[str, object] = None, stack_info: bool = False, stacklevel: int = 2) -> None:
         if extra is not None and extra.get("is_timing_decorator", False) is True:
             stacklevel += 0
+        return super()._log(level, msg, args, exc_info, extra, stack_info, stacklevel)
+
+
+class MetaLogger(GidLogger):
+
+    def _log(self, level: int, msg: object, args: "logging._ArgsType", exc_info: "logging._ExcInfoType" = None, extra: Mapping[str, object] = None, stack_info: bool = False, stacklevel: int = 2) -> None:
+        extra = extra or {}
+        extra["is_meta"] = True
+
         return super()._log(level, msg, args, exc_info, extra, stack_info, stacklevel)
 
 
@@ -112,16 +135,30 @@ def switch_logger_klass(logger_klass: type[logging.Logger]):
 
 
 def _modify_logger_name(name: str) -> str:
-    if name == "__main__":
-        return 'main'
     if name == "__logging_meta__":
         return 'main.__logging_meta__'
-    name = 'main.' + '.'.join(name.split('.')[1:])
+    # name = 'main.' + '.'.join(name.split('.')[1:])
+    if name.startswith("__main__"):
+        return name.replace("__main__", "main")
+
+    if GidLogger.main_pack_name is not None:
+
+        return name.replace(GidLogger.main_pack_name, "main")
+
     return name
 
 
+def get_main_logger() -> logging.Logger:
+    return get_logger("__main__")
+
+
+META_LOGGER_NAME = "__logging_meta__"
+
+
 def get_meta_logger():
-    return get_logger("__logging_meta__")
+    main_logger = get_main_logger()
+    with switch_logger_klass(MetaLogger):
+        return main_logger.getChild(META_LOGGER_NAME)
 
 
 def get_logger(name: str) -> Union[logging.Logger, GidLogger]:
@@ -139,54 +176,169 @@ def get_handlers(logger: Union[logging.Logger, GidLogger] = None) -> tuple[loggi
     return tuple(all_handlers)
 
 
+class WarningItem:
+    __slots__ = ("_message",
+                 "category",
+                 "_raw_filename",
+                 "lineno",
+                 "file",
+                 "line",
+                 "module",
+                 "resolved_filename",
+                 "func_name",
+                 "_is_resolved")
+
+    def __init__(self,
+                 message: str,
+                 category: type[Warning],
+                 filename: str,
+                 lineno: int,
+                 file: Optional[TextIO] = None,
+                 line: str = None) -> None:
+        self._message = message
+        self.category = category
+        self._raw_filename = filename
+        self.lineno = lineno
+        self.file = file
+        self.line = line
+
+        self.module: Optional[ModuleType] = None
+        self.resolved_filename: Optional[Path] = None
+        self.func_name: Optional[str] = None
+        self._is_resolved: bool = False
+
+    @property
+    def message(self) -> str:
+        return str(self._message).rstrip("\n")
+
+    @property
+    def is_frozen_stdlib(self) -> bool:
+        return self._raw_filename.startswith("<frozen ") and self._raw_filename.endswith(">")
+
+    @property
+    def filename(self) -> str:
+        if self.resolved_filename is None:
+            return self._raw_filename
+        return str(self.resolved_filename)
+
+    @property
+    def file_path(self) -> Optional[Path]:
+        if self.resolved_filename is not None:
+            return self.resolved_filename
+        return None
+
+    @property
+    def module_name(self) -> str:
+        if self.module is not None:
+            return self.module.__name__
+
+        if self.is_frozen_stdlib is True:
+            return self.filename.removeprefix("<frozen ").removesuffix(">").strip()
+
+        return self.filename
+
+    def _resolve_filename(self) -> None:
+        if self._raw_filename.startswith("<frozen ") and self._raw_filename.endswith(">"):
+            package_name, *sub_names = self._raw_filename.removeprefix("<frozen ").removesuffix(">").strip().rsplit(".", 1)
+            package = sys.modules[package_name]
+            module = package
+            for sub_name in sub_names:
+                module = getattr(module, sub_name)
+            self.module = module
+            self.resolved_filename = Path(module.__file__).resolve()
+
+        elif os.path.isfile(self._raw_filename) is True:
+            self.resolved_filename = Path(self._raw_filename).resolve()
+            for _module in tuple(sys.modules.values()):
+                if Path(_module.__name__).resolve() == self.resolved_filename:
+                    self.module = _module
+                    break
+
+    def _resolve_line(self) -> None:
+        if self.resolved_filename is None:
+            return
+        import linecache
+        temp_lineno = self.lineno
+        line = linecache.getline(str(self.resolved_filename), temp_lineno)
+        if self.line is None:
+            self.line = line.rstrip()
+
+        while True:
+            if match := func_pattern.search(line):
+                self.func_name = match.group("func_name").strip()
+                break
+            temp_lineno -= 1
+            if temp_lineno < 0:
+                self.func_name = "module"
+                break
+            line = linecache.getline(str(self.resolved_filename), temp_lineno)
+
+    def resolve(self) -> Self:
+        if self._is_resolved is True:
+            return
+        self._resolve_filename()
+        self._resolve_line()
+        self._is_resolved = True
+        return self
+
+    def get_logging_params(self) -> dict[str, object]:
+        _out = {}
+        _out["name"] = self.module_name
+        _out["level"] = logging.WARNING
+        _out["fn"] = self.func_name
+        _out["lno"] = self.lineno
+        _out["msg"] = self.message
+        _out["args"] = tuple()
+        _out["exc_info"] = None
+        _out["func"] = self.func_name
+
+        return _out
+
+    def __repr__(self) -> str:
+        _out = self.__class__.__name__ + "("
+
+        for attr_name in [i for i in self.__slots__ if not i.startswith("_")] + ["message", "filename", "is_frozen_stdlib"]:
+            _out += f"{attr_name}={getattr(self, attr_name)!r}, "
+
+        _out.removesuffix(", ")
+        _out += ")"
+        return _out
+
+    def __str__(self) -> str:
+        return self.message
+
+
 func_pattern = re.compile(r"(^| )def (?P<func_name>[^\(\)\n\"\'\]\[]+)")
 
 
+SHOW_WARNING_FUNC_TYPE: TypeAlias = Callable[[str, type[Warning], str, int, Optional[str], Optional[str]], None]
+
+
 class WarningHandler:
-    __slots__ = ("old_show_warnings_func",)
+    __slots__ = ("_old_show_warnings_func",)
 
-    def __init__(self, old_show_warnings_func: Callable = None):
-        self.old_show_warnings_func = old_show_warnings_func
+    def __init__(self, old_show_warnings_func: Optional[SHOW_WARNING_FUNC_TYPE] = None) -> None:
+        self._old_show_warnings_func = old_show_warnings_func or self._fallback_show_warning
 
-    def _error_fallback(self, error, message, category, filename, lineno, file=None, line=None) -> None:
-        logger = get_meta_logger()
-        logger.error("error with '_show_warnings', error: %r, message: %r, category: %r, filename: %r, lineno: %r, file: %r, line: %r", error, message, category, filename, lineno, file, line, exc_info=True)
+    @property
+    def meta_logger(self) -> logging.Logger:
+        return get_meta_logger()
 
-    def _show_warnings(self, message, category, filename, lineno, file=None, line=None):
+    def _fallback_show_warning(self, message: str, category: type[Warning], filename: str, lineno: int, file: Optional[TextIO] = None, line: Optional[str] = None) -> None:
+        self.meta_logger.warning("%s - %s:%s:%r - %s", category.__name__, filename, lineno, line or "", message)
+
+    def _show_warnings(self, message: str, category: type[Warning], filename: str, lineno: int, file: Optional[TextIO] = None, line: Optional[str] = None) -> None:
         try:
-            path = Path(filename).resolve()
-            sending_module = None
-            for module in reversed(sys.modules.values()):
-                try:
-                    if Path(module.__file__).resolve() == path:
-                        sending_module = module
-                        break
-                except (AttributeError, TypeError):
-                    continue
-            logger = get_logger(sending_module.__name__)
-            import linecache
-
-            temp_lineno = lineno
-            while True:
-                line = linecache.getline(filename, temp_lineno)
-                if match := func_pattern.search(line):
-                    func = match.group("func_name").strip()
-                    break
-                temp_lineno -= 1
-                if temp_lineno < 0:
-                    func = "module"
-                    break
-
-            record = logger.makeRecord(logger.name, level=logging.WARNING, fn=func, lno=lineno, msg=message.rstrip('\n'), args=[], exc_info=None, func=func)
+            warning_item = WarningItem(message=message, category=category, filename=filename, lineno=lineno, file=file, line=line).resolve()
+            logger = get_logger(f"__main__.{warning_item.module_name}")
+            record = logger.makeRecord(**warning_item.get_logging_params())
             logger.handle(record)
         except Exception as e:
-            if self.old_show_warnings_func:
-                self.old_show_warnings_func(message, category, filename, lineno, file, line)
-            else:
-                self._error_fallback(e, message, category, filename, lineno, file, line)
+            self.meta_logger.error(e, exc_info=True)
+            self._old_show_warnings_func(message=message, category=category, filename=filename, lineno=lineno, line=line)
 
-    def __call__(self, message, category, filename, lineno, file=None, line=None) -> Any:
-        self._show_warnings(message, category, filename, lineno, file, line)
+    def __call__(self, message: str, category: type[Warning], filename: str, lineno: int, file: Optional[TextIO] = None, line: str = None) -> None:
+        self._show_warnings(message=message, category=category, filename=filename, lineno=lineno, file=file, line=line)
 
 
 def setup_main_logger(name: str,
@@ -232,8 +384,10 @@ def setup_main_logger_with_file_logging(name: str,
                                         max_module_name_length: int = None,
                                         *,
                                         log_to_file: bool = True,
-                                        log_to_stdout: bool = True) -> Union[logging.Logger, GidLogger]:
-    if os.getenv('IS_DEV', "false") != "false":
+                                        log_to_stdout: bool = True,
+                                        main_pack_name: str = None) -> Union[logging.Logger, GidLogger]:
+    GidLogger.main_pack_name = main_pack_name
+    if is_dev() is True:
         log_folder = path.parent.joinpath('logs')
 
     os.environ["MAX_FUNC_NAME_LEN"] = str(max_func_name_length) if max_func_name_length is not None else str(min([max(len(i) for i in get_all_func_names(path, True)), 25]))
@@ -256,6 +410,7 @@ def setup_main_logger_with_file_logging(name: str,
     # storing_handler = GidStoringHandler(50)
     # storing_handler.setFormatter(formatter)
     # endpoints.append(storing_handler)
+
     listener = QueueListener(que, *endpoints)
     _log = get_logger(name)
     log_level = LoggingLevel(log_level)
@@ -273,10 +428,7 @@ def setup_main_logger_with_file_logging(name: str,
     return _log
 
 
-def get_main_logger():
-    return get_logger("__main__")
 # region [Main_Exec]
-
 
 if __name__ == '__main__':
     pass

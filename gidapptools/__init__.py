@@ -10,12 +10,20 @@ __version__ = "0.4.4"
 
 
 from pathlib import Path
-import logging
-
-THIS_FILE_DIR = Path(__file__).resolve().parent
-log = logging.getLogger(THIS_FILE_DIR.parent.name)
-
-
 from tzlocal import reload_localzone
 
-reload_localzone()
+THIS_FILE_DIR = Path(__file__).resolve().parent
+
+# _log = logging.getLogger(__name__)
+# _log.addHandler(logging.NullHandler())
+
+
+def setup_library() -> None:
+    from .gid_logger.logger import make_library_logger
+    log = make_library_logger(__name__)
+    log.debug("library %r setup", __name__)
+
+    reload_localzone()
+
+
+setup_library()

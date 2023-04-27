@@ -11,8 +11,9 @@ import inspect
 import logging
 import warnings
 from enum import Enum
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Iterable
 from pathlib import Path
+from functools import partial
 
 # endregion [Imports]
 
@@ -70,14 +71,29 @@ def _align_right(text: str, width: int = 0) -> str:
     return text.rjust(width)
 
 
-class LoggingSectionAlignment(Enum):
-    LEFT = (_align_left, "<")
-    CENTER = (_align_center, "^")
-    RIGHT = (_align_right, ">")
+def _align_left_extra_padded(text: str, width: int = 0, amount_extra_padding: int = 1) -> str:
+    extra_padding = " " * amount_extra_padding
+    return (extra_padding + text).ljust(width)
 
-    def __init__(self, align_func: Callable[[str, Optional[int]], str], aliases: str = "") -> None:
+
+def _align_none(text: str, width: int = 0) -> str:
+    return text
+
+
+class LoggingSectionAlignment(Enum):
+    NONE = (_align_none, ("none",))
+
+    LEFT = (_align_left, ("<",))
+    CENTER = (_align_center, ("^",))
+    RIGHT = (_align_right, (">",))
+
+    LEFT_EXTRA_PADDED_ONCE = (partial(_align_left_extra_padded, amount_extra_padding=1), ("<+1", "l_pad_1"))
+    LEFT_EXTRA_PADDED_TWICE = (partial(_align_left_extra_padded, amount_extra_padding=2), ("<+2", "l_pad_2"))
+    LEFT_EXTRA_PADDED_THRICE = (partial(_align_left_extra_padded, amount_extra_padding=3), ("<+3", "l_pad_3"))
+
+    def __init__(self, align_func: Callable[[str, Optional[int]], str], aliases: Iterable = None) -> None:
         self.align_func = align_func
-        self.aliases = set(aliases)
+        self.aliases = set(aliases) if aliases else set()
 
     def align(self, text: str, width: int = 0) -> str:
         return self.align_func(text, width)

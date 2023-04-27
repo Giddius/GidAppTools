@@ -11,6 +11,7 @@ import sys
 import json
 import inspect
 from abc import abstractmethod
+import os
 from enum import Enum
 from typing import Any, Mapping, TypeVar, Callable, Optional
 from pathlib import Path
@@ -26,6 +27,7 @@ from platformdirs import PlatformDirs
 from gidapptools.custom_types import PATH_TYPE
 from gidapptools.utility.enums import NamedMetaPath
 from gidapptools.general_helper.date_time import DatetimeFmt
+from gidapptools.general_helper.conversion import str_to_bool
 
 # endregion [Imports]
 
@@ -132,6 +134,15 @@ def meta_data_from_path(in_path: Path) -> dict[str, Any]:
     _init_module = inspect.getmodule(None, in_path)
 
     _metadata = metadata(_init_module.__package__)
+
+    _out = PackageMetadataDict.from_meta_importlib_meta_data(_metadata)
+
+    return _out
+
+
+def meta_data_from_package_name(package_name: str) -> dict[str, Any]:
+
+    _metadata = metadata(package_name)
 
     _out = PackageMetadataDict.from_meta_importlib_meta_data(_metadata)
 
@@ -272,6 +283,11 @@ def get_main_module_path() -> Path:
     main_module = sys.modules["__main__"]
 
     return Path(main_module.__file__).resolve()
+
+
+def is_dev() -> bool:
+    is_dev_string = os.getenv("IS_DEV", '0').casefold()
+    return str_to_bool(is_dev_string, strict=True) or sys.flags.dev_mode
 
 
 # region [Main_Exec]

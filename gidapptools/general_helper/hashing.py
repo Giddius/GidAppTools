@@ -59,9 +59,6 @@ def hash_to_int(in_hash: str) -> int:
 
 
 if __name__ == '__main__':
-    x = b"aaaaaaaaakdkdkdkdkkd"
-    y = sha1(x).hexdigest()
-    z = hash_to_int(y)
-    print(z)
+    pass
 
 # endregion [Main_Exec]

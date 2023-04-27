@@ -20,6 +20,7 @@ from gidapptools.errors import MaxError, MinError
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.general_helper.conversion import bytes2human, human2bytes, str_to_bool, seconds2human, human2timedelta
 from gidapptools.general_helper.import_helper import is_importable
+from gidapptools.general_helper.timing import get_dummy_profile_decorator_in_globals
 
 try:
     RICH_AVAILABLE = True
@@ -46,7 +47,7 @@ PYSIDE6_AVAILABLE = is_importable("PySide6")
 YARL_AVAILABLE = is_importable("yarl")
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
-
+get_dummy_profile_decorator_in_globals()
 # endregion [Constants]
 
 
@@ -108,13 +109,13 @@ class IntegerConfigValueConverter(ConfigValueConverter):
         except MinError:
             if self.on_min_error == "raise":
                 raise
-            elif self.on_min_error == "set_minimum":
+            if self.on_min_error == "set_minimum":
                 value = self.minimum
 
         except MaxError:
             if self.on_max_error == "raise":
                 raise
-            elif self.on_max_error == "set_maximum":
+            if self.on_max_error == "set_maximum":
                 value = self.maximum
 
         if value is None:

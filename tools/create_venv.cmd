@@ -114,15 +114,15 @@ ECHO.
 
 
 ECHO ################# Installing wheel
-CALL pip install --no-cache-dir --upgrade wheel
+CALL pip install --no-cache-dir --upgrade --require-virtualenv wheel wheel
 ECHO.
 
 ECHO ################# Installing PEP517
-CALL pip install --no-cache-dir --upgrade PEP517
+CALL pip install --no-cache-dir --upgrade --require-virtualenv wheel PEP517
 ECHO.
 
 ECHO ################# Installing python-dotenv
-CALL pip install --no-cache-dir --upgrade python-dotenv
+CALL pip install --no-cache-dir --upgrade --require-virtualenv wheel python-dotenv
 ECHO.
 
 
@@ -156,7 +156,7 @@ ECHO.
 Echo +++++++++++++++++++++++++++++ Misc Packages +++++++++++++++++++++++++++++
 ECHO.
 ECHO.
-CALL pip install --upgrade -r .\venv_setup_settings\required_misc.txt
+CALL pip install --require-virtualenv wheel -r .\venv_setup_settings\required_misc.txt
 ECHO.
 
 
@@ -181,7 +181,7 @@ FOR /F "tokens=1 delims=," %%A in (.\venv_setup_settings\required_from_github.tx
 ECHO.
 ECHO -------------------------- Installing %%A --------------^>
 ECHO.
-CALL pip install --upgrade git+%%A
+CALL pip install --require-virtualenv wheel git+%%A
 ECHO.
 )
 
@@ -192,7 +192,7 @@ Echo +++++++++++++++++++++++++++++ Test Packages +++++++++++++++++++++++++++++
 ECHO.
 
 ECHO.
-CALL pip install --upgrade -r .\venv_setup_settings\required_test.txt
+CALL pip install --require-virtualenv wheel -r .\venv_setup_settings\required_test.txt
 ECHO.
 
 
@@ -203,7 +203,7 @@ Echo +++++++++++++++++++++++++++++ Dev Packages +++++++++++++++++++++++++++++
 ECHO.
 
 ECHO.
-CALL pip install --upgrade -r .\venv_setup_settings\required_dev.txt
+CALL pip install --require-virtualenv wheel -r .\venv_setup_settings\required_dev.txt
 ECHO.
 
 
