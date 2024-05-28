@@ -10,13 +10,14 @@ Soon.
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Union, Literal, TypeVar, Optional
 from pathlib import Path
+import logging
 from datetime import datetime, timedelta
-
+import os
 # * Third Party Imports --------------------------------------------------------------------------------->
 from frozendict import frozendict
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.errors import MaxError, MinError
+from gidapptools.errors import MaxError, MinError, ValueValidationError, NotLoggingLevelError
 from gidapptools.general_helper.enums import MiscEnum
 from gidapptools.general_helper.conversion import bytes2human, human2bytes, str_to_bool, seconds2human, human2timedelta
 from gidapptools.general_helper.import_helper import is_importable
@@ -240,7 +241,7 @@ class PathConfigValueConverter(ConfigValueConverter):
     value_typus = "path"
     value_typus_aliases = ("fs_path",)
 
-    def __init__(self, conversion_table: "ConversionTable", resolve: bool = False) -> None:
+    def __init__(self, conversion_table: "ConversionTable", resolve: bool = True) -> None:
         super().__init__(conversion_table)
         self.resolve = resolve
 
@@ -255,9 +256,10 @@ class PathConfigValueConverter(ConfigValueConverter):
     def to_python_value(self, value: str) -> Union[Path, None]:
         if value is None:
             return None
-        path = Path(value)
+        path = Path(value.strip())
         if self.resolve is True:
-            path = path.resolve()
+            path = Path(os.path.expandvars(path)).resolve()
+
         return path
 
 
@@ -302,6 +304,45 @@ class ListConfigValueConverter(ConfigValueConverter):
             return None
         sub_converter: "ConfigValueConverter" = self.conversion_table.converters[self.sub_typus](self.conversion_table)
         return [sub_converter.to_python_value(item) for item in value.split(self.split_char) if item.strip()]
+
+
+class LoggingLevelValueConverter(ConfigValueConverter):
+    __slots__ = tuple()
+    is_standard_converter: bool = True
+    value_typus = "logging_level"
+
+    def validate_value(self, value, entry_name: str, section_name: str, config) -> None:
+        if not isinstance(value, (str, int)):
+            raise NotLoggingLevelError(value=value, converter=self, entry_name=entry_name, section_name=section_name, config=config)
+
+        if isinstance(value, int) and value not in logging._levelToName:
+            raise NotLoggingLevelError(value=value, converter=self, entry_name=entry_name, section_name=section_name, config=config)
+
+        if isinstance(value, str) and value not in logging._nameToLevel:
+            raise NotLoggingLevelError(value=value, converter=self, entry_name=entry_name, section_name=section_name, config=config)
+
+    def to_config_value(self, value: Any, **named_arguments) -> str:
+        if value is None:
+            return ""
+
+        if isinstance(value, int):
+
+            value = logging._levelToName[value]
+
+        if isinstance(value, str):
+            value = value.upper()
+
+        self.validate_value(value, None, None, None)
+
+        return value
+
+    def to_python_value(self, value: str, **named_arguments) -> Union[int, None]:
+
+        value = value.upper()
+
+        self.validate_value(value, None, None, None)
+
+        return logging._nameToLevel[value]
 
 
 if PYSIDE6_AVAILABLE is True:

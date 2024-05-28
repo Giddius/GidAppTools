@@ -5,7 +5,7 @@ from gidapptools.general_helper.conversion import seconds2human, human2timedelta
 from collections import namedtuple
 import random
 from datetime import timedelta, datetime
-from gidapptools.errors import FlagConflictError
+from gidapptools.errors import FlagConflictError, UnparsableHumanTimedelta
 Param = namedtuple("Param", ["param", "name"], defaults=(None,))
 
 
@@ -74,7 +74,7 @@ def nanoseconds_to_seconds(in_nanoseconds: int) -> int:
     return in_nanoseconds * (1 / 1_000_000_000)
 
 
-test_human2timedelta_params = [pytest.param("", None, timedelta(), id="empty string"),
+test_human2timedelta_params = [pytest.param("", UnparsableHumanTimedelta, timedelta(), id="empty string"),
                                pytest.param("1 nanosecond", None, timedelta(seconds=nanoseconds_to_seconds(1)), id="nanosecond positive"),
                                pytest.param("1 microsecond", None, timedelta(microseconds=1), id="microsecond positive"),
                                pytest.param("1 millisecond", None, timedelta(milliseconds=1), id="millisecond positive"),

@@ -67,10 +67,15 @@ def import_from_name(name: str) -> ModuleType:
     return module
 
 
-def import_from_file_path(file_path: Union[str, os.PathLike, Path]) -> ModuleType:
+def import_from_file_path(file_path: Union[str, os.PathLike, Path],
+                          add_to_global_modules: bool = False) -> ModuleType:
     file_path = Path(file_path).resolve()
-    spec = importlib.util.spec_from_file_location(file_path.stem, file_path)
+    _name = file_path.stem
+    spec = importlib.util.spec_from_file_location(_name, file_path)
     _module = importlib.util.module_from_spec(spec)
+
+    if add_to_global_modules is True:
+        sys.modules[_name] = _module
 
     spec.loader.exec_module(_module)
 

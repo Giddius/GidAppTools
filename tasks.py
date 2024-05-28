@@ -1,5 +1,6 @@
 from invoke import task, Result, Context
 
+
 import invoke
 from pathlib import Path
 import os
@@ -12,6 +13,7 @@ import subprocess
 from functools import reduce
 from operator import getitem, setitem
 import json
+
 
 PATH_TYPE = Union[str, os.PathLike, Path]
 THIS_FILE_DIR = Path(__file__).parent.resolve()
@@ -300,7 +302,7 @@ def get_outdated_packages(c):
     with output_file.open("w", encoding='utf-8', errors='ignore') as f:
         f.write(template.render(project_name=project.base_folder.stem, important_data={"name": "Important Packages", "packages": [i for i in data if i["is_important"] is True]}, non_important_data={"name": "Non-Important Packages", "packages": [i for i in data if i["is_important"] is False]}))
 
-    text_output_file.write_text('\n'.join(f"{i['name']}=={i['latest_version']}" for i in data), encoding='utf-8', errors='ignore')
+    text_output_file.write_text('\n'.join(f"{i['name']}" for i in data), encoding='utf-8', errors='ignore')
 
     c.run(f'"{str(output_file)}"')
 

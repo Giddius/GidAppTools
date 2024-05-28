@@ -7,7 +7,7 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
-from enum import Enum
+from enum import Enum, StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING, Union, Generator
 from datetime import datetime, timezone, timedelta, tzinfo
@@ -48,6 +48,16 @@ else:
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 log = get_logger(__name__)
 # endregion [Constants]
+
+
+class DatetimeFmt(StrEnum):
+    STANDARD = "%Y-%m-%d %H:%M:%S"
+    FILE = "%Y-%m-%d_%H-%M-%S"
+    LOCAL = "%x %X"
+
+    STANDARD_TZ = "%Y-%m-%d %H:%M:%S %Z"
+    FILE_TZ = "%Y-%m-%d_%H-%M-%S_%Z"
+    LOCAL_TZ = "%x %X %Z"
 
 
 def get_all_timezone_names() -> tuple[str]:
@@ -125,23 +135,6 @@ def get_all_timezones_by_offset_hours(include_dst_timezone: bool = True) -> dict
             log.error(e, exc_info=True)
 
     return {k: tuple(v) for k, v in _out.items()}
-
-
-class DatetimeFmt(str, Enum):
-    STANDARD = "%Y-%m-%d %H:%M:%S"
-    FILE = "%Y-%m-%d_%H-%M-%S"
-    LOCAL = "%x %X"
-
-    STANDARD_TZ = "%Y-%m-%d %H:%M:%S %Z"
-    FILE_TZ = "%Y-%m-%d_%H-%M-%S_%Z"
-    LOCAL_TZ = "%x %X %Z"
-
-    def strf(self, date_time: datetime) -> str:
-        non_tz_fmt = self if not self.name.endswith('_TZ') else getattr(self, self.name.removesuffix('_TZ'))
-        tz_fmt = self if self.name.endswith('_TZ') else getattr(self, self.name + '_TZ')
-        if date_time.tzinfo is None:
-            return date_time.strftime(non_tz_fmt)
-        return date_time.strftime(tz_fmt)
 
 
 def get_aware_now(tz: timezone) -> datetime:
@@ -316,31 +309,11 @@ def pytz_timezone_from_utc_offset(in_offset_hours: int, only_named_timezones: bo
 
 # region [Main_Exec]
 if __name__ == '__main__':
-    begi = datetime.now(tz=timezone.utc) - timedelta(days=1)
-    x = DateTimeFrame(begi, datetime.now(tz=timezone.utc))
+    x = datetime.now(tz=timezone.utc) - timedelta(hours=8)
+    y = datetime.now(tz=pytz.timezone("America/Los_Angeles")) - timedelta(hours=8)
 
-    print(f"{x=}")
-
-    y = list(x.iter_equal_steps(1000))
-    print(f"{len(y)=}")
-    print(f"{y[-2]=}")
-    print(f"{y[-1]=}")
-    print(f"{x.end=}")
-
-    print(f"{y[0]=}")
-    print(f"{x.start=}")
-    print(f"{y[0]==x.start=}")
-    print(f"{y[-1]==x.end=}")
-
-    for ii in y:
-        print(ii.timestamp())
-
-    a = x.__copy__()
-
-    print(a)
-    print(f"{a == x=}")
-    print(f"{a is x=}")
-    print(f"{hash(x) == hash(a)=}")
+    print(x.isoformat())
+    print(y.isoformat())
 
 
 # endregion [Main_Exec]

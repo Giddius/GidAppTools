@@ -247,6 +247,7 @@ class GidIniConfig:
         spec_item = self.get_spec_item(section_name=section_name, entry_name=entry_name)
         converter = self.get_converter(spec_item.converter)
         self.config.set_value(section_name=section_name, entry_key=entry_name, entry_value=converter.to_config_value(value))
+        self.clear_cache()
         self.reload_if_changed()
 
     def ensure_section(self, section_name: str) -> None:

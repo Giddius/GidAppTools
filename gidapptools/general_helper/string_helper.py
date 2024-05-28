@@ -58,7 +58,10 @@ class _StringCaseConverter:
     snake_case_to_pascal_case_regex = re.compile(r"(_|^)(\w)")
     _word_list_split_chars = frozenset({'-', '_', ' '})
 
-    __slots__ = ("_split_grammar", "_word_list_split_regex", "_dispatch_table", "_bad_chars")
+    __slots__ = ("_split_grammar",
+                 "_word_list_split_regex",
+                 "_dispatch_table",
+                 "_bad_chars")
 
     def __init__(self) -> None:
         self._split_grammar: Optional[ppa.ParserElement] = None
@@ -372,8 +375,13 @@ def make_attribute_name(in_string: str) -> str:
 
     return in_string.casefold()
 
+# [2,"""",""__SERVER__"",false,2,""2""]
 
-def fix_multiple_quotes(_text: str, max_consecutive_quotes: int = None) -> str:
+
+FIX_MULTIPLE_QUOTES_PATTERN = re.compile(r"""(\"|\')(\"{1,1}|\'{1,1})""")
+
+
+def fix_multiple_quotes(_text: str) -> str:
     """
 
     :param _text: str:
@@ -381,20 +389,7 @@ def fix_multiple_quotes(_text: str, max_consecutive_quotes: int = None) -> str:
 
     """
 
-    def _replace_function(match: re.Match):
-        """
-
-        :param match: re.Match:
-
-        """
-        return match.group()[0]
-    if max_consecutive_quotes is None:
-        pattern = r"""(\"+)|(\'+)"""
-    elif max_consecutive_quotes <= 1:
-        raise ValueError("'max_consecutive_quotes' cannot be less than 2.")
-    else:
-        pattern = rf"""(\"{{2,{max_consecutive_quotes}}})|(\'{{2,{max_consecutive_quotes}}})"""
-    return re.sub(pattern, _replace_function, _text)
+    return FIX_MULTIPLE_QUOTES_PATTERN.sub("\\g<1>", _text)
 
 
 def escape_doubled_quotes(text: str) -> str:

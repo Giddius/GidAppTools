@@ -33,7 +33,8 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 PATH_TYPE: TypeAlias = Union[str, os.PathLike[str], Path]
 
-LOCK_TYPE: TypeAlias = Union[type[threading.Lock], type[threading.RLock]]
+LOCK_TYPE: TypeAlias = Union[threading.Lock, threading.RLock]
+LOCK_CLASS_TYPE: TypeAlias = Union[type[threading.Lock], type[threading.RLock]]
 
 # region [Main_Exec]
 

@@ -13,7 +13,7 @@ from concurrent.futures import Future
 
 # * Qt Imports --------------------------------------------------------------------------------------->
 import PySide6
-from PySide6.QtGui import QMovie
+from PySide6.QtGui import QMovie, QColor
 from PySide6.QtCore import Qt, QSize, Signal
 from PySide6.QtWidgets import QLabel, QWidget, QPushButton, QSizePolicy, QVBoxLayout, QApplication
 
@@ -71,6 +71,7 @@ class BusySpinnerWidget(QLabel):
 
         spinner_gif_item = spinner_gif or get_gif(self.default_gif_name)
         spinner_gif = QMovie(str(spinner_gif_item.path))
+
         spinner_gif.setScaledSize(self.spinner_size)
         spinner_gif.setCacheMode(QMovie.CacheAll)
         self.setMovie(spinner_gif)

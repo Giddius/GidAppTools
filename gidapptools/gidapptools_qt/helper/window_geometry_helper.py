@@ -46,9 +46,13 @@ def move_to_center_of_screen(widget: QWidget, screen: QScreen = None) -> None:
     screen = screen or QApplication.instance().screenAt(widget.cursor().pos())
 
     screen_center = screen.availableGeometry().center()
-    widget_geometry = widget.geometry()
-    widget_geometry.moveCenter(screen_center)
-    widget.setGeometry(widget_geometry)
+    widget_frame_geometry = widget.frameGeometry()
+
+    widget_frame_geometry.moveCenter(screen_center)
+
+    # widget.setGeometry(widget_frame_geometry)
+
+    # widget.move(screen_center)
 
 
 # region [Main_Exec]

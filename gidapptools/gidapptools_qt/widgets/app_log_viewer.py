@@ -9,7 +9,8 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 from typing import Optional
 from pathlib import Path
-
+import logging
+import re
 # * Third Party Imports --------------------------------------------------------------------------------->
 from pyparsing.exceptions import ParseBaseException
 
@@ -47,6 +48,8 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 class AppLogHighlighter(QSyntaxHighlighter):
     grammar = GeneralGrammar()
+    level_regex = re.compile(r"(?P<level>(DEBUG)|(INFO)|(WARN(ING)?)|(CRITICAL)|(ERROR))")
+    line_number_regex = re.compile(r"\| *(?P<line_number>\d+) *\|")
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -104,17 +107,23 @@ class AppLogHighlighter(QSyntaxHighlighter):
 
     def highlightBlock(self, text: str) -> None:
 
-        try:
-            tokens = self.grammar(text)
-            background_fmt = self.formats[tokens["level"].log_level.casefold()]
-            self.setFormat(0, len(text), background_fmt)
-            for name, token in tokens.items():
-                fmt = self.formats.get(name, self.base_format)
-                fmt.setBackground(background_fmt.background())
-                self.setFormat(token.start, token.span, fmt)
+        # try:
+        #     tokens = self.grammar(text)
+        #     background_fmt = self.formats[tokens["level"].log_level.casefold()]
+        #     self.setFormat(0, len(text), background_fmt)
+        #     for name, token in tokens.items():
+        #         fmt = self.formats.get(name, self.base_format)
+        #         fmt.setBackground(background_fmt.background())
+        #         self.setFormat(token.start, token.span, fmt)
 
-        except ParseBaseException:
-            pass
+        # except ParseBaseException as e:
+        # print(f"{e=} | {e.args=}", flush=True)
+
+        if match := self.level_regex.search(text):
+            self.setFormat(0, len(text), self.formats.get(match.group("level").casefold(), self.base_format))
+
+        if match := self.line_number_regex.search(text):
+            self.setFormat(match.start("line_number"), match.end("line_number") - match.start("line_number"), self.formats["line_number"])
 
     # def highlightBlock(self, text: str) -> None:
     #     try:
@@ -266,9 +275,9 @@ class FileAppLogViewer(QWidget):
 
 class StoredAppLogViewer(QWidget):
 
-    def __init__(self, parent: Optional[PySide6.QtWidgets.QWidget] = None) -> None:
+    def __init__(self, parent: Optional[PySide6.QtWidgets.QWidget] = None, storage_handler: logging.Handler = None) -> None:
         super().__init__(parent)
-        self.storage_handler = get_main_logger().all_handlers["que_handlers"]["GidStoringHandler"]
+        self.storage_handler = storage_handler or get_main_logger().all_handlers["que_handlers"]["GidStoringHandler"]
         self.last_len = 0
         self.timer_id = None
 
@@ -290,8 +299,10 @@ class StoredAppLogViewer(QWidget):
         font: QFont = self.text_widget.font()
         font.setStyleHint(QFont.Monospace)
         font.setFamily("Consolas")
+        font.setPointSizeF(font.pointSizeF() * 1.25)
         self.text_widget.setFont(font)
-
+        self.highlighter = AppLogHighlighter()
+        self.highlighter.setDocument(self.text_widget.document())
         self.layout.addWidget(self.text_widget)
 
     @property

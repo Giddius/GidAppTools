@@ -133,7 +133,7 @@ class MetaInfo(AbstractMetaItem):
 
     @property
     def pretty_started_at(self) -> str:
-        return DatetimeFmt.STANDARD.strf(self.started_at)
+        return self.started_at.strftime(DatetimeFmt.STANDARD)
 
     def as_dict(self, pretty: bool = False) -> dict[str, Any]:
         if pretty is True:

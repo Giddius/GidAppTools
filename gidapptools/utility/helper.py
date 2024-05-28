@@ -152,13 +152,13 @@ def meta_data_from_package_name(package_name: str) -> dict[str, Any]:
 TCallable = TypeVar("TCallable", bound=Callable)
 
 
-def mark_appdir_path(func: TCallable) -> TCallable:
+def _mark_appdir_path(func: TCallable) -> TCallable:
     func._appdir_path_type = NamedMetaPath(func.__name__)
     return func
 
 
 class PathLibAppDirs:
-    mark_path = mark_appdir_path
+    mark_path = _mark_appdir_path
 
     def __init__(self,
                  appname: str,
@@ -176,31 +176,31 @@ class PathLibAppDirs:
     def authorname(self) -> Optional[str]:
         return self.platform_dirs.appauthor
 
-    @mark_appdir_path
+    @mark_path
     def user_data_dir(self) -> Path:
         return Path(self.platform_dirs.user_data_path)
 
-    @mark_appdir_path
+    @mark_path
     def user_log_dir(self) -> Path:
         return Path(self.platform_dirs.user_log_path)
 
-    @mark_appdir_path
+    @mark_path
     def user_cache_dir(self) -> Path:
         return Path(self.platform_dirs.user_cache_path)
 
-    @mark_appdir_path
+    @mark_path
     def user_config_dir(self) -> Path:
         return Path(self.platform_dirs.user_config_path)
 
-    @mark_appdir_path
+    @mark_path
     def user_state_dir(self) -> Path:
         return Path(self.platform_dirs.user_state_path)
 
-    @mark_appdir_path
+    @mark_path
     def site_data_dir(self) -> Path:
         return Path(self.platform_dirs.user_data_path)
 
-    @mark_appdir_path
+    @mark_path
     def site_config_dir(self) -> Path:
 
         return Path(self.platform_dirs.site_config_path)

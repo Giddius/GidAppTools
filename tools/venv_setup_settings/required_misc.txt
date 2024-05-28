@@ -1,3 +1,4 @@
-distinctipy[optional]~=1.2
+distinctipy
 identify[license]~=2.5
 deepmerge
+filelock

@@ -133,6 +133,27 @@ def open_folder_in_explorer(in_folder: Union[str, os.PathLike]) -> None:
             raise RuntimeError(f"Not able to open folder {in_folder.as_posix()!r}, because no known procedure for Operating System {operating_system!s}.")
 
 
+ILLEGAL_FILE_NAME_CHARS: set[str] = set("\"|%:/,.\\[]<>*?")
+
+EXTENDED_ILLEGAL_FILE_NAME_CHARS: set[str] = ILLEGAL_FILE_NAME_CHARS.union("'&§\{\};#=")
+
+
+def ensure_valid_file_stem(file_stem: str,
+                           strict: bool = False,
+                           replace_all_spaces: bool = False) -> str:
+    illegal_chars = ILLEGAL_FILE_NAME_CHARS
+    file_stem = file_stem.rstrip()
+
+    if strict is True:
+        illegal_chars = EXTENDED_ILLEGAL_FILE_NAME_CHARS
+        file_stem = file_stem.lstrip()
+
+    if replace_all_spaces is True:
+        file_stem = file_stem.replace(" ", "_")
+
+    return "".join(c for c in file_stem if c not in illegal_chars)
+
+
 # region [Main_Exec]
 if __name__ == '__main__':
     pass

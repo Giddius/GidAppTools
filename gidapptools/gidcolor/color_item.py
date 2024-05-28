@@ -42,7 +42,17 @@ except ImportError:
 
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
+
+from warnings import warn_explicit, warn
+from . import color
+
+warn(message=f"Submodule {__name__!r} is deprecated, please use submodule {color.__name__!r}.",
+     category=DeprecationWarning,
+     stacklevel=2)
+
+
 # endregion [Constants]
+
 
 INT_OR_FLOAT = Union[int, float]
 

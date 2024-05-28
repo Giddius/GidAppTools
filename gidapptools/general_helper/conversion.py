@@ -9,21 +9,20 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import re
 from enum import Flag, auto
-from typing import Any, Union, Iterable
+from typing import Any, Union, Iterable, Literal, TypeVar
 from pathlib import Path
 from datetime import timedelta
 from operator import neg, or_, pos
 from functools import reduce, total_ordering, cached_property
 from collections import defaultdict
-
+from pprint import pprint
 # * Third Party Imports --------------------------------------------------------------------------------->
-import attr
 import pyparsing as pp
 import pyparsing.common as ppc
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.errors import FlagConflictError
-from gidapptools.data.conversion_data import RAW_TIMEUNITS, STRING_TRUE_VALUES, STRING_FALSE_VALUES, FILE_SIZE_SYMBOL_DATA, NANOSECONDS_IN_SECOND, MICROSECONDS_IN_SECOND
+from gidapptools.errors import FlagConflictError, UnparsableHumanTimedelta
+from gidapptools.data.conversion_data import TimeUnit, TIMEUNITS, TIMEUNIT_NAME_MAP, STRING_TRUE_VALUES, STRING_FALSE_VALUES, FILE_SIZE_SYMBOL_DATA, NANOSECONDS_IN_SECOND, MICROSECONDS_IN_SECOND
 
 # endregion [Imports]
 
@@ -187,7 +186,7 @@ def bytes2human(n: int) -> str:
         if n >= unit:
             _out = float(n) / unit
 
-            _out = f'{sign_prefix}{_out:.1f} {unit}'
+            _out = f'{sign_prefix}{_out:.2f} {unit}'
             return _out
     _out = n
 
@@ -233,39 +232,6 @@ def ms_to_s(micro_seconds: Union[int, float], decimal_places: int = None) -> Uni
     return round(seconds, decimal_places)
 
 
-@attr.s(auto_attribs=True, auto_detect=True, frozen=True, slots=True, weakref_slot=True)
-class TimeUnit:
-    name: str = attr.ib()
-    symbol: str = attr.ib()
-    factor: float = attr.ib()
-    aliases: tuple[str] = attr.ib(converter=tuple)
-    plural: str = attr.ib()
-
-    @plural.default
-    def default_plural(self):
-        return self.name + "s"
-
-    def convert_seconds(self, in_seconds: int) -> int:
-        return int(in_seconds / self.factor)
-
-    def convert_with_rest(self, in_seconds: int) -> tuple[int, int]:
-        _amount, _rest = divmod(in_seconds, self.factor)
-
-        return int(_amount), _rest
-
-    def value_to_string(self, in_value: int, use_symbols: bool = False) -> str:
-        if use_symbols is True:
-            return f"{in_value}{self.symbol}"
-        if in_value == 1:
-            return f"{in_value} {self.name}"
-        return f"{in_value} {self.plural}"
-
-
-TIMEUNITS = sorted([TimeUnit(*item) for item in RAW_TIMEUNITS], key=lambda x: x.factor, reverse=True)
-
-TIMEUNIT_NAME_MAP = {t.name.casefold(): t for t in TIMEUNITS}
-
-
 class TimeUnits:
     __slots__ = ("_with_year",
                  "units",
@@ -303,6 +269,9 @@ class TimeUnits:
     def __getitem__(self, key: Union[int, str]) -> TimeUnit:
         if isinstance(key, int):
             return self.units[key]
+
+        if isinstance(key, str):
+            return self.full_dict[key.casefold()]
 
         return self.full_dict[key]
 
@@ -434,11 +403,12 @@ def get_timedelta_parsing_grammar() -> pp.ParserElement:
 TIMEDELTA_PARSING_GRAMMAR = get_timedelta_parsing_grammar()
 
 
-def human2timedelta(in_text: str, default: Any = timedelta()) -> timedelta:
+def human2timedelta(in_text: str) -> timedelta:
+
     try:
         tokens = TIMEDELTA_PARSING_GRAMMAR.parse_string(in_text, parse_all=True).as_dict()
-    except pp.ParseBaseException:
-        return default
+    except pp.ParseBaseException as e:
+        raise UnparsableHumanTimedelta(in_text) from e
     _raw_modifier_data = tokens.get("prefix") + tokens.get('postfix')
     if _raw_modifier_data == []:
         _raw_modifier_data = [TimedeltaConversionModifiers.POSITIVE]
@@ -448,6 +418,10 @@ def human2timedelta(in_text: str, default: Any = timedelta()) -> timedelta:
 
     raw_timedelta = timedelta(**raw_timedelta_kwargs)
     return modifiers.sign(raw_timedelta)
+
+
+def human2seconds(in_text: str) -> float:
+    return human2timedelta(in_text=in_text).total_seconds()
 
 
 def str_to_bool(in_string: str, strict: bool = False) -> bool:
@@ -473,6 +447,7 @@ def number_to_pretty(in_num: Union[int, float]) -> str:
 # region [Main_Exec]
 
 if __name__ == '__main__':
-    ...
+    import shutil
 
+    print(shutil.which("firefox"))
 # endregion [Main_Exec]

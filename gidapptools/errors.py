@@ -39,6 +39,11 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion [Constants]
 
 
+def show_basic_error_pop_up(message: str, title: str = None) -> None:
+    from tkinter import messagebox
+    messagebox.showerror(title=title or "Error", message=message)
+
+
 class GidAppToolsBaseError(Exception):
     """
     Base Exception For GidAppTools.
@@ -46,6 +51,10 @@ class GidAppToolsBaseError(Exception):
 
 
 class GidAppToolsFatalError(RuntimeError):
+    ...
+
+
+class ConversionError(GidAppToolsBaseError):
     ...
 
 
@@ -218,6 +227,19 @@ class TrailingCommentError(IniParsingError):
     ...
 
 
+class NotLoggingLevelError(GidConfigError):
+
+    def __init__(self, value, converter, section_name: str = None, entry_name: str = None, config=None) -> None:
+        self.value = value
+
+        self.converter = converter
+        self.section_name = section_name
+        self.entry_name = entry_name
+        self.config = config
+        self.msg = f"Entry {self.entry_name!r} of section {self.section_name}, of config {self.config!r} has a value ({self.value!r}) that is not a valid value of converter {self.converter!r}."
+        super().__init__(self.msg)
+
+
 class MinError(GidConfigError):
 
     def __init__(self, value, min_value, converter, section_name: str = None, entry_name: str = None, config=None) -> None:
@@ -356,6 +378,14 @@ class AppNameMissingError(BaseMetaPathsError):
 
     def __init__(self) -> None:
         self.message = "The name of the App was not found in the 'kwargs_holder' or in the env ('APP_NAME')."
+        super().__init__(self.message)
+
+
+class UnparsableHumanTimedelta(ConversionError):
+
+    def __init__(self, human_text: str) -> None:
+        self.human_text = human_text
+        self.message = f"Unable to parse the text {self.human_text!r} to a valid timedelta."
         super().__init__(self.message)
 
 

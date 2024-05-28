@@ -102,6 +102,7 @@ class AbstractLoggingStyleSection:
                  alignment: Union[LoggingSectionAlignment, str] = None) -> None:
         self.position = position
         self.width = width or self.default_width
+
         if alignment is None:
             self.alignment = self.default_alignment
         elif isinstance(alignment, str):
@@ -278,19 +279,14 @@ class PathSection(AbstractLoggingStyleSection):
 
 class LoggerNameSection(AbstractLoggingStyleSection):
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.LEFT
-    __slots__ = ("_width_cache",)
+    default_width: int = 20
+    __slots__ = tuple()
 
     def __init__(self,
                  position: int = None,
                  width: int = None,
                  alignment: Union[LoggingSectionAlignment, str] = None) -> None:
-        super().__init__(position=position, width=self.width_from_env, alignment=alignment)
-        self._width_cache: int = width or None
-
-    def width_from_env(self) -> int:
-        if self._width_cache is None:
-            self._width_cache = int(os.getenv("MAX_MODULE_NAME_LEN", "20"))
-        return self._width_cache
+        super().__init__(position=position, width=width, alignment=alignment)
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
         if record.extras.get("module", None) is not None:
@@ -300,18 +296,12 @@ class LoggerNameSection(AbstractLoggingStyleSection):
 
 class FunctionNameSection(AbstractLoggingStyleSection):
     default_alignment: LoggingSectionAlignment = LoggingSectionAlignment.LEFT
-    default_width: int = int(os.getenv("MAX_FUNC_NAME_LEN", "10"))
+    default_width: int = 20
     default_text: str = "-"
-    __slots__ = ("_width_cache",)
+    __slots__ = tuple()
 
-    def __init__(self) -> None:
-        super().__init__(width=self.width_from_env)
-        self._width_cache: int = None
-
-    def width_from_env(self) -> int:
-        if self._width_cache is None:
-            self._width_cache = int(os.getenv("MAX_FUNC_NAME_LEN", "10"))
-        return self._width_cache
+    def __init__(self, width: int = None) -> None:
+        super().__init__(width=width)
 
     def get_formated_value(self, record: "LOG_RECORD_TYPES") -> str:
         if record.funcName == "<module>":

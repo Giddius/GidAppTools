@@ -349,10 +349,10 @@ def setup_main_logger(name: str,
                       *,
                       determine_max_module_len: bool = False,
                       determine_max_func_name_len: bool = False) -> Union[logging.Logger, GidLogger]:
-    if determine_max_func_name_len:
-        os.environ["MAX_FUNC_NAME_LEN"] = str(min([max(len(i) for i in get_all_func_names(path, True)), 20]))
-    if determine_max_module_len:
-        os.environ["MAX_MODULE_NAME_LEN"] = str(min([max(len(i) for i in get_all_module_names(path)), 20]))
+    # if determine_max_func_name_len:
+    #     os.environ["MAX_FUNC_NAME_LEN"] = str(min([max(len(i) for i in get_all_func_names(path, True)), 20]))
+    # if determine_max_module_len:
+    #     os.environ["MAX_MODULE_NAME_LEN"] = str(min([max(len(i) for i in get_all_module_names(path)), 20]))
 
     handler = GidBaseStreamHandler(stream=sys.stdout)
 
@@ -390,8 +390,8 @@ def setup_main_logger_with_file_logging(name: str,
     if is_dev() is True:
         log_folder = path.parent.joinpath('logs')
 
-    os.environ["MAX_FUNC_NAME_LEN"] = str(max_func_name_length) if max_func_name_length is not None else str(min([max(len(i) for i in get_all_func_names(path, True)), 25]))
-    os.environ["MAX_MODULE_NAME_LEN"] = str(max_module_name_length) if max_module_name_length is not None else str(min([max(len(i) for i in get_all_module_names(path)), 25]))
+    # os.environ["MAX_FUNC_NAME_LEN"] = str(max_func_name_length) if max_func_name_length is not None else str(min([max(len(i) for i in get_all_func_names(path, True)), 25]))
+    # os.environ["MAX_MODULE_NAME_LEN"] = str(max_module_name_length) if max_module_name_length is not None else str(min([max(len(i) for i in get_all_module_names(path)), 25]))
 
     que = queue.Queue()
     que_handler = QueueHandler(que)
