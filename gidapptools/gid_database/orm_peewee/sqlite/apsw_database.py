@@ -24,7 +24,7 @@ from threading import RLock
 from collections.abc import Mapping, Callable
 
 # * Third Party Imports --------------------------------------------------------------------------------->
-import pp
+
 import apsw
 import peewee
 from frozendict import frozendict
@@ -220,7 +220,7 @@ class GidAPSWDatabase(APSWDatabase):
                          **dict(self.default_extensions | (extensions or {})))
 
     def init(self, database, pragmas=None, timeout=5, returning_clause=None, **kwargs):
-        pp(kwargs)
+
         super().init(database, pragmas, timeout, returning_clause, **kwargs)
         self.timeout = timeout
 
@@ -399,7 +399,6 @@ if __name__ == '__main__':
     x.setup(data_setup=run_setup)
     with x:
         print(x.execute(peewee.SQL('SELECT "Person"."name", "Country"."name" FROM "Person"  INNER JOIN "Country"  ON "Country"."id"=="Person"."country"')).fetchall())
-    pp(x.pragma_info.pragma_data)
 
 
 # endregion [Main_Exec]

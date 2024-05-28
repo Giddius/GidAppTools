@@ -79,7 +79,7 @@ from gidapptools.general_helper.string_helper import shorten_string, StringCaseC
 from gidapptools.gidapptools_qt._data.images import get_image
 from gidapptools.gidapptools_qt.layouts.sorted_layout import SortedVBoxLayout
 
-import pp
+
 import distinctipy
 from pygments import lexers
 from pygments.lexer import Lexer
@@ -269,7 +269,7 @@ class ShowFunctionResultButton(QPushButton):
         self.kwargs = kwargs
         self._text = self.function.__name__
         if kwargs:
-            self._text += " with " + ', '.join(f"{k}=>{shorten_string(repr(v),50,split_on=r'any')}" for k, v in self.kwargs.items())
+            self._text += " with " + ', '.join(f"{k}=>{shorten_string(repr(v), 50, split_on=r'any')}" for k, v in self.kwargs.items())
 
         self.setText(f"show result for {self._text}")
         self.clicked.connect(self.show_info_box)

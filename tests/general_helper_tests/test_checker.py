@@ -7,7 +7,7 @@ from pytest_lazyfixture import lazy_fixture
 from pathlib import Path
 
 from gidapptools.general_helper.checker import is_hashable
-import pp
+
 # endregion [Imports]
 
 # region [Constants]

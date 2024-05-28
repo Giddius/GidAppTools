@@ -144,9 +144,6 @@ class ClassTreeNode(Generic[CLASS_TREE_NODE_KLASS_TYPE]):
         return f'{self.__class__.__name__}(klass={self.klass!r})'
 
 
-import pp
-
-
 class ClassTree:
 
     def __init__(self, start_class: CLASS_TREE_NODE_KLASS_TYPE) -> None:
@@ -165,7 +162,7 @@ class ClassTree:
                 print("--------------------")
                 # parent_node = self.root
             parent_node.add_child_node(ClassTreeNode(child_class))
-            pp(child_class.mro())
+
             print("=============================")
 
     def draw(self, engine: str = "ASCII") -> None:
@@ -176,6 +173,7 @@ class ClassTree:
             for sub_child_node in child_node.child_nodes:
                 print(f"    │     ├─{sub_child_node.klass.__name__}")
             print("    │")
+
 
         # region [Main_Exec]
 if __name__ == '__main__':
