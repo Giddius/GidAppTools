@@ -7,22 +7,27 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
-from typing import Optional
+import logging.handlers
+from typing import Optional, NamedTuple
 from pathlib import Path
 import logging
+import math
 import re
 # * Third Party Imports --------------------------------------------------------------------------------->
 from pyparsing.exceptions import ParseBaseException
 
 # * Qt Imports --------------------------------------------------------------------------------------->
 import PySide6
-from PySide6.QtGui import QFont, QColor, QTextCharFormat, QSyntaxHighlighter
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLabel, QWidget, QGroupBox, QTextEdit, QFormLayout, QGridLayout
+from PySide6 import QtGui, QtWidgets, QtCore
+from PySide6.QtGui import QFont, QColor, QPalette, QBrush, QTextCharFormat, QSyntaxHighlighter, QPainter
+from PySide6.QtCore import Qt, Slot, Signal, QSize
+from PySide6.QtWidgets import QLabel, QWidget, QStyle, QApplication, QStyleOption, QStyleOptionViewItem, QSizePolicy, QGroupBox, QTextEdit, QFormLayout, QStyledItemDelegate, QGridLayout, QPushButton, QTableView, QTableWidget, QTableWidgetItem, QAbstractItemView
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_logger.logger import get_main_logger
+from gidapptools.gid_logger.handler import GidStoringHandler
 from gidapptools.general_helper.conversion import bytes2human
+from gidapptools.general_helper.string_helper import StringCaseConverter, StringCase
 from gidapptools.gid_parsing.py_log_parsing import GeneralGrammar
 
 # endregion [Imports]
@@ -118,12 +123,11 @@ class AppLogHighlighter(QSyntaxHighlighter):
 
         # except ParseBaseException as e:
         # print(f"{e=} | {e.args=}", flush=True)
+        if match := self.line_number_regex.search(text):
+            self.setFormat(match.start("line_number"), match.end("line_number") - match.start("line_number"), self.formats["line_number"])
 
         if match := self.level_regex.search(text):
             self.setFormat(0, len(text), self.formats.get(match.group("level").casefold(), self.base_format))
-
-        if match := self.line_number_regex.search(text):
-            self.setFormat(match.start("line_number"), match.end("line_number") - match.start("line_number"), self.formats["line_number"])
 
     # def highlightBlock(self, text: str) -> None:
     #     try:
@@ -275,11 +279,32 @@ class FileAppLogViewer(QWidget):
 
 class StoredAppLogViewer(QWidget):
 
-    def __init__(self, parent: Optional[PySide6.QtWidgets.QWidget] = None, storage_handler: logging.Handler = None) -> None:
+    def __init__(self, logger: logging.Logger, parent: Optional[PySide6.QtWidgets.QWidget] = None, storage_handler: GidStoringHandler = None) -> None:
         super().__init__(parent)
-        self.storage_handler = storage_handler or get_main_logger().all_handlers["que_handlers"]["GidStoringHandler"]
+        self.logger = logger
+        self.storage_handler: GidStoringHandler = storage_handler or self._try_find_storage_handler()
         self.last_len = 0
         self.timer_id = None
+
+    def _try_find_storage_handler(self) -> logging.Handler:
+        logger = self.logger
+
+        while len(logger.handlers) <= 0:
+            logger = logging.getLogger(logger.name.rsplit(".", 1)[0])
+
+        all_handlers = list(logger.handlers)
+
+        for _handler in tuple(all_handlers):
+            if isinstance(_handler, logging.handlers.QueueHandler):
+                for qued_listener in _handler.listener:
+                    for qued_handler in qued_listener.handlers:
+                        all_handlers.append(qued_handler)
+
+        for handler in tuple(all_handlers):
+            if isinstance(handler, GidStoringHandler):
+                return handler
+
+        raise ValueError("no storing handler found.")
 
     def setup(self) -> "StoredAppLogViewer":
         self.setLayout(QGridLayout())
@@ -288,7 +313,7 @@ class StoredAppLogViewer(QWidget):
         self.setup_widgets()
         self.gather_content()
 
-        self.timer_id = self.startTimer(500, Qt.CoarseTimer)
+        self.timer_id = self.startTimer(int(0.5 * 1000), Qt.CoarseTimer)
 
         return self
 
@@ -304,6 +329,18 @@ class StoredAppLogViewer(QWidget):
         self.highlighter = AppLogHighlighter()
         self.highlighter.setDocument(self.text_widget.document())
         self.layout.addWidget(self.text_widget)
+
+        self.clear_button = QPushButton("Clear")
+        self.clear_button.pressed.connect(self.on_clear_pressed)
+        self.layout.addWidget(self.clear_button)
+        self.clear_button = QPushButton("Clear")
+        self.clear_button.pressed.connect(self.on_clear_pressed)
+        self.layout.addWidget(self.clear_button)
+
+    @Slot()
+    def on_clear_pressed(self, checked: bool = False):
+        self.storage_handler.clear()
+        self.gather_content()
 
     @property
     def layout(self) -> QGridLayout:
@@ -334,9 +371,305 @@ class StoredAppLogViewer(QWidget):
         if self.timer_id is not None:
             self.killTimer(self.timer_id)
         event.accept()
+
+
+class HighlightDelegate(QtWidgets.QStyledItemDelegate):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.doc = QtGui.QTextDocument(self.parent())
+        self._highlight_data: list[tuple[QtCore.QRegularExpression, QtGui.QTextCharFormat]] = []
+
+    def paint(self, painter, option, index):
+        painter.save()
+        options = QtWidgets.QStyleOptionViewItem(option)
+        self.initStyleOption(options, index)
+        self.doc.setDefaultFont(options.font)
+        self.doc.setPlainText(options.text)
+
+        palette: QPalette = options.palette
+
+        bkgrnd_color = index.data(Qt.ItemDataRole.BackgroundRole)
+        if bkgrnd_color:
+
+            palette.setColor(QPalette.ColorRole.Base, bkgrnd_color.color())
+
+        foreground_color = index.data(Qt.ItemDataRole.ForegroundRole)
+        if foreground_color:
+            palette.setColor(QPalette.ColorRole.Text, foreground_color.color())
+
+        self.apply_highlight()
+        options.text = ""
+        style = QtWidgets.QApplication.style() if options.widget is None else options.widget.style()
+        style.drawControl(QtWidgets.QStyle.CE_ItemViewItem, options, painter)
+
+        ctx = QtGui.QAbstractTextDocumentLayout.PaintContext()
+        if option.state & QtWidgets.QStyle.State_Selected:
+            ctx.palette.setColor(QtGui.QPalette.Text, option.palette.color(
+                QtGui.QPalette.Active, QtGui.QPalette.HighlightedText))
+        else:
+            ctx.palette.setColor(QtGui.QPalette.Text, option.palette.color(
+                QtGui.QPalette.Active, QtGui.QPalette.Text))
+
+        textRect = style.subElementRect(
+            QtWidgets.QStyle.SE_ItemViewItemText, options)
+
+        if index.column() != 0:
+            textRect.adjust(5, 0, 0, 0)
+
+        the_constant = 4
+        margin = (option.rect.height() - options.fontMetrics.height()) // 2
+        margin = margin - the_constant
+        textRect.setTop(textRect.top() + margin)
+
+        painter.translate(textRect.topLeft())
+        painter.setClipRect(textRect.translated(-textRect.topLeft()))
+        self.doc.documentLayout().draw(painter, ctx)
+
+        painter.restore()
+
+    def apply_highlight(self):
+        for regex, fmt in self._highlight_data:
+            cursor = QtGui.QTextCursor(self.doc)
+            cursor.beginEditBlock()
+            highlightCursor = QtGui.QTextCursor(self.doc)
+            while not highlightCursor.isNull() and not highlightCursor.atEnd():
+                highlightCursor = self.doc.find(regex, highlightCursor)
+                if not highlightCursor.isNull():
+                    highlightCursor.mergeCharFormat(fmt)
+            cursor.endEditBlock()
+
+    def add_format_item(self, regex: QtCore.QRegularExpression, fmt: QtGui.QTextFormat) -> None:
+        self._highlight_data.append((regex, fmt))
+
+    def copy(self, parent=None) -> "HighlightDelegate":
+        new_highlight_delegate = self.__class__(parent)
+
+        new_highlight_delegate._highlight_data = list(self._highlight_data)
+
+        return new_highlight_delegate
+
+
+class ColumnDataItem:
+
+    __slots__ = ("_attr_name",
+                 "_display_name",
+                 "_alignment",
+                 "_delegate")
+
+    def __init__(self,
+                 attr_name: str,
+                 display_name: str | None = None,
+                 alignment: Qt.AlignmentFlag = None,
+                 delegate: QStyledItemDelegate | None = None) -> None:
+        self._attr_name = attr_name
+        self._display_name = display_name if display_name is not None else self._get_auto_display_name()
+        self._alignment = alignment
+        self._delegate = delegate
+
+    @property
+    def attr_name(self) -> str:
+        return self._attr_name
+
+    @property
+    def display_name(self) -> str:
+        return self._display_name
+
+    @property
+    def alignment(self) -> Qt.AlignmentFlag | None:
+        return self._alignment
+
+    @property
+    def delegate(self) -> QStyledItemDelegate | None:
+        return self._delegate
+
+    def _get_auto_display_name(self) -> str:
+        return StringCaseConverter.convert_to(self.attr_name, StringCase.TITLE)
+
+
+def get_date_style_delegate(parent=None):
+    highlight_delegate = HighlightDelegate(parent)
+
+    date_regex = QtCore.QRegularExpression(r"\d+\-\d+\-\d+")
+
+    date_fmt = QtGui.QTextCharFormat()
+
+    date_fmt.setForeground(QApplication.palette().dark())
+    date_fmt.setFontWeight(500)
+
+    highlight_delegate.add_format_item(date_regex, date_fmt)
+
+    time_regex = QtCore.QRegularExpression(r"\d+\:\d+\:\d+\.\d*")
+
+    time_fmt = QtGui.QTextCharFormat()
+    QApplication.style
+    time_fmt.setForeground(QApplication.palette().placeholderText())
+
+    time_fmt.setFontUnderline(True)
+
+    highlight_delegate.add_format_item(time_regex, time_fmt)
+
+    return highlight_delegate
+
+
+# _DATE_STYLE_DELEGATE = get_date_style_delegate()
+
+
+def get_message_style_delegate(parent=None):
+    highlight_delegate = HighlightDelegate(parent)
+
+    string_regex = QtCore.QRegularExpression(r"(?P<quotes>\'|\").*?(?P=quotes)")
+
+    string_fmt = QtGui.QTextCharFormat()
+
+    string_fmt.setForeground(QApplication.palette().link())
+
+    string_fmt.setFontItalic(True)
+
+    highlight_delegate.add_format_item(string_regex, string_fmt)
+
+    return highlight_delegate
+
+
+class StoredAppLogTableViewer(StoredAppLogViewer):
+
+    def __init__(self,
+                 logger: logging.Logger,
+                 parent=None,
+                 storage_handler: GidStoringHandler = None) -> None:
+        super().__init__(parent=parent, logger=logger, storage_handler=storage_handler)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.MinimumExpanding)
+
+        self.error_background_color = QColor(Qt.GlobalColor.red)
+        self.error_background_color.setAlpha(50)
+
+        self.critical_background_color = QColor.fromRgb(255, 165, 0)
+        self.critical_background_color.setAlpha(50)
+
+        self.warning_background_color = QColor(Qt.GlobalColor.blue)
+        self.warning_background_color.setAlpha(50)
+
+        self.debug_background_color = QColor(Qt.GlobalColor.gray)
+        self.debug_background_color.setAlpha(50)
+
+        self.debug_foreground_color = QColor(Qt.GlobalColor.darkGray)
+
+    def _get_color_map(self):
+        return {"background": {"error": ...,
+                               "critical": ...,
+                               "warning": ...,
+                               "info": ...,
+                               "debug": ...},
+                "foregorund": {"error": ...}}
+
+    def setup_widgets(self):
+        self.table_widget = QTableWidget(self)
+
+        self.column_data = (ColumnDataItem(attr_name="asctime"),
+                            ColumnDataItem(attr_name="levelname", display_name="Level Name", alignment=Qt.AlignmentFlag.AlignCenter),
+                            ColumnDataItem(attr_name="name", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                            ColumnDataItem(attr_name="lineno", display_name="Line Number", alignment=Qt.AlignmentFlag.AlignCenter),
+                            ColumnDataItem(attr_name="funcName", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                            ColumnDataItem(attr_name="message", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter))
+
+        self.table_widget.horizontalHeader().setStretchLastSection(True)
+        self.table_widget.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.table_widget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table_widget.setColumnCount(len(self.column_data))
+        self.table_widget.setHorizontalHeaderLabels([item.display_name for item in self.column_data])
+        self.table_widget.horizontalHeader().setMinimumSectionSize(100)
+        self.table_widget.verticalHeader().setMinimumSectionSize(25)
+        self.table_widget.setWordWrap(False)
+        self.table_widget.setTextElideMode(Qt.TextElideMode.ElideNone)
+        for column, column_data in enumerate(self.column_data):
+            if column_data.delegate is not None:
+                column_data.delegate.setParent(self.table_widget)
+                self.table_widget.setItemDelegateForColumn(column, column_data.delegate)
+
+        font: QFont = self.table_widget.font()
+        font.setStyleHint(QFont.Monospace)
+        font.setFamily("Consolas")
+        font.setPointSizeF(font.pointSizeF() * 1.25)
+        self.table_widget.setFont(font)
+
+        self.layout.addWidget(self.table_widget)
+
+        self.clear_button = QPushButton("Clear")
+        self.clear_button.pressed.connect(self.on_clear_pressed)
+        self.layout.addWidget(self.clear_button)
+
+    def gather_content(self):
+        if len(self.storage_handler) != self.table_widget.rowCount():
+            self.table_widget.clearContents()
+
+            all_messages = list(self.storage_handler.get_all_messages(formatted=True))
+
+            h_scroll_value = self.table_widget.horizontalScrollBar().value()
+
+            self.table_widget.setRowCount(len(all_messages))
+
+            for row, msg in enumerate(all_messages):
+
+                for column, column_data in enumerate(self.column_data):
+                    if column_data.attr_name == "asctime":
+                        item = QTableWidgetItem(self.storage_handler.formatter.formatTime(msg))
+
+                    elif column_data.attr_name == "message":
+                        item = QTableWidgetItem(msg.message + (f"\n{msg.exc_text}" if msg.exc_text else ""))
+                    else:
+                        value = getattr(msg, column_data.attr_name)
+
+                        text = "" if value is None else str(value)
+
+                        item = QTableWidgetItem(text)
+
+                    if column_data.alignment is not None:
+                        item.setTextAlignment(column_data.alignment)
+
+                    _pathname = Path(msg.pathname).resolve()
+                    if msg.exc_text:
+                        item.setToolTip(f"{_pathname.as_posix()!r}\n\n{msg.exc_text}")
+
+                    else:
+                        item.setToolTip(f"{_pathname.as_posix()!r}")
+
+                    match msg.levelname.casefold():
+                        case "error":
+
+                            item.setBackground(self.error_background_color)
+
+                        case "critical":
+
+                            item.setBackground(self.critical_background_color)
+
+                        case "warning" | "warn":
+
+                            item.setBackground(self.warning_background_color)
+
+                        case "debug":
+
+                            item.setBackground(self.debug_background_color)
+
+                            item.setForeground(self.debug_foreground_color)
+
+                        case "info":
+                            pass
+
+                    self.table_widget.setItem(row, column, item)
+                if msg.exc_text:
+                    self.table_widget.resizeRowToContents(row)
+                    # self.table_widget.setRowHeight(row, self.table_widget.fontMetrics().h)
+
+            self.table_widget.verticalScrollBar().setValue(self.table_widget.verticalScrollBar().maximum())
+            self.table_widget.horizontalScrollBar().setValue(h_scroll_value)
+
+            self.last_len = self.table_widget.rowCount()
+
+            if self.table_widget.rowCount() > 0:
+                self.table_widget.resizeColumnsToContents()
+                self.table_widget.resizeRowsToContents()
+
+
 # region [Main_Exec]
-
-
 if __name__ == '__main__':
     pass
 

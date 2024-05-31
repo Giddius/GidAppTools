@@ -9,13 +9,15 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import re
 import logging
+from time import perf_counter
+from threading import Lock, RLock
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Union, Literal, Callable
 from pathlib import Path
 from datetime import datetime, timezone
 from collections import deque
 from logging.handlers import BaseRotatingHandler
-
+from frozendict import frozendict
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.conversion import human2bytes
 from gidapptools.general_helper.regex.datetime_regex import datetime_format_to_regex
@@ -189,6 +191,13 @@ class GidStoringHandler(logging.Handler):
 
     def __init__(self, max_storage_size: int = None) -> None:
         super().__init__()
+        self.emit_lock = RLock()
+        self._callbacks: dict[str, list[Callable[["LOG_RECORD_TYPES"], None]]] = {"ALL": [],
+                                                                                  "DEBUG": [],
+                                                                                  "INFO": [],
+                                                                                  "WARNING": [],
+                                                                                  "CRITICAL": [],
+                                                                                  "ERROR": []}
         self.debug_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
         self.info_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
         self.warning_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
@@ -196,43 +205,107 @@ class GidStoringHandler(logging.Handler):
         self.error_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
         self.other_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
 
-        self.table = {'CRITICAL': self.critical_messages,
-                      'FATAL': self.critical_messages,
-                      'ERROR': self.error_messages,
-                      'WARN': self.warning_messages,
-                      'WARNING': self.warning_messages,
-                      'INFO': self.info_messages,
-                      'DEBUG': self.debug_messages,
-                      "OTHER": self.other_messages}
+        self._all_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
+
+        self.table = frozendict({'CRITICAL': self.critical_messages,
+                                 'FATAL': self.critical_messages,
+                                 'ERROR': self.error_messages,
+                                 'WARN': self.warning_messages,
+                                 'WARNING': self.warning_messages,
+                                 'INFO': self.info_messages,
+                                 'DEBUG': self.debug_messages,
+                                 "OTHER": self.other_messages})
+
+    @property
+    def all_deques(self) -> tuple["LOG_DEQUE_TYPE"]:
+        # dupicates = {"FATAL", "WARN"}
+        return tuple({k: v for k, v in self.table.items() if k not in {"FATAL", "WARN"}}.values())
+        # _out = []
+        # for table in self.table.values():
+        #     if table not in _out:
+        #         _out.append(table)
+
+        # return tuple(_out)
+
+    def add_callback(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], callback: Callable[["LOG_RECORD_TYPES"], None]):
+        callback_list = self._callbacks[typus]
+        if callback not in callback_list:
+            callback_list.append(callback)
+
+    def remove_callback(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], callback: Callable[["LOG_RECORD_TYPES"], None]):
+        try:
+            self._callbacks[typus].remove(callback)
+        except ValueError:
+            pass
 
     def set_max_storage_size(self, max_storage_size: int = None):
         for store in self.table.values():
             store.maxlen = max_storage_size
 
     def emit(self, record: "LOG_RECORD_TYPES") -> None:
+        with self.emit_lock:
+            target = self.table.get(record.levelname, self.other_messages)
 
-        target = self.table.get(record.levelname, self.other_messages)
+            target.append(record)
 
-        target.append(record)
+            self._all_messages.append(record)
+
+            for callback in self._callbacks.get("ALL", []):
+                callback(record)
+
+            typus = record.levelname.upper()
+            if typus == "WARN":
+                typus = "WARNING"
+
+            if typus == "FATAL":
+                typus = "CRITICAL"
+
+            for callback in self._callbacks.get(typus, []):
+                callback(record)
 
     def get_stored_messages(self) -> dict[str, tuple["LOG_RECORD_TYPES"]]:
-        _out = {}
-        for level, store in self.table.items():
-            _out[level] = tuple(store)
 
-        return _out
+        return {k: tuple(v) for k, v in self.table.items() if k not in {"FATAL", "WARN"}}
+        # _out = {}
+        # for level, store in self.table.items():
+        #     if level == "FATAL":
+        #         level = "CRITICAL"
+        #     elif level == "WARN":
+        #         level = "WARNING"
+        #     _out[level] = tuple(store)
+
+        # return _out
+
+    def get_all_messages(self, formatted: bool = False) -> tuple["LOG_RECORD_TYPES"]:
+        with self.emit_lock:
+            all_messages = tuple(self._all_messages)
+            if formatted is True:
+                list(self.format(r) for r in all_messages)
+
+            return all_messages
 
     def get_formated_messages(self) -> dict[str, tuple[str]]:
         _out = {}
         for level, store in self.table.items():
+            if level == "FATAL":
+                level = "CRITICAL"
+            elif level == "WARN":
+                level = "WARNING"
             _out[level] = tuple(self.format(r) for r in store)
         return _out
 
     def __len__(self) -> int:
-        _out = 0
-        for store in self.table.values():
-            _out += len(store)
-        return _out
+        with self.emit_lock:
+            return len(self._all_messages)
+
+    def clear(self, typus: None | Literal["debug", "info", "warning", "critical", "error", "other"] = None):
+        if typus is not None:
+            _deque: "LOG_DEQUE_TYPE" = getattr(self, f"{typus.casefold()}_messages")
+            _deque.clear()
+
+        else:
+            for _deque in (self.debug_messages, self.info_messages, self.warning_messages, self.critical_messages, self.error_messages, self.other_messages, self._all_messages):
+                _deque.clear()
 # region [Main_Exec]
 
 
