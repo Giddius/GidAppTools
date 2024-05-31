@@ -8,7 +8,7 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import logging.handlers
-from typing import Optional, NamedTuple
+from typing import Optional, NamedTuple, Literal
 from pathlib import Path
 import logging
 import math
@@ -21,7 +21,8 @@ import PySide6
 from PySide6 import QtGui, QtWidgets, QtCore
 from PySide6.QtGui import QFont, QColor, QPalette, QBrush, QTextCharFormat, QSyntaxHighlighter, QPainter
 from PySide6.QtCore import Qt, Slot, Signal, QSize
-from PySide6.QtWidgets import QLabel, QWidget, QStyle, QApplication, QStyleOption, QStyleOptionViewItem, QSizePolicy, QGroupBox, QTextEdit, QFormLayout, QStyledItemDelegate, QGridLayout, QPushButton, QTableView, QTableWidget, QTableWidgetItem, QAbstractItemView
+from PySide6.QtWidgets import (QLabel, QWidget, QStyle, QApplication, QFrame, QStyleOption, QStyleOptionViewItem, QComboBox, QSizePolicy, QGroupBox,
+                               QTextEdit, QFormLayout, QStyledItemDelegate, QGridLayout, QHBoxLayout, QPushButton, QSpacerItem, QTableView, QTableWidget, QTableWidgetItem, QAbstractItemView)
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_logger.logger import get_main_logger
@@ -278,12 +279,14 @@ class FileAppLogViewer(QWidget):
 
 
 class StoredAppLogViewer(QWidget):
+    closed_signal = Signal()
 
     def __init__(self, logger: logging.Logger, parent: Optional[PySide6.QtWidgets.QWidget] = None, storage_handler: GidStoringHandler = None) -> None:
         super().__init__(parent)
         self.logger = logger
         self.storage_handler: GidStoringHandler = storage_handler or self._try_find_storage_handler()
         self.last_len = 0
+        self.last_typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"] = "ALL"
         self.timer_id = None
 
     def _try_find_storage_handler(self) -> logging.Handler:
@@ -333,9 +336,10 @@ class StoredAppLogViewer(QWidget):
         self.clear_button = QPushButton("Clear")
         self.clear_button.pressed.connect(self.on_clear_pressed)
         self.layout.addWidget(self.clear_button)
-        self.clear_button = QPushButton("Clear")
-        self.clear_button.pressed.connect(self.on_clear_pressed)
-        self.layout.addWidget(self.clear_button)
+
+    @Slot()
+    def on_level_selection_changed(self, level_text: str):
+        ...
 
     @Slot()
     def on_clear_pressed(self, checked: bool = False):
@@ -370,6 +374,8 @@ class StoredAppLogViewer(QWidget):
     def closeEvent(self, event: PySide6.QtGui.QCloseEvent) -> None:
         if self.timer_id is not None:
             self.killTimer(self.timer_id)
+
+        self.closed_signal.emit()
         event.accept()
 
 
@@ -562,6 +568,26 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
                 "foregorund": {"error": ...}}
 
     def setup_widgets(self):
+        # level_select_layout = QFrame()
+        # level_select_layout.setLayout(QHBoxLayout())
+        self.level_select_widget = QComboBox()
+        self.level_select_widget.insertItems(0, ["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"])
+        self.level_select_widget.setCurrentIndex(0)
+        self.level_select_widget.currentTextChanged.connect(self.on_level_selection_changed)
+        self.level_select_widget.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContentsOnFirstShow)
+        self.level_select_widget.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
+        self.level_select_widget.setFixedWidth(int(self.level_select_widget.sizeHint().width() * 1.2))
+        self.level_select_widget.setFixedHeight(int(self.level_select_widget.sizeHint().height() * 1.2))
+        self.level_select_widget.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        # level_select_layout.layout().addWidget(self.level_select_widget)
+        # spacer = QSpacerItem(level_select_layout.layout().sizeHint().width(), level_select_layout.layout().sizeHint().height(), QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred)
+
+        # level_select_layout.layout().addSpacerItem(spacer)
+        # level_select_layout.layout().setStretch(0, 1)
+
+        # level_select_layout.layout().setStretch(1, 10)
+
+        self.layout.addWidget(self.level_select_widget)
         self.table_widget = QTableWidget(self)
 
         self.column_data = (ColumnDataItem(attr_name="asctime"),
@@ -597,11 +623,27 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         self.clear_button.pressed.connect(self.on_clear_pressed)
         self.layout.addWidget(self.clear_button)
 
-    def gather_content(self):
-        if len(self.storage_handler) != self.table_widget.rowCount():
-            self.table_widget.clearContents()
+    @Slot()
+    def on_clear_pressed(self, checked: bool = False):
+        typus = self.level_select_widget.currentText()
+        if typus == "ALL":
+            typus = None
+        self.storage_handler.clear(typus=typus)
+        self.gather_content()
 
-            all_messages = list(self.storage_handler.get_all_messages(formatted=True))
+    @Slot()
+    def on_level_selection_changed(self, level_text: str):
+        self.gather_content(level_text.upper())
+
+    def gather_content(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"] | None = None):
+        typus = typus if typus is not None else self.last_typus
+        source = self.storage_handler.table[typus]
+
+        if typus != self.last_typus or len(source) != self.table_widget.rowCount():
+
+            self.table_widget.clearContents()
+            all_messages = list(source)
+            list(self.storage_handler.format(r) for r in source)
 
             h_scroll_value = self.table_widget.horizontalScrollBar().value()
 
@@ -663,6 +705,7 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
             self.table_widget.horizontalScrollBar().setValue(h_scroll_value)
 
             self.last_len = self.table_widget.rowCount()
+            self.last_typus = typus
 
             if self.table_widget.rowCount() > 0:
                 self.table_widget.resizeColumnsToContents()
