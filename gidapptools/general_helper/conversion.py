@@ -447,7 +447,5 @@ def number_to_pretty(in_num: Union[int, float]) -> str:
 # region [Main_Exec]
 
 if __name__ == '__main__':
-    import shutil
-
-    print(shutil.which("firefox"))
+    print(human2bytes("100kb"))
 # endregion [Main_Exec]

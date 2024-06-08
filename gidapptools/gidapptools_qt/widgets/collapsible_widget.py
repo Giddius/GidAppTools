@@ -154,6 +154,7 @@ class CollapsibleGroupBox(QGroupBox):
         self.expanded = value
         self.content.setVisible(value)
         self.setTitle(self.full_text)
+        self.update()
 
     def set_content(self, content: QWidget) -> None:
         if self.has_content is True:
@@ -165,8 +166,17 @@ class CollapsibleGroupBox(QGroupBox):
         if self.has_content is False and self.expanded is True:
             self.set_expanded(False)
 
+    def sizeHint(self) -> QSize:
+        # return super().sizeHint()
+        if self.expanded is False:
+            return super().sizeHint() + self.content.sizeHint()
+
+        else:
+            return super().sizeHint()
+
 
 # region [Main_Exec]
+
 
 if __name__ == '__main__':
     from gidapptools.gidapptools_qt.helper.misc import batch_modify_widget

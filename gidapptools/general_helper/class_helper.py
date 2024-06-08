@@ -8,10 +8,11 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import inspect
+from functools import wraps
 from typing import TYPE_CHECKING, Any, Union, Callable, Iterable
 from pathlib import Path
 from weakref import WeakSet, WeakMethod, ref
-
+from gidapptools.errors import NotUsableError
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from weakref import ReferenceType
@@ -74,7 +75,37 @@ def make_repr(instance: object, attr_names: Union[Callable, Iterable[str]] = Non
 # TODO: Unfinished
 
 
-class CachedClassProperty:
+def UNFINISHED(_obj: Any):
+
+    if hasattr(_obj, "__init__"):
+        @wraps(_obj.__init__)
+        def _inner(*args, **kwargs):
+
+            raise NotUsableError(_obj, "unfinished")
+
+        _obj.__init__ = _inner
+
+        return _obj
+
+    else:
+        @wraps(_obj)
+        def _inner(*args, **kwargs):
+
+            raise NotUsableError(_obj, "unfinished")
+
+        return _inner
+
+
+@UNFINISHED
+class ClassProperty:
+    """
+    # UNFINISHED
+
+    rewrite probably needed
+    """
+
+    # TODO: researching how others have solved this!
+
     def __init__(self, fget=None, doc=None):
         self.fget = fget
         if doc is None and fget is not None:
@@ -95,6 +126,6 @@ class CachedClassProperty:
 
 # region [Main_Exec]
 if __name__ == '__main__':
-    pass
+    print(f"{ClassProperty()=}")
 
 # endregion [Main_Exec]

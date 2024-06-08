@@ -58,6 +58,17 @@ class ConversionError(GidAppToolsBaseError):
     ...
 
 
+class NotUsableError(GidAppToolsBaseError):
+
+    def __init__(self,
+                 subject: object | type,
+                 reason: Literal["unfinished", "broken", "unknown"] | None = None) -> None:
+        self.subject = subject
+        self.reason = reason if reason is not None else "unknown"
+        self.msg = f"{self.subject!r} is not usable, reason: {self.reason!r}."
+        super().__init__(self.msg)
+
+
 class ApplicationInstanceAlreadyRunningError(GidAppToolsFatalError):
     def __init__(self, app_name: str, running_pid: int) -> None:
         self.app_name = app_name
