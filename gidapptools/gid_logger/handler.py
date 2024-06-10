@@ -193,12 +193,12 @@ class GidStoringHandler(logging.Handler):
     def __init__(self, max_storage_size: int = None) -> None:
         super().__init__()
         self.emit_lock = RLock()
-        self._callbacks: dict[str, set[Callable[["LOG_RECORD_TYPES"], None]]] = {"ALL": set(),
-                                                                                 "DEBUG": set(),
-                                                                                 "INFO": set(),
-                                                                                 "WARNING": set(),
-                                                                                 "CRITICAL": set(),
-                                                                                 "ERROR": set()}
+        self._callbacks: dict[str, set[Callable[["LOG_RECORD_TYPES" | None], None]]] = {"ALL": set(),
+                                                                                        "DEBUG": set(),
+                                                                                        "INFO": set(),
+                                                                                        "WARNING": set(),
+                                                                                        "CRITICAL": set(),
+                                                                                        "ERROR": set()}
         self.debug_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
         self.info_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
         self.warning_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
@@ -229,18 +229,18 @@ class GidStoringHandler(logging.Handler):
 
         # return tuple(_out)
 
-    def add_callback(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], callback: Callable[["LOG_RECORD_TYPES"], None]):
+    def add_callback(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], callback: Callable[["LOG_RECORD_TYPES" | None], None]):
         callback_list = self._callbacks[typus]
 
         callback_list.add(callback)
 
-    def remove_callback(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], callback: Callable[["LOG_RECORD_TYPES"], None]):
+    def remove_callback(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], callback: Callable[["LOG_RECORD_TYPES" | None], None]):
         try:
             self._callbacks[typus].remove(callback)
         except KeyError:
             pass
 
-    def send_to_callbacks(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], record: "LOG_RECORD_TYPES"):
+    def send_to_callbacks(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], record: "LOG_RECORD_TYPES" | None):
         for callback in self._callbacks.get(typus, []):
             callback(record)
 
@@ -310,12 +310,16 @@ class GidStoringHandler(logging.Handler):
             for record in records:
                 self._all_messages.remove(record)
 
+            self.send_to_callbacks(typus=typus.upper(), record=None)
+
         else:
             for _deque in (self.debug_messages, self.info_messages, self.warning_messages, self.critical_messages, self.error_messages, self.other_messages, self._all_messages):
                 _deque.clear()
 
+            self.send_to_callbacks(typus="ALL", record=None)
 
 # region [Main_Exec]
+
 
 if __name__ == '__main__':
     pass
