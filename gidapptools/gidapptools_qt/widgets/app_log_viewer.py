@@ -643,6 +643,7 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         self.level_select_widget = self._setup_level_select_widget()
         self.layout.addWidget(self.level_select_widget, 0, 0, 2, 1)
         self.table_widget = QTableWidget(self)
+        self.table_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
         self.column_data = (ColumnDataItem(attr_name="asctime"),
                             ColumnDataItem(attr_name="levelname", display_name="Level Name", alignment=Qt.AlignmentFlag.AlignCenter),
