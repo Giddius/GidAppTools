@@ -12,7 +12,7 @@ dynamic = ['version', 'description']
 requires-python = ">=3.9"
 dependencies = [
     "attrs>=22.1",
-    "frozendict>=2.3",
+    "frozendict>=2.4",
     "platformdirs>=2.6",
     "psutil>=5.9",
     "pyparsing>=3.0",
@@ -32,20 +32,20 @@ gidapptools-info = "gidapptools.cli_info:cli_show_info"
 
 [project.optional-dependencies]
 
-pyside = ["PySide6>=6.4", "pyqtgraph>=0.13", "jinja2>=3.1"]
-orm = ["peewee>=3.15", "apsw>=3.39"]
+pyside = ["PySide6>=6.7", "pyqtgraph>=0.13", "jinja2>=3.1"]
+orm = ["peewee>=3.15", "apsw>=3.46"]
 rich = ["rich>=13.1"]
 parsing = ["python-dateutil>=2.8"]
-image = ["Pillow>=9.4", "scipy>=1.10", "numpy>=1.24"]
+image = ["Pillow>=10.3", "scipy>=1.10", "numpy>=1.24"]
 all = [
-    "PySide6>=6.4",
+    "PySide6>=6.7",
     "peewee>=3.15",
-    "cython>=0.29",
+    "cython>=3.0",
     "rich>=13.1",
     "jinja2>=3.1",
     "python-dateutil>=2.8",
-    "apsw>=3.39",
-    "Pillow>=9.4",
+    "apsw>=3.46",
+    "Pillow>=10.3",
     "scipy>=1.10",
     "numpy>=1.24",
     "pyqtgraph>=0.13",

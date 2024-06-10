@@ -347,7 +347,10 @@ class StoredAppLogViewer(QWidget):
     def __init__(self, logger: logging.Logger, parent: Optional[PySide6.QtWidgets.QWidget] = None, storage_handler: GidStoringHandler = None) -> None:
         super().__init__(parent)
         self.logger = logger
-        self.storage_handler: GidStoringHandler = storage_handler or self._try_find_storage_handler()
+        if storage_handler is None:
+            self.storage_handler: GidStoringHandler = self._try_find_storage_handler()
+        else:
+            self.storage_handler: GidStoringHandler = storage_handler
         self.last_len = 0
         self.last_active_level_names: frozenset[Literal["DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"]] = frozenset(["DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"])
         self.timer_id = None
