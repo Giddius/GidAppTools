@@ -22,7 +22,7 @@ import PySide6
 from PySide6 import QtGui, QtWidgets, QtCore
 from PySide6.QtGui import QFont, QColor, QPalette, QBrush, QMouseEvent, QTextCharFormat, QSyntaxHighlighter, QPainter
 from PySide6.QtCore import Qt, Slot, Signal, QSize
-from PySide6.QtWidgets import (QLabel, QWidget, QStyle, QApplication, QFrame, QVBoxLayout, QStyleOption, QStyleOptionViewItem, QComboBox, QSizePolicy, QGroupBox,
+from PySide6.QtWidgets import (QLabel, QWidget, QStyle, QScrollBar, QApplication, QFrame, QVBoxLayout, QStyleOption, QStyleOptionViewItem, QComboBox, QSizePolicy, QGroupBox,
                                QTextEdit, QFormLayout, QStyledItemDelegate, QGridLayout, QRadioButton, QCheckBox, QHBoxLayout, QPushButton, QSpacerItem, QTableView,
                                QTableWidget, QTableWidgetItem, QAbstractItemView)
 
@@ -652,7 +652,10 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
                             ColumnDataItem(attr_name="funcName", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
                             ColumnDataItem(attr_name="message", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter))
 
-        self.table_widget.horizontalHeader().setStretchLastSection(True)
+        # self.table_widget.horizontalHeader().setStretchLastSection(True)
+        self.table_widget.setHorizontalScrollMode(self.table_widget.ScrollMode.ScrollPerPixel)
+        self.table_widget.setVerticalScrollMode(self.table_widget.ScrollMode.ScrollPerPixel)
+
         self.table_widget.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table_widget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table_widget.setColumnCount(len(self.column_data))
@@ -763,6 +766,8 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         if self.table_widget.rowCount() > 0:
             self.table_widget.resizeColumnsToContents()
             self.table_widget.resizeRowsToContents()
+
+        self.table_widget.resizeColumnsToContents()
 
 
 # region [Main_Exec]
