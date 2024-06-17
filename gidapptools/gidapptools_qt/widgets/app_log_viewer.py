@@ -755,7 +755,6 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
                 self.table_widget.setItem(row, column, item)
             if msg.exc_text:
                 self.table_widget.resizeRowToContents(row)
-                # self.table_widget.setRowHeight(row, self.table_widget.fontMetrics().h)
 
         self.table_widget.verticalScrollBar().setValue(self.table_widget.verticalScrollBar().maximum())
         self.table_widget.horizontalScrollBar().setValue(h_scroll_value)
@@ -764,6 +763,7 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         self.last_active_level_names = frozenset(active_level_names)
 
         if self.table_widget.rowCount() > 0:
+
             self.table_widget.resizeColumnsToContents()
             self.table_widget.resizeRowsToContents()
 

@@ -190,15 +190,16 @@ LOG_DEQUE_TYPE = deque["LOG_RECORD_TYPES"]
 
 class GidStoringHandler(logging.Handler):
 
-    def __init__(self, max_storage_size: int = None) -> None:
-        super().__init__()
+    def __init__(self, max_storage_size: int = None,
+                 level: int = 0) -> None:
+        super().__init__(level=level)
         self.emit_lock = RLock()
-        self._callbacks: dict[str, set[Callable[[Union["LOG_RECORD_TYPES", None]], None]]] = {"ALL": set(),
-                                                                                              "DEBUG": set(),
-                                                                                              "INFO": set(),
-                                                                                              "WARNING": set(),
-                                                                                              "CRITICAL": set(),
-                                                                                              "ERROR": set()}
+        self._callbacks: frozendict[str, set[Callable[[Union["LOG_RECORD_TYPES", None]], None]]] = frozendict({"ALL": set(),
+                                                                                                               "DEBUG": set(),
+                                                                                                               "INFO": set(),
+                                                                                                               "WARNING": set(),
+                                                                                                               "CRITICAL": set(),
+                                                                                                               "ERROR": set()})
         self.debug_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
         self.info_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
         self.warning_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
@@ -220,14 +221,8 @@ class GidStoringHandler(logging.Handler):
 
     @property
     def all_deques(self) -> tuple["LOG_DEQUE_TYPE"]:
-        # dupicates = {"FATAL", "WARN"}
-        return tuple({k: v for k, v in self.table.items() if k not in {"FATAL", "WARN"}}.values())
-        # _out = []
-        # for table in self.table.values():
-        #     if table not in _out:
-        #         _out.append(table)
 
-        # return tuple(_out)
+        return tuple({k: v for k, v in self.table.items() if k not in {"FATAL", "WARN"}}.values())
 
     def add_callback(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], callback: Callable[[Union["LOG_RECORD_TYPES", None]], None]):
         callback_list = self._callbacks[typus]
@@ -270,15 +265,6 @@ class GidStoringHandler(logging.Handler):
     def get_stored_messages(self) -> dict[str, tuple["LOG_RECORD_TYPES"]]:
 
         return {k: tuple(v) for k, v in self.table.items() if k not in {"FATAL", "WARN"}}
-        # _out = {}
-        # for level, store in self.table.items():
-        #     if level == "FATAL":
-        #         level = "CRITICAL"
-        #     elif level == "WARN":
-        #         level = "WARNING"
-        #     _out[level] = tuple(store)
-
-        # return _out
 
     def get_all_messages(self, formatted: bool = False) -> tuple["LOG_RECORD_TYPES"]:
         with self.emit_lock:

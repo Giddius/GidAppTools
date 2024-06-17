@@ -8,6 +8,7 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import os
+import time
 import inspect
 import logging
 import threading
@@ -115,7 +116,12 @@ gid_log_record_factory = GidLogRecordFactory()
 class GidBaseLogRecord(logging.LogRecord):
 
     def __init__(self, *args, **kwargs) -> None:
+        _nano_seconds = time.time_ns()
+        _more_exact_created_time = _nano_seconds / 1_000_000_000
         super().__init__(*args, **kwargs)
+        self.created = _more_exact_created_time
+        self.msecs = int((_nano_seconds / 1_000_000) % 1_000)
+        self.relativeCreated = (self.created - logging._startTime) * 1000
         self.extras = {}
 
 
@@ -123,6 +129,18 @@ LOG_RECORD_TYPES = Union[logging.LogRecord, GidBaseLogRecord]
 
 # region [Main_Exec]
 if __name__ == '__main__':
-    pass
+    from datetime import datetime, timezone, timedelta
+    nano_seconds = time.time_ns()
+    seconds = nano_seconds / 1_000_000_000
+
+    msecs = int((nano_seconds / 1_000_000) % 1_000)
+    print(f"{datetime.fromtimestamp(seconds).isoformat(sep=" ", timespec="milliseconds")=}")
+    stringified = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(seconds))
+
+    print(f"{nano_seconds=}")
+    print(f"{seconds=}")
+    print(f"{msecs=}")
+    print(f"{stringified=}")
+
 
 # endregion [Main_Exec]
