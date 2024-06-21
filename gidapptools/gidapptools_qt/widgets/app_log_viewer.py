@@ -689,7 +689,7 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         _level = logging._levelToName[self.storage_handler.level].upper()
         _active_level_names = ["DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"]
 
-        if _level != "NOTSET":
+        if _level in _active_level_names:
             _active_level_names = _active_level_names[_active_level_names.index(_level):]
 
         self.gather_content(_active_level_names)
