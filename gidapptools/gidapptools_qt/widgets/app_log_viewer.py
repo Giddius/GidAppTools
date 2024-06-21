@@ -681,6 +681,23 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         self.clear_button.pressed.connect(self.on_clear_pressed)
         self.layout.addWidget(self.clear_button, 3, 0, 1, 1)
 
+    def setup(self) -> Self:
+        self.setLayout(QGridLayout())
+        self.setWindowTitle("Application Log")
+
+        self.setup_widgets()
+        _level = logging._levelToName[self.storage_handler.level].upper()
+        _active_level_names = ["DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"]
+
+        if _level != "NOTSET":
+            _active_level_names = _active_level_names[_active_level_names.index(_level):]
+
+        self.gather_content(_active_level_names)
+
+        self.timer_id = self.startTimer(int(0.5 * 1000), Qt.CoarseTimer)
+
+        return self
+
     @ Slot()
     def on_clear_pressed(self, checked: bool = False):
         current_selecte_level_names = self.level_select_widget.get_activated_level_names()
