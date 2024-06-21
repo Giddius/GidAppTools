@@ -344,7 +344,10 @@ class LogLevelSelector(QGroupBox):
 class StoredAppLogViewer(QWidget):
     closed_signal = Signal()
 
-    def __init__(self, logger: logging.Logger, parent: Optional[PySide6.QtWidgets.QWidget] = None, storage_handler: GidStoringHandler = None) -> None:
+    def __init__(self,
+                 logger: logging.Logger,
+                 parent: Optional[PySide6.QtWidgets.QWidget] = None,
+                 storage_handler: GidStoringHandler = None) -> None:
         super().__init__(parent)
         self.logger = logger
         if storage_handler is None:
@@ -375,7 +378,7 @@ class StoredAppLogViewer(QWidget):
 
         raise ValueError("no storing handler found.")
 
-    def setup(self) -> Self:
+    def setup(self, initial_level: Literal["DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"] | None = None) -> Self:
         self.setLayout(QGridLayout())
         self.setWindowTitle("Application Log")
 
@@ -681,16 +684,23 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         self.clear_button.pressed.connect(self.on_clear_pressed)
         self.layout.addWidget(self.clear_button, 3, 0, 1, 1)
 
-    def setup(self) -> Self:
+    def setup(self, initial_level: Literal["DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"] | None = None) -> Self:
         self.setLayout(QGridLayout())
         self.setWindowTitle("Application Log")
 
         self.setup_widgets()
-        _level = logging._levelToName[self.storage_handler.level].upper()
+
         _active_level_names = ["DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"]
 
-        if _level in _active_level_names:
-            _active_level_names = _active_level_names[_active_level_names.index(_level):]
+        if initial_level is not None and initial_level in _active_level_names:
+            _active_level_names = _active_level_names[_active_level_names.index(initial_level):]
+
+            for _lvl_name, _checkbox in self.level_select_widget._level_widgets.items():
+                if _lvl_name not in _active_level_names:
+                    _checkbox.setChecked(False)
+
+                else:
+                    _checkbox.setChecked(True)
 
         self.gather_content(_active_level_names)
 
