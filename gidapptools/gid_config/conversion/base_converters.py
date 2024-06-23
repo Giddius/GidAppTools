@@ -158,8 +158,9 @@ class FloatConfigValueConverter(ConfigValueConverter):
         return str(value)
 
     def to_python_value(self, value: str) -> Union[float, None]:
-        if value is None:
+        if value is None or value.strip() == "":
             return None
+
         return float(value)
 
 

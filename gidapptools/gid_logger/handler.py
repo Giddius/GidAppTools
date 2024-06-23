@@ -190,7 +190,8 @@ LOG_DEQUE_TYPE = deque["LOG_RECORD_TYPES"]
 
 class GidStoringHandler(logging.Handler):
 
-    def __init__(self, max_storage_size: int = None,
+    def __init__(self,
+                 max_storage_size: int = 500,
                  level: int = 0) -> None:
         super().__init__(level=level)
         self.emit_lock = RLock()
@@ -244,23 +245,16 @@ class GidStoringHandler(logging.Handler):
             store.maxlen = max_storage_size
 
     def emit(self, record: "LOG_RECORD_TYPES") -> None:
-        with self.emit_lock:
-            target = self.table.get(record.levelname, self.other_messages)
+        self.format(record=record)
+        self.table.get(record.levelname, self.other_messages).append(record)
 
-            target.append(record)
+        self._all_messages.append(record)
 
-            self._all_messages.append(record)
+        self.send_to_callbacks(typus="ALL", record=record)
 
-            self.send_to_callbacks(typus="ALL", record=record)
+        typus = re.sub(r"^(FATAL)|(WARN)$", lambda m: "CRITICAL" if m.group() == "FATAL" else "WARNING", record.levelname.upper())
 
-            typus = record.levelname.upper()
-            if typus == "WARN":
-                typus = "WARNING"
-
-            if typus == "FATAL":
-                typus = "CRITICAL"
-
-            self.send_to_callbacks(typus=typus, record=record)
+        self.send_to_callbacks(typus=typus, record=record)
 
     def get_stored_messages(self) -> dict[str, tuple["LOG_RECORD_TYPES"]]:
 
@@ -308,5 +302,6 @@ class GidStoringHandler(logging.Handler):
 
 
 if __name__ == '__main__':
-    pass
+    ...
+
 # endregion [Main_Exec]
