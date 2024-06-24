@@ -21,7 +21,7 @@ from pyparsing.exceptions import ParseBaseException
 import PySide6
 from PySide6 import QtGui, QtWidgets, QtCore
 from PySide6.QtGui import QFont, QColor, QPalette, QBrush, QMouseEvent, QTextCharFormat, QSyntaxHighlighter, QPainter
-from PySide6.QtCore import Qt, Slot, Signal, QSize
+from PySide6.QtCore import Qt, Slot, Signal, QTimerEvent, QSize
 from PySide6.QtWidgets import (QLabel, QWidget, QStyle, QScrollBar, QApplication, QFrame, QVBoxLayout, QStyleOption, QStyleOptionViewItem, QComboBox, QSizePolicy, QGroupBox,
                                QTextEdit, QFormLayout, QStyledItemDelegate, QGridLayout, QRadioButton, QCheckBox, QHBoxLayout, QPushButton, QSpacerItem, QTableView,
                                QTableWidget, QTableWidgetItem, QAbstractItemView)
@@ -796,6 +796,10 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
             self.table_widget.resizeRowsToContents()
 
         self.table_widget.resizeColumnsToContents()
+
+    def timerEvent(self, event: QTimerEvent) -> None:
+        event.accept()
+        self.gather_content(active_level_names=self.level_select_widget.get_activated_level_names())
 
 
 # region [Main_Exec]
