@@ -665,7 +665,7 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         self.table_widget.setHorizontalHeaderLabels([item.display_name for item in self.column_data])
         self.table_widget.horizontalHeader().setMinimumSectionSize(100)
         self.table_widget.verticalHeader().setMinimumSectionSize(25)
-        self.table_widget.horizontalHeader().setSectionResizeMode(len(self.column_data) - 1, self.table_widget.horizontalHeader().ResizeMode.Stretch)
+        # self.table_widget.horizontalHeader().setSectionResizeMode(len(self.column_data) - 1, self.table_widget.horizontalHeader().ResizeMode.Stretch)
         self.table_widget.setWordWrap(False)
         self.table_widget.setTextElideMode(Qt.TextElideMode.ElideNone)
         for column, column_data in enumerate(self.column_data):
