@@ -194,7 +194,7 @@ class GidStoringHandler(logging.Handler):
                  max_storage_size: int = 500,
                  level: int = 0) -> None:
         super().__init__(level=level)
-        self._lock = RLock()
+
         self._callbacks: frozendict[str, set[Callable[[Union["LOG_RECORD_TYPES", None]], None]]] = frozendict({"ALL": set(),
                                                                                                                "DEBUG": set(),
                                                                                                                "INFO": set(),
@@ -222,8 +222,8 @@ class GidStoringHandler(logging.Handler):
 
     @property
     def all_deques(self) -> tuple["LOG_DEQUE_TYPE"]:
-        with self._lock:
-            return tuple({k: v for k, v in self.table.items() if k not in {"FATAL", "WARN"}}.values())
+
+        return tuple({k: v for k, v in self.table.items() if k not in {"FATAL", "WARN"}}.values())
 
     def add_callback(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], callback: Callable[[Union["LOG_RECORD_TYPES", None]], None]):
         callback_list = self._callbacks[typus]
@@ -241,35 +241,41 @@ class GidStoringHandler(logging.Handler):
             callback(record)
 
     def set_max_storage_size(self, max_storage_size: int = None):
-        with self._lock:
-            for store in self.table.values():
-                store.maxlen = max_storage_size
+        for store in self.table.values():
+            store.maxlen = max_storage_size
+
+    def handle(self, record: logging.handlers.LogRecord):
+        _out = super().handle(record)
+        self.send_to_callbacks(typus="ALL", record=record)
+
+        self.send_to_callbacks(typus=re.sub(r"^(FATAL)|(WARN)$", lambda m: "CRITICAL" if m.group() == "FATAL" else "WARNING", record.levelname.upper()), record=record)
+        return _out
 
     def emit(self, record: "LOG_RECORD_TYPES") -> None:
         self.format(record=record)
         _deque = self.table.get(record.levelname, self.other_messages)
-        with self._lock:
-            _deque.append(record)
-            self._all_messages.append(record)
+
+        _deque.append(record)
+        self._all_messages.append(record)
 
         self.send_to_callbacks(typus="ALL", record=record)
 
         self.send_to_callbacks(typus=re.sub(r"^(FATAL)|(WARN)$", lambda m: "CRITICAL" if m.group() == "FATAL" else "WARNING", record.levelname.upper()), record=record)
 
     def get_stored_messages(self) -> dict[str, tuple["LOG_RECORD_TYPES"]]:
-        with self._lock:
+        with self.lock:
             return {k: tuple(v) for k, v in self.table.items() if k not in {"FATAL", "WARN"}}
 
     def get_all_messages(self, formatted: bool = False) -> tuple["LOG_RECORD_TYPES"]:
-        with self._lock:
+        with self.lock:
             all_messages = tuple(self._all_messages)
-            if formatted is True:
-                list(self.format(r) for r in all_messages)
+        if formatted is True:
+            list(self.format(r) for r in all_messages)
 
-            return all_messages
+        return all_messages
 
     def get_formated_messages(self) -> dict[str, tuple[str]]:
-        with self._lock:
+        with self.lock:
             _out = {}
             for level, store in self.table.items():
                 if level == "FATAL":
@@ -277,28 +283,30 @@ class GidStoringHandler(logging.Handler):
                 elif level == "WARN":
                     level = "WARNING"
                 _out[level] = tuple(self.format(r) for r in store)
-            return _out
+        return _out
 
     def __len__(self) -> int:
-        with self._lock:
+        with self.lock:
             return len(self._all_messages)
 
     def clear(self, typus: None | Literal["debug", "info", "warning", "critical", "error", "other"] = None):
-        with self._lock:
-            if typus is not None:
+        if typus is not None:
+
+            with self.lock:
                 _deque: "LOG_DEQUE_TYPE" = getattr(self, f"{typus.casefold()}_messages")
                 records = tuple(_deque)
                 _deque.clear()
                 for record in records:
                     self._all_messages.remove(record)
 
-                self.send_to_callbacks(typus=typus.upper(), record=None)
+            self.send_to_callbacks(typus=typus.upper(), record=None)
 
-            else:
+        else:
+            with self.lock:
                 for _deque in (self.debug_messages, self.info_messages, self.warning_messages, self.critical_messages, self.error_messages, self.other_messages, self._all_messages):
                     _deque.clear()
 
-                self.send_to_callbacks(typus="ALL", record=None)
+            self.send_to_callbacks(typus="ALL", record=None)
 
 # region [Main_Exec]
 
