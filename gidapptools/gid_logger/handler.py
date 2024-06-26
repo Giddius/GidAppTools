@@ -194,21 +194,21 @@ class GidStoringHandler(logging.Handler):
                  max_storage_size: int = 500,
                  level: int = 0) -> None:
         super().__init__(level=level)
-
+        self._max_storage_size: int = max_storage_size
         self._callbacks: frozendict[str, set[Callable[[Union["LOG_RECORD_TYPES", None]], None]]] = frozendict({"ALL": set(),
                                                                                                                "DEBUG": set(),
                                                                                                                "INFO": set(),
                                                                                                                "WARNING": set(),
                                                                                                                "CRITICAL": set(),
                                                                                                                "ERROR": set()})
-        self.debug_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
-        self.info_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
-        self.warning_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
-        self.critical_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
-        self.error_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
-        self.other_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
+        self.debug_messages: "LOG_DEQUE_TYPE" = deque(maxlen=self._max_storage_size)
+        self.info_messages: "LOG_DEQUE_TYPE" = deque(maxlen=self._max_storage_size)
+        self.warning_messages: "LOG_DEQUE_TYPE" = deque(maxlen=self._max_storage_size)
+        self.critical_messages: "LOG_DEQUE_TYPE" = deque(maxlen=self._max_storage_size)
+        self.error_messages: "LOG_DEQUE_TYPE" = deque(maxlen=self._max_storage_size)
+        self.other_messages: "LOG_DEQUE_TYPE" = deque(maxlen=self._max_storage_size)
 
-        self._all_messages: "LOG_DEQUE_TYPE" = deque(maxlen=max_storage_size)
+        self._all_messages: "LOG_DEQUE_TYPE" = deque(maxlen=self._max_storage_size)
 
         self.table = frozendict({'CRITICAL': self.critical_messages,
                                  'FATAL': self.critical_messages,
@@ -241,8 +241,11 @@ class GidStoringHandler(logging.Handler):
             callback(record)
 
     def set_max_storage_size(self, max_storage_size: int = None):
+        if max_storage_size == self._max_storage_size:
+            return
         for store in self.table.values():
             store.maxlen = max_storage_size
+        self._max_storage_size = max_storage_size
 
     def handle(self, record: logging.handlers.LogRecord):
         _out = super().handle(record)
