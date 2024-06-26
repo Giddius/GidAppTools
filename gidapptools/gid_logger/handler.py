@@ -247,7 +247,7 @@ class GidStoringHandler(logging.Handler):
             store.maxlen = max_storage_size
         self._max_storage_size = max_storage_size
 
-    def handle(self, record: logging.handlers.LogRecord):
+    def handle(self, record: "LOG_RECORD_TYPES"):
         _out = super().handle(record)
         self.send_to_callbacks(typus="ALL", record=record)
 
