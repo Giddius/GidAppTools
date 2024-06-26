@@ -222,8 +222,8 @@ class GidStoringHandler(logging.Handler):
 
     @property
     def all_deques(self) -> tuple["LOG_DEQUE_TYPE"]:
-
-        return tuple({k: v for k, v in self.table.items() if k not in {"FATAL", "WARN"}}.values())
+        with self.lock:
+            return tuple({k: v for k, v in self.table.items() if k not in {"FATAL", "WARN"}}.values())
 
     def add_callback(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], callback: Callable[[Union["LOG_RECORD_TYPES", None]], None]):
         callback_list = self._callbacks[typus]
@@ -243,9 +243,10 @@ class GidStoringHandler(logging.Handler):
     def set_max_storage_size(self, max_storage_size: int = None):
         if max_storage_size == self._max_storage_size:
             return
-        for store in self.table.values():
-            store.maxlen = max_storage_size
-        self._max_storage_size = max_storage_size
+        with self.lock:
+            for store in self.table.values():
+                store.maxlen = max_storage_size
+            self._max_storage_size = max_storage_size
 
     def handle(self, record: "LOG_RECORD_TYPES"):
         _out = super().handle(record)
