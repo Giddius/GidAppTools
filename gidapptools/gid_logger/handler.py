@@ -257,10 +257,12 @@ class GidStoringHandler(logging.Handler):
 
     def emit(self, record: "LOG_RECORD_TYPES") -> None:
         self.format(record=record)
-        _deque = self.table.get(record.levelname, self.other_messages)
 
-        _deque.append(record)
-        self._all_messages.append(record)
+        with self.lock:
+            _deque = self.table.get(record.levelname, self.other_messages)
+
+            _deque.append(record)
+            self._all_messages.append(record)
 
         self.send_to_callbacks(typus="ALL", record=record)
 
@@ -298,7 +300,7 @@ class GidStoringHandler(logging.Handler):
 
             with self.lock:
                 _deque: "LOG_DEQUE_TYPE" = getattr(self, f"{typus.casefold()}_messages")
-                records = tuple(_deque)
+                records = tuple(_deque.copy())
                 _deque.clear()
                 for record in records:
                     self._all_messages.remove(record)
@@ -307,8 +309,13 @@ class GidStoringHandler(logging.Handler):
 
         else:
             with self.lock:
-                for _deque in (self.debug_messages, self.info_messages, self.warning_messages, self.critical_messages, self.error_messages, self.other_messages, self._all_messages):
-                    _deque.clear()
+                self.debug_messages.clear()
+                self.info_messages.clear()
+                self.warning_messages.clear()
+                self.critical_messages.clear()
+                self.error_messages.clear()
+                self.other_messages.clear()
+                self._all_messages.clear()
 
             self.send_to_callbacks(typus="ALL", record=None)
 

@@ -164,7 +164,7 @@ class RGBColor(BaseColor):
 
     @np_value.default
     def _np_value_default(self):
-        return np.asfarray(self.as_rgb_float(True, False), dtype=np.float32)
+        return np.asarray(self.as_rgb_float(True, False), dtype=np.float32)
 
     def as_rgb_float(self, include_alpha: bool = True, alpha_as_int: bool = False) -> COLOR_FLOAT_TYPE:
         _out = list(self)[:-1]
