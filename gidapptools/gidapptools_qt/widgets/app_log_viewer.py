@@ -651,13 +651,17 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         self.column_data = (ColumnDataItem(attr_name="asctime"),
                             ColumnDataItem(attr_name="levelname", display_name="Level Name", alignment=Qt.AlignmentFlag.AlignCenter),
                             ColumnDataItem(attr_name="name", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                            ColumnDataItem(attr_name="pathname", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
                             ColumnDataItem(attr_name="lineno", display_name="Line Number", alignment=Qt.AlignmentFlag.AlignCenter),
                             ColumnDataItem(attr_name="funcName", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                            ColumnDataItem(attr_name="threadName", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                            ColumnDataItem(attr_name="thread", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                            ColumnDataItem(attr_name="process", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
                             ColumnDataItem(attr_name="message", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter))
 
         # self.table_widget.horizontalHeader().setStretchLastSection(True)
-        self.table_widget.setHorizontalScrollMode(self.table_widget.ScrollMode.ScrollPerPixel)
-        self.table_widget.setVerticalScrollMode(self.table_widget.ScrollMode.ScrollPerPixel)
+        self.table_widget.setHorizontalScrollMode(self.table_widget.ScrollMode.ScrollPerItem)
+        self.table_widget.setVerticalScrollMode(self.table_widget.ScrollMode.ScrollPerItem)
 
         self.table_widget.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table_widget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -783,9 +787,22 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
                 self.table_widget.setItem(row, column, item)
             if msg.exc_text:
                 self.table_widget.resizeRowToContents(row)
-
+        self.table_widget.setHorizontalScrollMode(self.table_widget.ScrollMode.ScrollPerPixel)
+        self.table_widget.setVerticalScrollMode(self.table_widget.ScrollMode.ScrollPerPixel)
         self.table_widget.verticalScrollBar().setValue(self.table_widget.verticalScrollBar().maximum())
         self.table_widget.horizontalScrollBar().setValue(h_scroll_value)
+
+        # self.table_widget.verticalScrollBar().setRange(0, len(all_relevant_messages) * 5)
+        self.table_widget.verticalScrollBar().setSingleStep(2)
+        self.table_widget.verticalScrollBar().setPageStep(len(all_relevant_messages))
+
+        # self.table_widget.verticalScrollBar().setPageStep(len(all_relevant_messages) * 5)
+
+        # self.table_widget.horizontalScrollBar().setRange(0, len(self.column_data) * 2)
+        self.table_widget.horizontalScrollBar().setSingleStep(2)
+        self.table_widget.horizontalScrollBar().setPageStep(len(self.column_data))
+
+        # self.table_widget.horizontalScrollBar().setPageStep(len(self.column_data) * 2)
 
         self.last_len = self.table_widget.rowCount()
         self.last_active_level_names = frozenset(active_level_names)

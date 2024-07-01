@@ -113,17 +113,5 @@ def hex_to_rgb_float(in_hex: str) -> tuple[float]:
 
 # region [Main_Exec]
 if __name__ == '__main__':
-    import numpy as np
-    x = (0.0, 0.6901960784313725, 1.0)
-
-    y = rgb_to_hsv(*x)
-
-    z = ((y[0] + 0.5) - 1.0, (y[1] / 4) * 3, (y[2] / 4) * 3)
-
-    print(f"{z=}")
-    zz = hsv_to_rgb(*z)
-    print(f"{rgb_float_to_hex(zz)=}")
-
-    # x = "#00B0FF"
-    # print(f"{hex_to_rgb_float(x)=}")
+    ...
 # endregion [Main_Exec]

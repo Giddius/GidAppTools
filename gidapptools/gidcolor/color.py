@@ -17,7 +17,7 @@ import random
 from copy import copy
 from decimal import Decimal
 from enum import Enum, auto, Flag
-import scipy
+
 from gidapptools.errors import MissingOptionalDependencyError
 from gidapptools.gidcolor.misc_calculations import calculate_contrast_ratio
 from math import radians, degrees, ceil, floor, sqrt
@@ -138,9 +138,9 @@ class Color:
         self._hsl: np.ndarray
         self._hsv: np.ndarray
 
-        super().__setattr__("_rgb", np.asfarray([_clamp_between_zero_one(i) for i in rgb], dtype=np.float32))
-        super().__setattr__("_hsv", np.asfarray([_clamp_between_zero_one(i) for i in hsv], dtype=np.float32))
-        super().__setattr__("_hsl", np.asfarray([_clamp_between_zero_one(i) for i in hsl], dtype=np.float32))
+        super().__setattr__("_rgb", np.asarray([_clamp_between_zero_one(i) for i in rgb], dtype=np.float32))
+        super().__setattr__("_hsv", np.asarray([_clamp_between_zero_one(i) for i in hsv], dtype=np.float32))
+        super().__setattr__("_hsl", np.asarray([_clamp_between_zero_one(i) for i in hsl], dtype=np.float32))
 
         self.alpha: float
 

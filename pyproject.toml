@@ -37,7 +37,7 @@ pyside = ["PySide6>=6.7", "pyqtgraph>=0.13", "jinja2>=3.1"]
 orm = ["peewee>=3.15", "apsw>=3.46"]
 rich = ["rich>=13.7"]
 parsing = []
-image = ["Pillow>=10.3", "scipy>=1.10", "numpy>=1.24"]
+image = ["Pillow>=10.3", "numpy>=1.24"]
 all = [
     "PySide6>=6.7",
     "peewee>=3.15",
@@ -46,7 +46,7 @@ all = [
     "jinja2>=3.1",
     "apsw>=3.46",
     "Pillow>=10.3",
-    "scipy>=1.10",
+
     "numpy>=1.24",
     "pyqtgraph>=0.13",
 ]

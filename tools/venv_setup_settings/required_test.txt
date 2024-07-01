@@ -3,7 +3,7 @@ pytest
 pytest-cov
 pytest-datafiles
 pytest-html-reporter
-pytest-lazy-fixture
+pytest-lazy-fixtures
 pytest-metadata
 pytest-qt
 pytest-random-order

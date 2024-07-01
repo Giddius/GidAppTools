@@ -2,7 +2,7 @@
 
 import pytest
 from pytest import param
-from pytest_lazyfixture import lazy_fixture
+
 from pathlib import Path
 from gidapptools.gid_config.conversion.converter_grammar import parse_specification
 from gidapptools.errors import InvalidConverterValue

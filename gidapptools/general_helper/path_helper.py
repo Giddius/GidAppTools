@@ -135,7 +135,7 @@ def open_folder_in_explorer(in_folder: Union[str, os.PathLike]) -> None:
 
 ILLEGAL_FILE_NAME_CHARS: set[str] = set("\"|%:/,.\\[]<>*?")
 
-EXTENDED_ILLEGAL_FILE_NAME_CHARS: set[str] = ILLEGAL_FILE_NAME_CHARS.union("'&§\{\};#=")
+EXTENDED_ILLEGAL_FILE_NAME_CHARS: set[str] = ILLEGAL_FILE_NAME_CHARS.union("'&§;#=" + r"{}")
 
 
 def ensure_valid_file_stem(file_stem: str,

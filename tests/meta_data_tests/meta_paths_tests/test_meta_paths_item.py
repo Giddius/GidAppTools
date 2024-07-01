@@ -3,15 +3,15 @@ from gidapptools.meta_data.interface import AppMeta
 from pathlib import Path
 import os
 import pytest
-
+from pytest_lazy_fixtures import lf as lazy_fixture
 import platform
 
 from pytest import param
 
 
 @pytest.mark.parametrize(["in_app_meta_instance", "name", "suffix", "result"],
-                         [param(pytest.lazy_fixture("app_meta_instance"), "wuff", None, {"full_name": "wuff"}),
-                         param(pytest.lazy_fixture("app_meta_instance"), "wuff", "extra", {"full_name": "wuff_extra"})])
+                         [param(lazy_fixture("app_meta_instance"), "wuff", None, {"full_name": "wuff"}),
+                         param(lazy_fixture("app_meta_instance"), "wuff", "extra", {"full_name": "wuff_extra"})])
 def test_get_temp_dir(in_app_meta_instance: AppMeta, name: str, suffix: str, result: dict[str, object]):
     meta_paths: MetaPaths = in_app_meta_instance['meta_paths']
     new_temp_dir = meta_paths.get_new_temp_dir(suffix=suffix, name=name)

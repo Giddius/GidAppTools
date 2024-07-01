@@ -174,7 +174,8 @@ bytes2human_param_basic = [param(1, None, "1 b", id="exatly_one_byte"),
                            param(52_428_800, None, "50.0 Mb", id="50_mega_bytes")]
 
 bytes2human_param_advanced = [param(12.5, TypeError, "", id="float TypeError"),
-                              param(-1024, None, "-1.0 Kb", id="negative exactly_one_kilo_byte")]
+                              param(-1024, None, "-1.0 Kb", id="negative exactly_one_kilo_byte"),
+                              param(2952790016, None, "2.75 Gb", id="two after comma digits")]
 
 
 @ pytest.mark.parametrize("in_bytes, error, expected", bytes2human_param_basic + bytes2human_param_advanced)

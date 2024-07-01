@@ -2,7 +2,7 @@
 
 import pytest
 from pytest import param
-from pytest_lazyfixture import lazy_fixture
+from pytest_lazy_fixtures import lf as lazy_fixture
 
 from pathlib import Path
 import json

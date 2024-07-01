@@ -7,12 +7,15 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
+import importlib.util
 import os
 from typing import TYPE_CHECKING, Any, Union, Literal, Hashable, Iterable, Optional
 from pathlib import Path
 from datetime import timezone, datetime
 from contextlib import contextmanager
-
+import inspect
+import sys
+import importlib
 # * Type-Checking Imports --------------------------------------------------------------------------------->
 if TYPE_CHECKING:
     from gidapptools.general_helper.date_time import DateTimeFrame
@@ -78,13 +81,16 @@ class ApplicationInstanceAlreadyRunningError(GidAppToolsFatalError):
 
 
 class MissingOptionalDependencyError(GidAppToolsBaseError):
+    _checked_import_names: dict[str, tuple[Path, int]] = {}
 
     def __init__(self, dependency_name: str, package_name: str = None) -> None:
         self.dependency_name = dependency_name
         self.package_name = package_name
         self.msg = f"Missing optional dependency {self.dependency_name!r}"
         if self.package_name is not None:
-            self.msg += f" try installing '{self.package_name!s}[{self.dependency_name!s}]'"
+            self.msg += f", try installing by doing 'pip install -U {self.package_name!s}'"
+        elif self.package_name == self.dependency_name:
+            self.msg += f", try installing by doing 'pip install -U {self.package_name!s}[{self.dependency_name!s}]'"
         self.msg += "."
         super().__init__(self.msg)
 
@@ -93,12 +99,40 @@ class MissingOptionalDependencyError(GidAppToolsBaseError):
     def try_import(cls, package_name: str = None):
         try:
             yield
-        except ImportError as e:
+        except (ImportError, ModuleNotFoundError) as e:
             if e.path is None:
                 dependency_name = e.name
-                raise cls(dependency_name=dependency_name, package_name=package_name) from e
+                raise cls(dependency_name=dependency_name, package_name=package_name)
 
             raise e
+
+    @classmethod
+    def check_is_importable(cls, package_name: str, install_name: str | None = None):
+        if os.getenv("is_dev", "false") != "false":
+
+            _frame_info = inspect.stack()[1]
+
+            cls._checked_import_names[install_name or package_name] = (Path(_frame_info.filename).resolve(), _frame_info.lineno, inspect.getmodule(_frame_info[0]).__name__)
+        try:
+            importlib.import_module(package_name)
+
+        except (ImportError, ModuleNotFoundError) as e:
+
+            if e.path is None:
+                e.__suppress_context__ = True
+                raise cls(dependency_name=e.name, package_name=install_name or package_name)
+
+            raise e
+
+    @classmethod
+    def get_all_optional_imports(cls, package_dir: Path, package_name: str = None):
+
+        import pkgutil
+
+        for loader, module_name, is_pkg in pkgutil.walk_packages([package_dir], prefix=f"{package_name}." if package_name is not None else "", onerror=lambda x: ...):
+            ...
+
+        return cls._checked_import_names.copy()
 
 
 class FlagConflictError(GidAppToolsBaseError):

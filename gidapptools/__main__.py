@@ -11,7 +11,6 @@ from pathlib import Path
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.cli_info import cli_show_info
-
 # endregion [Imports]
 
 # region [TODO]
@@ -33,7 +32,9 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # region [Main_Exec]
 
+
 if __name__ == '__main__':
+
     cli_show_info()
 
 

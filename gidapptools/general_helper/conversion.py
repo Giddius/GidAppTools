@@ -184,9 +184,9 @@ def bytes2human(n: int) -> str:
         sign_prefix = "-"
     for unit in reversed(FILE_SIZE_REFERENCE.units):
         if n >= unit:
-            _out = float(n) / unit
+            _out = round(float(n) / unit, ndigits=2)
 
-            _out = f'{sign_prefix}{_out:.2f} {unit}'
+            _out = f'{sign_prefix}{_out} {unit}'
             return _out
     _out = n
 
@@ -447,5 +447,5 @@ def number_to_pretty(in_num: Union[int, float]) -> str:
 # region [Main_Exec]
 
 if __name__ == '__main__':
-    print(human2bytes("100kb"))
+    print(human2bytes("2.75 gb"))
 # endregion [Main_Exec]

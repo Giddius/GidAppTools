@@ -3,7 +3,7 @@
 import pytest
 from pytest import param
 from typing import TypedDict, NamedTuple, Any
-from pytest_lazyfixture import lazy_fixture
+from pytest_lazy_fixtures import lf as lazy_fixture
 from gidapptools.general_helper.timing import time_execution
 from pathlib import Path
 from gidapptools.gid_config.interface import get_config, ResolvedSection, ResolvedEntry, MissingDefaultValue
