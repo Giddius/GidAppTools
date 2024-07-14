@@ -12,6 +12,7 @@ from typing import Optional, NamedTuple, Literal, Iterable
 from pathlib import Path
 import logging
 import math
+import os
 from functools import partial
 import re
 # * Third Party Imports --------------------------------------------------------------------------------->
@@ -620,7 +621,7 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         self.critical_background_color = QColor.fromRgb(255, 165, 0)
         self.critical_background_color.setAlpha(50)
 
-        self.warning_background_color = QColor(Qt.GlobalColor.blue)
+        self.warning_background_color = QColor(Qt.GlobalColor.yellow)
         self.warning_background_color.setAlpha(50)
 
         self.debug_background_color = QColor(Qt.GlobalColor.gray)
@@ -656,7 +657,10 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
                             ColumnDataItem(attr_name="funcName", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
                             ColumnDataItem(attr_name="threadName", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
                             ColumnDataItem(attr_name="thread", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
-                            ColumnDataItem(attr_name="process", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                            # ColumnDataItem(attr_name="process", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                            # ColumnDataItem(attr_name="stack_info", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                            # ColumnDataItem(attr_name="exc_info", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                            # ColumnDataItem(attr_name="args", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
                             ColumnDataItem(attr_name="message", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter))
 
         # self.table_widget.horizontalHeader().setStretchLastSection(True)
@@ -688,6 +692,8 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         self.clear_button = QPushButton("Clear Current Logs")
         self.clear_button.pressed.connect(self.on_clear_pressed)
         self.layout.addWidget(self.clear_button, 3, 0, 1, 1)
+        self.layout.setColumnStretch(0, 0)
+        self.layout.setColumnStretch(1, 10)
 
     def setup(self, initial_level: Literal["DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"] | None = None) -> Self:
         self.setLayout(QGridLayout())
@@ -737,6 +743,9 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
 
         self.table_widget.setRowCount(len(all_relevant_messages))
 
+        common_path_prefix = os.path.commonprefix([Path(m.pathname).resolve().as_posix() for m in all_relevant_messages]).removesuffix("/")
+        if "/" in common_path_prefix:
+            common_path_prefix = "/".join(common_path_prefix.split("/")[:-1])
         for row, msg in enumerate(all_relevant_messages):
 
             for column, column_data in enumerate(self.column_data):
@@ -744,7 +753,15 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
                     item = QTableWidgetItem(self.storage_handler.formatter.formatTime(msg))
 
                 elif column_data.attr_name == "message":
-                    item = QTableWidgetItem(msg.message + (f"\n{msg.exc_text}" if msg.exc_text else ""))
+                    item = QTableWidgetItem(msg.message + (f"\n{msg.exc_text}" if msg.exc_text else "") + "    ")
+
+                elif column_data.attr_name == "pathname":
+                    resolved_pathname = Path(msg.pathname).resolve().as_posix()
+                    if resolved_pathname.startswith(common_path_prefix):
+                        resolved_pathname = resolved_pathname.replace(common_path_prefix, "...", 1)
+
+                    item = QTableWidgetItem(resolved_pathname)
+
                 else:
                     value = getattr(msg, column_data.attr_name)
 
