@@ -303,14 +303,14 @@ class GidStoringHandler(logging.Handler):
                 _deque: "LOG_DEQUE_TYPE" = getattr(self, f"{typus.casefold()}_messages")
                 records = tuple(_deque.copy())
                 _deque.clear()
-                try:
 
-                    for record in records:
+                for record in records:
+                    try:
                         _index = self._all_messages.index(record)
                         del self._all_messages[_index]
-                except Exception as e:
-                    print(f"{e=}", flush=True)
-                    self._all_messages.clear()
+                    except ValueError as e:
+                        continue
+                    # self._all_messages.clear()
 
             self.send_to_callbacks(typus=typus.upper(), record=None)
 

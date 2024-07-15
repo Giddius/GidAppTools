@@ -530,17 +530,24 @@ class ColumnDataItem:
     __slots__ = ("_attr_name",
                  "_display_name",
                  "_alignment",
-                 "_delegate")
+                 "_delegate",
+                 "_set_to_hidden")
 
     def __init__(self,
                  attr_name: str,
                  display_name: str | None = None,
                  alignment: Qt.AlignmentFlag = None,
-                 delegate: QStyledItemDelegate | None = None) -> None:
+                 delegate: QStyledItemDelegate | None = None,
+                 hidden: bool = False) -> None:
         self._attr_name = attr_name
         self._display_name = display_name if display_name is not None else self._get_auto_display_name()
         self._alignment = alignment
         self._delegate = delegate
+        self._set_to_hidden = hidden
+
+    @property
+    def set_to_hidden(self) -> bool:
+        return self._set_to_hidden
 
     @ property
     def attr_name(self) -> str:
@@ -655,12 +662,12 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
                             ColumnDataItem(attr_name="pathname", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
                             ColumnDataItem(attr_name="lineno", display_name="Line Number", alignment=Qt.AlignmentFlag.AlignCenter),
                             ColumnDataItem(attr_name="funcName", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
-                            ColumnDataItem(attr_name="threadName", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
-                            ColumnDataItem(attr_name="thread", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
-                            # ColumnDataItem(attr_name="process", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
-                            # ColumnDataItem(attr_name="stack_info", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
-                            # ColumnDataItem(attr_name="exc_info", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
-                            # ColumnDataItem(attr_name="args", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                            ColumnDataItem(attr_name="threadName", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, hidden=True),
+                            ColumnDataItem(attr_name="thread", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, hidden=True),
+                            ColumnDataItem(attr_name="process", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, hidden=True),
+                            ColumnDataItem(attr_name="stack_info", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, hidden=True),
+                            ColumnDataItem(attr_name="exc_info", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, hidden=True),
+                            ColumnDataItem(attr_name="args", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, hidden=True),
                             ColumnDataItem(attr_name="message", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter))
 
         # self.table_widget.horizontalHeader().setStretchLastSection(True)
@@ -680,6 +687,8 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
             if column_data.delegate is not None:
                 column_data.delegate.setParent(self.table_widget)
                 self.table_widget.setItemDelegateForColumn(column, column_data.delegate)
+            if column_data.set_to_hidden is True:
+                self.table_widget.horizontalHeader().setSectionHidden(column, True)
 
         font: QFont = self.table_widget.font()
         font.setStyleHint(QFont.Monospace)
@@ -715,7 +724,7 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
 
         self.gather_content(_active_level_names)
 
-        self.timer_id = self.startTimer(int(0.5 * 1000), Qt.CoarseTimer)
+        self.timer_id = self.startTimer(int(0.25 * 1000), Qt.CoarseTimer)
 
         return self
 
