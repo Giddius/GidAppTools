@@ -10,7 +10,10 @@ Soon.
 from pathlib import Path
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
-from gidapptools.cli_info import cli_show_info
+from gidapptools.cli_info import cli_show_info  # noqa: F401
+
+from gidapptools.general_helper import bytes2human_cli, human2bytes_cli  # noqa: F401
+
 # endregion [Imports]
 
 # region [TODO]
