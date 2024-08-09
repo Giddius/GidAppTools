@@ -5,7 +5,7 @@ from .conversion import bytes2human, human2bytes
 
 def bytes2human_cli():
     _parser = argparse.ArgumentParser()
-    _parser.add_argument("value", type=int, required=True)
+    _parser.add_argument("value", type=int)
 
     _arguments = _parser.parse_args()
 
@@ -19,7 +19,7 @@ def bytes2human_cli():
 def human2bytes_cli():
     _parser = argparse.ArgumentParser()
     _parser.add_argument("-s", "--strict", action=argparse._StoreTrueAction, required=False)
-    _parser.add_argument("value", type=str, required=True)
+    _parser.add_argument("value", type=str)
 
     _arguments = _parser.parse_args()
 
