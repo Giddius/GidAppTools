@@ -7,12 +7,16 @@ Soon.
 # region [Imports]
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
+import random
 import logging.handlers
+
+
 from typing import Optional, NamedTuple, Literal, Iterable
 from pathlib import Path
 import logging
 import math
 import os
+import textwrap
 from functools import partial
 import re
 # * Third Party Imports --------------------------------------------------------------------------------->
@@ -34,6 +38,13 @@ from gidapptools.general_helper.conversion import bytes2human
 from gidapptools.general_helper.string_helper import StringCaseConverter, StringCase
 from gidapptools.gid_parsing.py_log_parsing import GeneralGrammar
 
+from pygments import highlight
+from pygments.lexers import PythonLexer
+from pygments.formatters import HtmlFormatter
+from pygments.styles import get_style_by_name
+
+from pygments.style import Style as PygmentsStyle
+from pygments import token as pygments_token
 import sys
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -613,6 +624,26 @@ def get_message_style_delegate(parent=None):
     return highlight_delegate
 
 
+def _get_style_foreground_color(style: PygmentsStyle) -> str:
+
+    foreground_color = None
+
+    for possible_attr_name in ("foreground", "FOREGROUND"):
+        foreground_color = getattr(style, possible_attr_name, None)
+        if foreground_color is not None:
+            break
+
+    if foreground_color is None:
+        foreground_color = style.style_for_token(pygments_token.Token)["color"]
+
+    if foreground_color is None:
+        foreground_color = "#ffffff"
+
+    foreground_color = "#" + foreground_color.strip().removeprefix("#")
+    print(f"{foreground_color=}", flush=True)
+    return foreground_color
+
+
 class StoredAppLogTableViewer(StoredAppLogViewer):
 
     def __init__(self,
@@ -635,6 +666,16 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         self.debug_background_color.setAlpha(50)
 
         self.debug_foreground_color = QColor(Qt.GlobalColor.darkGray)
+
+        self.pygment_style = get_style_by_name("github-dark")
+        self.pygment_lexer = PythonLexer()
+        self.pygment_formatter_kwargs = {"noclasses": True,
+                                         "style": self.pygment_style,
+                                         "lineseparator": "<br>",
+                                         "prestyles": 'font-family: FiraCode Nerd Font Mono, monospace; font-weight: bold'}
+        self.pygment_formatter = HtmlFormatter(**self.pygment_formatter_kwargs)
+
+        self.setStyleSheet("QToolTip {background-color:" + self.pygment_style.background_color + "; color: " + _get_style_foreground_color(self.pygment_style) + ";}")
 
     def _get_color_map(self):
         return {"background": {"error": ...,
@@ -676,6 +717,7 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
 
         self.table_widget.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table_widget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table_widget.setAutoScroll(False)
         self.table_widget.setColumnCount(len(self.column_data))
         self.table_widget.setHorizontalHeaderLabels([item.display_name for item in self.column_data])
         self.table_widget.horizontalHeader().setMinimumSectionSize(100)
@@ -730,8 +772,8 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
 
     @ Slot()
     def on_clear_pressed(self, checked: bool = False):
-        current_selecte_level_names = self.level_select_widget.get_activated_level_names()
-        for _level_name in current_selecte_level_names:
+        current_selected_level_names = self.level_select_widget.get_activated_level_names()
+        for _level_name in current_selected_level_names:
             self.storage_handler.clear(_level_name.casefold())
         self.gather_content()
 
@@ -762,7 +804,26 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
                     item = QTableWidgetItem(self.storage_handler.formatter.formatTime(msg))
 
                 elif column_data.attr_name == "message":
-                    item = QTableWidgetItem(msg.message + (f"\n{msg.exc_text}" if msg.exc_text else "") + "    ")
+                    _msg_text = msg.message + (f"\n{msg.exc_text}" if msg.exc_text else "")
+
+                    _first_line = _msg_text.splitlines()[0]
+
+                    item = QTableWidgetItem(_first_line)
+
+                    tool_tip_raw_text = _msg_text.strip()
+
+                    if msg.levelname.casefold() == "error":
+
+                        tool_tip_raw_text = _msg_text.strip()
+                        # formatter = HtmlFormatter(**(self.pygment_formatter_kwargs | {"linenos": "inline"}))
+                        formatter = self.pygment_formatter
+
+                    else:
+                        formatter = self.pygment_formatter
+
+                    tool_tip_html_text = highlight(tool_tip_raw_text, self.pygment_lexer, formatter)
+
+                    item.setToolTip(tool_tip_html_text.replace("</span><br></pre>", "</span></pre>"))
 
                 elif column_data.attr_name == "pathname":
                     resolved_pathname = Path(msg.pathname).resolve().as_posix()
@@ -782,11 +843,9 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
                     item.setTextAlignment(column_data.alignment)
 
                 _pathname = Path(msg.pathname).resolve()
-                if msg.exc_text:
-                    item.setToolTip(f"{_pathname.as_posix()!r}\n\n{msg.exc_text}")
 
-                else:
-                    item.setToolTip(f"{_pathname.as_posix()!r}")
+                if not item.toolTip().strip():
+                    item.setToolTip(f"{_pathname.as_posix()!s}")
 
                 match msg.levelname.casefold():
                     case "error":

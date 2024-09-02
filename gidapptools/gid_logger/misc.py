@@ -81,9 +81,15 @@ class QtMessageHandler(metaclass=ProhibitiveSingletonMeta):
         _logger = None
         frame_count = 2
         _context_data = None
+
+        if all(_context_attr is not None for _context_attr in (in_context.file, in_context.function, in_context.line)):
+            _context_data = {"fn": in_context.file,
+                             "func": in_context.function,
+                             "lno": in_context.line}
+
         while _logger is None:
-            if frame_count >= 20:
-                break
+            # if frame_count >= 50:
+            #     break
             try:
                 frame = sys._getframe(frame_count)
                 if frame is None:
@@ -97,11 +103,12 @@ class QtMessageHandler(metaclass=ProhibitiveSingletonMeta):
             except AttributeError:
                 frame_count = frame_count + 1
 
-            except Exception:
+            except Exception as e:
+
                 break
         if _context_data is None:
             raise RuntimeError(f"unable to get a frame for {in_context!r}")
-        return _context_data, _logger
+        return _context_data, _logger or get_meta_logger()
 
     def modify_message(self, in_msg: str) -> str:
 

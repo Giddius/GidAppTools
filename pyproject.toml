@@ -15,9 +15,9 @@ dependencies = [
     "frozendict>=2.4.4",
     "platformdirs>=4.2.2",
     "psutil>=6.0",
-    "pyparsing>=3.1.2",
+    "pyparsing>=3.1.4",
     "tzlocal>=4.2",
-    "yarl>=1.9",
+    "yarl>=1.9.7",
     "pytz>=2024.1",
     "filelock>=3.15.4",
     "orjson>=3.10.7",
@@ -36,7 +36,7 @@ human2bytes = "gidapptools.__main__:human2bytes_cli"
 [project.optional-dependencies]
 
 pyside = ["PySide6>=6.7.2", "pyqtgraph>=0.13.7", "jinja2>=3.1.4"]
-orm = ["peewee>=3.15", "apsw>=3.46.0.1"]
+orm = ["peewee>=3.15", "apsw>=3.46.1.0"]
 rich = ["rich>=13.7.1"]
 parsing = []
 image = ["Pillow>=10.4.0", "numpy>=2.0"]

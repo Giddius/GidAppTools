@@ -447,5 +447,5 @@ def number_to_pretty(in_num: Union[int, float]) -> str:
 # region [Main_Exec]
 
 if __name__ == '__main__':
-    print(bytes2human(65536 * 4))
+    print(human2bytes("10mb"))
 # endregion [Main_Exec]

@@ -11,6 +11,7 @@ import logging.handlers
 import re
 import logging
 from time import perf_counter
+
 from threading import Lock, RLock
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Union, Literal, Callable
@@ -189,6 +190,7 @@ LOG_DEQUE_TYPE = deque["LOG_RECORD_TYPES"]
 
 
 class GidStoringHandler(logging.Handler):
+    # TODO: Redo with less deques and a way to not delete error messages except when explicitly requested
 
     def __init__(self,
                  max_storage_size: int = 500,
@@ -208,7 +210,7 @@ class GidStoringHandler(logging.Handler):
         self.error_messages: "LOG_DEQUE_TYPE" = deque(maxlen=self._max_storage_size)
         self.other_messages: "LOG_DEQUE_TYPE" = deque(maxlen=self._max_storage_size)
 
-        self._all_messages: "LOG_DEQUE_TYPE" = deque(maxlen=self._max_storage_size)
+        self._all_messages: "LOG_DEQUE_TYPE" = deque(maxlen=self._max_storage_size * 6 if self._max_storage_size else None)
 
         self.table = frozendict({'CRITICAL': self.critical_messages,
                                  'FATAL': self.critical_messages,
@@ -249,6 +251,7 @@ class GidStoringHandler(logging.Handler):
             self._max_storage_size = max_storage_size
 
     def handle(self, record: "LOG_RECORD_TYPES"):
+
         _out = super().handle(record)
         self.send_to_callbacks(typus="ALL", record=record)
 
@@ -256,6 +259,7 @@ class GidStoringHandler(logging.Handler):
         return _out
 
     def emit(self, record: "LOG_RECORD_TYPES") -> None:
+
         self.format(record=record)
 
         with self.lock:
@@ -301,16 +305,13 @@ class GidStoringHandler(logging.Handler):
             with self.lock:
 
                 _deque: "LOG_DEQUE_TYPE" = getattr(self, f"{typus.casefold()}_messages")
-                records = tuple(_deque.copy())
                 _deque.clear()
 
-                for record in records:
+                for record in [r for r in self._all_messages if r.levelname.casefold() == typus]:
                     try:
-                        _index = self._all_messages.index(record)
-                        del self._all_messages[_index]
+                        self._all_messages.remove(record)
                     except ValueError as e:
                         continue
-                    # self._all_messages.clear()
 
             self.send_to_callbacks(typus=typus.upper(), record=None)
 

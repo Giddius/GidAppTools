@@ -8,12 +8,16 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import ast
+import importlib.util
 import inspect
 import pkgutil
 from types import ModuleType
 from typing import Any, Optional
 from pathlib import Path
 from importlib import import_module
+from pprint import pprint
+
+import importlib
 from collections.abc import Iterable
 from importlib.metadata import metadata
 
@@ -265,7 +269,7 @@ class PackageInfoData:
 
     def __init__(self, module: ModuleType) -> None:
         self._sub_modules_data: dict[str, "SubModule"] = dict()
-        self._top_module_data: "TopModule" = TopModule.from_module_info(pkgutil.ModuleInfo(pkgutil.find_loader(module.__name__), module.__name__, getattr(module, "__path__", None) is not None))
+        self._top_module_data: "TopModule" = TopModule.from_module_info(pkgutil.ModuleInfo(importlib.util.find_spec(module.__name__), module.__name__, getattr(module, "__path__", None) is not None))
 
     @property
     def top_module_data(self) -> TopModule:
@@ -348,8 +352,11 @@ def print_all_sub_module_data(in_module: ModuleType, no_rich: bool = False) -> N
 
 # region [Main_Exec]
 if __name__ == '__main__':
-    from PySide6 import QtWidgets
-    import importlib.resources
-    print_all_sub_module_data(importlib.resources)
+    from PySide6 import QtWidgets, QtCore, QtGui
+
+    for member_name in get_all_sub_module_data(QtGui)[0]["member_names"]:
+        if "event" in member_name.casefold():
+            print(member_name + ",", end=" ")
+
 
 # endregion [Main_Exec]
