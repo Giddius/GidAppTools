@@ -640,7 +640,6 @@ def _get_style_foreground_color(style: PygmentsStyle) -> str:
         foreground_color = "#ffffff"
 
     foreground_color = "#" + foreground_color.strip().removeprefix("#")
-    print(f"{foreground_color=}", flush=True)
     return foreground_color
 
 
