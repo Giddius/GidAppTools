@@ -10,7 +10,7 @@ Soon.
 import random
 import logging.handlers
 
-
+from typing import TYPE_CHECKING
 from typing import Optional, NamedTuple, Literal, Iterable
 from pathlib import Path
 import logging
@@ -44,12 +44,19 @@ from pygments.formatters import HtmlFormatter
 from pygments.styles import get_style_by_name
 
 from pygments.style import Style as PygmentsStyle
+from pygments.lexer import Lexer as PygmentsLexer
+from pygments.formatter import Formatter as PygmentsFormatter
 from pygments import token as pygments_token
 import sys
+
 if sys.version_info >= (3, 11):
     from typing import Self
 else:
     from typing_extensions import Self
+
+
+if TYPE_CHECKING:
+    from gidapptools.gid_logger.records import LOG_RECORD_TYPES
 # endregion [Imports]
 
 # region [TODO]
@@ -396,8 +403,8 @@ class StoredAppLogViewer(QWidget):
 
         self.setup_widgets()
         self.gather_content()
-
-        self.timer_id = self.startTimer(int(0.5 * 1000), Qt.CoarseTimer)
+        if self.timer_id is None:
+            self.timer_id = self.startTimer(int(5 * 1000), Qt.CoarseTimer)
 
         return self
 
@@ -643,6 +650,49 @@ def _get_style_foreground_color(style: PygmentsStyle) -> str:
     return foreground_color
 
 
+class MessageTableWidgetItem(QTableWidgetItem):
+
+    def __init__(self,
+                 msg_item: "LOG_RECORD_TYPES",
+                 pygments_style: PygmentsStyle,
+                 pygments_lexer: PygmentsLexer,
+                 pygments_formatter: PygmentsFormatter,
+                 **pygment_formatter_kwargs) -> None:
+        super().__init__()
+        self.msg_item = msg_item
+        self.msg_text = self.msg_item.message + (f"\n{self.msg_item.exc_text}" if self.msg_item.exc_text else "")
+        self.pygments_style = pygments_style
+        self.pygments_lexer = pygments_lexer
+        self.pygments_formatter = pygments_formatter
+        self.pygment_formatter_kwargs = dict(pygment_formatter_kwargs)
+
+        self._tooltip_html_text: str | None = None
+
+        self.setText(self.msg_text.split("\n", 1)[0].strip())
+
+    def _create_tooltip_html_text(self) -> str:
+        tool_tip_raw_text = self.msg_text.strip()
+
+        tooltip_html_text = highlight(tool_tip_raw_text, self.pygments_lexer, self.pygments_formatter)
+
+        tooltip_html_text = tooltip_html_text.replace("</span><br></pre>", "</span></pre>")
+
+        return tooltip_html_text
+
+    def toolTip(self) -> str:
+        if self._tooltip_html_text is None:
+            self._tooltip_html_text = self._create_tooltip_html_text()
+
+        return self._tooltip_html_text
+
+    def data(self, role: int) -> PythonLexer:
+
+        if role == Qt.ItemDataRole.ToolTipRole:
+            return self.toolTip()
+
+        return super().data(role)
+
+
 class StoredAppLogTableViewer(StoredAppLogViewer):
 
     def __init__(self,
@@ -803,26 +853,7 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
                     item = QTableWidgetItem(self.storage_handler.formatter.formatTime(msg))
 
                 elif column_data.attr_name == "message":
-                    _msg_text = msg.message + (f"\n{msg.exc_text}" if msg.exc_text else "")
-
-                    _first_line = _msg_text.splitlines()[0]
-
-                    item = QTableWidgetItem(_first_line)
-
-                    tool_tip_raw_text = _msg_text.strip()
-
-                    if msg.levelname.casefold() == "error":
-
-                        tool_tip_raw_text = _msg_text.strip()
-                        # formatter = HtmlFormatter(**(self.pygment_formatter_kwargs | {"linenos": "inline"}))
-                        formatter = self.pygment_formatter
-
-                    else:
-                        formatter = self.pygment_formatter
-
-                    tool_tip_html_text = highlight(tool_tip_raw_text, self.pygment_lexer, formatter)
-
-                    item.setToolTip(tool_tip_html_text.replace("</span><br></pre>", "</span></pre>"))
+                    item = MessageTableWidgetItem(msg_item=msg, pygments_style=self.pygment_style, pygments_lexer=self.pygment_lexer, pygments_formatter=self.pygment_formatter, **self.pygment_formatter_kwargs)
 
                 elif column_data.attr_name == "pathname":
                     resolved_pathname = Path(msg.pathname).resolve().as_posix()
@@ -843,7 +874,7 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
 
                 _pathname = Path(msg.pathname).resolve()
 
-                if not item.toolTip().strip():
+                if column_data.attr_name != "message":
                     item.setToolTip(f"{_pathname.as_posix()!s}")
 
                 match msg.levelname.casefold():

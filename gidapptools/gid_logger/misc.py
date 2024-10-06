@@ -12,7 +12,7 @@ import sys
 import logging
 from typing import TYPE_CHECKING, Any
 from pathlib import Path
-
+import weakref
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.gid_logger.logger import get_logger, get_meta_logger
 
@@ -42,18 +42,24 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 class ProhibitiveSingletonMeta(type):
     _instance = None
 
+    def _unset_instance(cls, *args, **kwargs) -> None:
+        cls._instance = None
+
     def __call__(cls, *args, **kwargs):
-        if cls._instance is not None:
+        if cls._instance is not None and cls._instance() is not None:
             raise RuntimeError(f"There can only be one instance of {cls.__name__}")
-        cls._instance = super(ProhibitiveSingletonMeta, cls).__call__(*args, **kwargs)
-        return cls._instance
+        instance = super(ProhibitiveSingletonMeta, cls).__call__(*args, **kwargs)
+        cls._instance = weakref.proxy(instance, cls._unset_instance)
+
+        return instance
 
 
 class QtMessageHandler(metaclass=ProhibitiveSingletonMeta):
     received_records: list["LOG_RECORD_TYPES"] = []
     __slots__ = ("msg_split_regex",
                  "is_installed",
-                 "_old_messagehandler")
+                 "_old_messagehandler",
+                 "__weakref__")
 
     def __init__(self) -> None:
         self.msg_split_regex = re.compile(r"(?P<q_class>.*)\:\:(?P<q_method>.*)\:(?P<actual_message>.*)")

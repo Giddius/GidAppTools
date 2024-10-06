@@ -15,7 +15,7 @@ from pathlib import Path
 from datetime import datetime
 from collections import defaultdict
 from gidapptools.gid_logger.logger import get_logger
-
+import pprint
 # * Qt Imports --------------------------------------------------------------------------------------->
 from PySide6.QtGui import QMouseEvent, QPaintEvent, QResizeEvent, QStatusTipEvent, QPlatformSurfaceEvent, QInputMethodQueryEvent
 from PySide6.QtCore import QEvent, QChildEvent, QDynamicPropertyChangeEvent
@@ -170,7 +170,7 @@ class EventAnalyzer:
         return {"event": event, "std": std_data, "specific": specific_data}
 
     def _render_to_string(self, data: dict[str, Any]):
-        return pp.fmt(data)
+        return pprint.pformat(data)
 
     def analyze(self, event: QEvent) -> Optional[Union[str, dict]]:
         if self.only is not None and event.__class__.__name__ not in self.only:

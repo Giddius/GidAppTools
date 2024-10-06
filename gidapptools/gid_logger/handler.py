@@ -9,9 +9,10 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import logging.handlers
 import re
+import traceback
 import logging
 from time import perf_counter
-
+import sys
 from threading import Lock, RLock
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Union, Literal, Callable
@@ -326,6 +327,139 @@ class GidStoringHandler(logging.Handler):
                 self._all_messages.clear()
 
             self.send_to_callbacks(typus="ALL", record=None)
+
+
+class AlternativeGidStoringHandler(logging.Handler):
+
+    def __init__(self,
+                 max_storage_size: int = 100,
+                 level: int = 0) -> None:
+        super().__init__(level=level)
+        self._max_storage_size: int = max_storage_size
+        self._callbacks: frozendict[str, set[Callable[[Union["LOG_RECORD_TYPES", None]], None]]] = frozendict({"ALL": set(),
+                                                                                                               "DEBUG": set(),
+                                                                                                               "INFO": set(),
+                                                                                                               "WARNING": set(),
+                                                                                                               "CRITICAL": set(),
+                                                                                                               "ERROR": set()})
+        self._error_messages: deque[tuple[int, "LOG_RECORD_TYPES"]] = deque(maxlen=self._max_storage_size * 4)
+        self._non_error_messages: deque[tuple[int, "LOG_RECORD_TYPES"]] = deque(maxlen=self._max_storage_size)
+
+        self._current_position_number: int = 0
+
+    def _get_next_position_number(self) -> int:
+        self._current_position_number += 1
+        return self._current_position_number
+
+    def add_callback(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], callback: Callable[[Union["LOG_RECORD_TYPES", None]], None]):
+        callback_list = self._callbacks[typus]
+
+        callback_list.add(callback)
+
+    def remove_callback(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], callback: Callable[[Union["LOG_RECORD_TYPES", None]], None]):
+        try:
+            self._callbacks[typus].remove(callback)
+        except KeyError:
+            pass
+
+    def send_to_callbacks(self, typus: Literal["ALL", "DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"], record: Union["LOG_RECORD_TYPES", None]):
+        for callback in self._callbacks.get(typus, []):
+            try:
+                callback(record)
+            except Exception as error:
+                if sys.stderr:
+                    traceback.print_exception(error.__class__, error)
+
+    def set_max_storage_size(self, max_storage_size: int = None):
+        if max_storage_size == self._max_storage_size:
+            return
+        with self.lock:
+            self._max_storage_size = max_storage_size
+            self._non_error_messages = deque(self._non_error_messages, self._max_storage_size)
+
+    def handle(self, record: "LOG_RECORD_TYPES"):
+
+        _out = super().handle(record)
+        self.send_to_callbacks(typus="ALL", record=record)
+
+        self.send_to_callbacks(typus=re.sub(r"^(FATAL)|(WARN)$", lambda m: "CRITICAL" if m.group() == "FATAL" else "WARNING", record.levelname.upper()), record=record)
+        return _out
+
+    def emit(self, record: "LOG_RECORD_TYPES") -> None:
+
+        self.format(record=record)
+
+        with self.lock:
+            position_number = self._get_next_position_number()
+
+            if record.levelno == logging.ERROR:
+                _deque = self._error_messages
+
+            else:
+                _deque = self._non_error_messages
+
+            _deque.append((position_number, record))
+
+        self.send_to_callbacks(typus="ALL", record=record)
+
+        self.send_to_callbacks(typus=re.sub(r"^(FATAL)|(WARN)$", lambda m: "CRITICAL" if m.group() == "FATAL" else "WARNING", record.levelname.upper()), record=record)
+
+    def get_stored_messages(self) -> dict[str, tuple["LOG_RECORD_TYPES"]]:
+        with self.lock:
+            _messages = {"ERROR": tuple(message[1] for message in self._error_messages)}
+            for level_no, level_name in logging._levelToName.items():
+                _messages[level_name.upper()] = tuple(message[1] for message in self._non_error_messages if message[1].levelno == level_no)
+
+        return _messages
+
+    def get_all_messages(self, formatted: bool = False) -> tuple["LOG_RECORD_TYPES"]:
+        with self.lock:
+            all_messages = tuple(message[1] for message in sorted(tuple(self._non_error_messages) + tuple(self._error_messages), key=lambda x: x[0]))
+        if formatted is True:
+            list(self.format(r) for r in all_messages)
+
+        return all_messages
+
+    def get_formated_messages(self) -> dict[str, tuple[str]]:
+        with self.lock:
+            _stored_messages = self.get_stored_messages()
+            _out = {}
+
+            for key, value in _stored_messages.items():
+                _out[key] = tuple(self.format(message) for message in value)
+        return _out
+
+    def __len__(self) -> int:
+        with self.lock:
+            return len(self._non_error_messages) + len(self._error_messages)
+
+    def clear(self, typus: None | Literal["debug", "info", "warning", "critical", "error"] = None):
+        if typus is None:
+            with self.lock:
+                self._error_messages.clear()
+                self._non_error_messages.clear()
+                self._current_position_number = 0
+
+            self.send_to_callbacks(typus="ALL", record=None)
+
+        elif typus.casefold() == "error":
+            with self.lock:
+
+                self._error_messages.clear()
+
+                self.send_to_callbacks(typus=typus.upper(), record=None)
+
+        else:
+
+            with self.lock:
+
+                level_no = logging._nameToLevel[typus.upper()]
+
+                for value in tuple(i for i in self._non_error_messages if i[1].levelno == level_no):
+                    self._non_error_messages.remove(value)
+
+            self.send_to_callbacks(typus=typus.upper(), record=None)
+
 
 # region [Main_Exec]
 

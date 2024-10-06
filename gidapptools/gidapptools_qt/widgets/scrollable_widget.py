@@ -65,7 +65,7 @@ from PySide6.QtCore import (QByteArray, QCoreApplication, QDate, QDateTime, QEve
 from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient, QCursor, QFont, QFontDatabase, QFontMetrics, QGradient, QIcon, QImage,
                            QKeySequence, QLinearGradient, QPainter, QPalette, QPixmap, QRadialGradient, QTransform)
 
-from PySide6.QtWidgets import (QApplication, QScrollArea, QBoxLayout, QCheckBox, QColorDialog, QColumnView, QComboBox, QDateTimeEdit, QDialogButtonBox,
+from PySide6.QtWidgets import (QApplication, QSizePolicy, QScrollArea, QBoxLayout, QCheckBox, QColorDialog, QColumnView, QComboBox, QDateTimeEdit, QDialogButtonBox,
                                QDockWidget, QDoubleSpinBox, QFontComboBox, QFormLayout, QFrame, QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
                                QLCDNumber, QLabel, QLayout, QLineEdit, QListView, QListWidget, QMainWindow, QMenu, QMenuBar, QMessageBox,
                                QProgressBar, QProgressDialog, QPushButton, QSizePolicy, QSpacerItem, QSpinBox, QStackedLayout, QStackedWidget,
@@ -100,6 +100,8 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion [Constants]
 
 
+# INFO: Not Working
+
 class ScrollableWidget(QWidget):
 
     def __init__(self, **kwargs: "QWidgetStandardKwargsType") -> None:
@@ -107,8 +109,10 @@ class ScrollableWidget(QWidget):
         self._outer_layout: QVBoxLayout = QVBoxLayout()
         self.set_outer_Layout(self._outer_layout)
         self._inner_scroll_widget: QScrollArea = QScrollArea()
-        # self._inner_scroll_widget.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        # self._inner_scroll_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self._inner_scroll_widget.setSizeAdjustPolicy(QScrollArea.SizeAdjustPolicy.AdjustToContents)
+        self._inner_scroll_widget.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred))
+        self._inner_scroll_widget.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self._inner_scroll_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self._outer_layout.addWidget(self._inner_scroll_widget, 1)
 
     @property

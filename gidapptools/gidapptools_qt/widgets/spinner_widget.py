@@ -8,6 +8,7 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 from typing import Union
+
 from pathlib import Path
 from concurrent.futures import Future
 
@@ -20,6 +21,11 @@ from PySide6.QtWidgets import QLabel, QWidget, QPushButton, QSizePolicy, QVBoxLa
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.data.gifs import StoredGif, get_gif
 
+import sys
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 # endregion [Imports]
 
 # region [TODO]
@@ -44,7 +50,10 @@ class BusySpinnerWidget(QLabel):
     default_spinner_size: tuple[int, int] = (75, 75)
     _stop_signal = Signal(Future)
 
-    def __init__(self, parent: QWidget = None, spinner_gif: Union[QMovie, str, Path, StoredGif] = None, spinner_size: QSize = None):
+    def __init__(self,
+                 parent: QWidget = None,
+                 spinner_gif: Union[QMovie, str, Path, StoredGif] = None,
+                 spinner_size: QSize = None):
         super().__init__(parent)
         self.spinner_size = spinner_size or QSize(*self.default_spinner_size)
         self.spinner_gif_item, self.spinner_gif = self.setup_spinner_gif(spinner_gif=spinner_gif)
@@ -75,6 +84,7 @@ class BusySpinnerWidget(QLabel):
         spinner_gif.setScaledSize(self.spinner_size)
         spinner_gif.setCacheMode(QMovie.CacheAll)
         self.setMovie(spinner_gif)
+        self.setMinimumSize(self.spinner_size)
         return spinner_gif_item, spinner_gif
 
     def start(self):
@@ -85,6 +95,17 @@ class BusySpinnerWidget(QLabel):
         self.spinner_gif.stop()
         self.running = False
 
+    def __enter__(self) -> Self:
+        self.show()
+        self.start()
+        return self
+
+    def __exit__(self, *arg, **kwargs):
+        self.hide()
+        self.stop()
+
+
+# class BusyWindow(QWidget):
 
 class BusyPushButton(QPushButton):
 
