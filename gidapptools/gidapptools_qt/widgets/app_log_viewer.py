@@ -26,8 +26,8 @@ from pyparsing.exceptions import ParseBaseException
 import PySide6
 from PySide6 import QtGui, QtWidgets, QtCore
 from PySide6.QtGui import QFont, QColor, QPalette, QBrush, QMouseEvent, QTextCharFormat, QSyntaxHighlighter, QPainter
-from PySide6.QtCore import Qt, Slot, Signal, QTimerEvent, QSize
-from PySide6.QtWidgets import (QLabel, QWidget, QStyle, QScrollBar, QApplication, QFrame, QVBoxLayout, QStyleOption, QStyleOptionViewItem, QComboBox, QSizePolicy, QGroupBox,
+from PySide6.QtCore import Qt, Slot, Signal, QTimerEvent, QSize, QAbstractTableModel
+from PySide6.QtWidgets import (QLabel, QWidget, QStyle, QScrollBar, QApplication, QTableView, QFrame, QVBoxLayout, QStyleOption, QStyleOptionViewItem, QComboBox, QSizePolicy, QGroupBox,
                                QTextEdit, QFormLayout, QStyledItemDelegate, QGridLayout, QRadioButton, QCheckBox, QHBoxLayout, QPushButton, QSpacerItem, QTableView,
                                QTableWidget, QTableWidgetItem, QAbstractItemView)
 
@@ -749,8 +749,8 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         self.column_data = (ColumnDataItem(attr_name="asctime"),
                             ColumnDataItem(attr_name="levelname", display_name="Level Name", alignment=Qt.AlignmentFlag.AlignCenter),
                             ColumnDataItem(attr_name="name", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
-                            ColumnDataItem(attr_name="pathname", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
-                            ColumnDataItem(attr_name="lineno", display_name="Line Number", alignment=Qt.AlignmentFlag.AlignCenter),
+                            ColumnDataItem(attr_name="pathname", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, hidden=True),
+                            ColumnDataItem(attr_name="lineno", display_name="Line Number", alignment=Qt.AlignmentFlag.AlignCenter, hidden=True),
                             ColumnDataItem(attr_name="funcName", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
                             ColumnDataItem(attr_name="threadName", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, hidden=True),
                             ColumnDataItem(attr_name="thread", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, hidden=True),
@@ -932,6 +932,13 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
     def timerEvent(self, event: QTimerEvent) -> None:
         event.accept()
         self.gather_content(active_level_names=self.level_select_widget.get_activated_level_names())
+
+
+class LogMessageModel(QAbstractTableModel):
+
+    def __init__(self,
+                 parent: QWidget | None = None) -> None:
+        super().__init__(parent)
 
 
 # region [Main_Exec]
