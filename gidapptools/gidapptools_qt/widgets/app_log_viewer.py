@@ -25,9 +25,9 @@ from pyparsing.exceptions import ParseBaseException
 # * Qt Imports --------------------------------------------------------------------------------------->
 import PySide6
 from PySide6 import QtGui, QtWidgets, QtCore
-from PySide6.QtGui import QFont, QColor, QPalette, QBrush, QMouseEvent, QTextCharFormat, QSyntaxHighlighter, QPainter
+from PySide6.QtGui import QFont, QColor, QPalette, QTextOption, QBrush, QMouseEvent, QTextCharFormat, QSyntaxHighlighter, QPainter
 from PySide6.QtCore import Qt, Slot, Signal, QTimerEvent, QSize, QAbstractTableModel
-from PySide6.QtWidgets import (QLabel, QWidget, QStyle, QScrollBar, QApplication, QTableView, QFrame, QVBoxLayout, QStyleOption, QStyleOptionViewItem, QComboBox, QSizePolicy, QGroupBox,
+from PySide6.QtWidgets import (QLabel, QWidget, QFormLayout, QStyle, QScrollBar, QLineEdit, QScrollArea, QApplication, QTableView, QFrame, QVBoxLayout, QStyleOption, QStyleOptionViewItem, QComboBox, QSizePolicy, QGroupBox,
                                QTextEdit, QFormLayout, QStyledItemDelegate, QGridLayout, QRadioButton, QCheckBox, QHBoxLayout, QPushButton, QSpacerItem, QTableView,
                                QTableWidget, QTableWidgetItem, QAbstractItemView)
 
@@ -693,6 +693,82 @@ class MessageTableWidgetItem(QTableWidgetItem):
         return super().data(role)
 
 
+class LogMessageDetailWidget(QScrollArea):
+
+    def __init__(self,
+                 parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        self.setWidgetResizable(True)
+        self.inner_widget: QWidget | None = None
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.clear()
+
+    def show_log_message(self,
+                         log_message: Optional["LOG_RECORD_TYPES"] = None) -> None:
+        if log_message is None:
+            self.clear()
+            return
+
+        self._remove_previous_widget()
+
+        self.inner_widget = QWidget()
+        self.inner_widget.setObjectName("LogInnerWidget")
+        self.inner_widget.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
+
+        _layout = QFormLayout()
+        if log_message is None:
+            self.setLayout(_layout)
+            return
+
+        _layout.addRow("CLASSNAME: ", QLabel(log_message.__class__.__name__))
+        for attr_name in [_attr_name for _attr_name in dir(log_message) if not (_attr_name.startswith("__") and _attr_name.endswith("__"))]:
+            _value = getattr(log_message, attr_name, None)
+
+            if callable(_value):
+                continue
+
+            if attr_name.casefold() == "message":
+                _value_widget = QTextEdit(str(_value))
+                _value_widget.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
+
+                _value_widget.setWordWrapMode(QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
+                _value_widget.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+            else:
+                _value_widget = QLineEdit(str(_value))
+
+            _value_widget.setReadOnly(True)
+            _font = _value_widget.font()
+            _font.setStyleHint(QFont.StyleHint.Monospace)
+            _font.setFamily("Consolas")
+            _value_widget.setFont(_font)
+
+            # _value_widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.MinimumExpanding)
+            _layout.addRow(StringCaseConverter.convert_to(attr_name, StringCase.TITLE) + ": ", _value_widget)
+
+        _layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
+        _layout.setSizeConstraint(QFormLayout.SizeConstraint.SetNoConstraint)
+        self.inner_widget.setLayout(_layout)
+
+        self.setWidget(self.inner_widget)
+        self.setHidden(False)
+        self.resize(self.size().width(), self.sizeHint().height())
+
+    def _remove_previous_widget(self) -> None:
+        if self.inner_widget is None:
+            return
+
+        self.takeWidget()
+        self.inner_widget.deleteLater()
+        self.inner_widget = None
+
+    def clear(self) -> None:
+        self._remove_previous_widget()
+
+        self.setHidden(True)
+        self.resize(self.size().width(), 0)
+
+
 class StoredAppLogTableViewer(StoredAppLogViewer):
 
     def __init__(self,
@@ -726,6 +802,8 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
 
         self.setStyleSheet("QToolTip {background-color:" + self.pygment_style.background_color + "; color: " + _get_style_foreground_color(self.pygment_style) + ";}")
 
+        self._loaded_messages: list["LOG_RECORD_TYPES"] = []
+
     def _get_color_map(self):
         return {"background": {"error": ...,
                                "critical": ...,
@@ -748,7 +826,7 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
 
         self.column_data = (ColumnDataItem(attr_name="asctime"),
                             ColumnDataItem(attr_name="levelname", display_name="Level Name", alignment=Qt.AlignmentFlag.AlignCenter),
-                            ColumnDataItem(attr_name="name", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
+                            ColumnDataItem(attr_name="name", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, hidden=True),
                             ColumnDataItem(attr_name="pathname", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, hidden=True),
                             ColumnDataItem(attr_name="lineno", display_name="Line Number", alignment=Qt.AlignmentFlag.AlignCenter, hidden=True),
                             ColumnDataItem(attr_name="funcName", alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter),
@@ -766,6 +844,7 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
 
         self.table_widget.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table_widget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.table_widget.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.table_widget.setAutoScroll(False)
         self.table_widget.setColumnCount(len(self.column_data))
         self.table_widget.setHorizontalHeaderLabels([item.display_name for item in self.column_data])
@@ -794,6 +873,10 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         self.layout.addWidget(self.clear_button, 3, 0, 1, 1)
         self.layout.setColumnStretch(0, 0)
         self.layout.setColumnStretch(1, 10)
+
+        self.detail_widget = LogMessageDetailWidget()
+
+        self.layout.addWidget(self.detail_widget, 4, 1, 2, 9)
 
     def setup(self, initial_level: Literal["DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"] | None = None) -> Self:
         self.setLayout(QGridLayout())
@@ -825,6 +908,7 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         for _level_name in current_selected_level_names:
             self.storage_handler.clear(_level_name.casefold())
         self.gather_content()
+        self.detail_widget.show_log_message()
 
     @ Slot()
     def on_level_selection_changed(self, active_level_names: Iterable[Literal["DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"]]):
@@ -832,21 +916,21 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
 
     def gather_content(self, active_level_names: Iterable[Literal["DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"]] | None = None):
         active_level_names = frozenset(active_level_names if active_level_names is not None else self.last_active_level_names)
-        all_relevant_messages = [r for r in self.storage_handler.get_all_messages(True) if r.levelname.upper() in active_level_names]
+        self._loaded_messages = [r for r in self.storage_handler.get_all_messages(True) if r.levelname.upper() in active_level_names]
 
-        if self.last_active_level_names == active_level_names and len(all_relevant_messages) == self.table_widget.rowCount():
+        if self.last_active_level_names == active_level_names and len(self._loaded_messages) == self.table_widget.rowCount():
             return
 
         self.table_widget.clearContents()
 
         h_scroll_value = self.table_widget.horizontalScrollBar().value()
 
-        self.table_widget.setRowCount(len(all_relevant_messages))
+        self.table_widget.setRowCount(len(self._loaded_messages))
 
-        common_path_prefix = os.path.commonprefix([Path(m.pathname).resolve().as_posix() for m in all_relevant_messages]).removesuffix("/")
+        common_path_prefix = os.path.commonprefix([Path(m.pathname).resolve().as_posix() for m in self._loaded_messages]).removesuffix("/")
         if "/" in common_path_prefix:
             common_path_prefix = "/".join(common_path_prefix.split("/")[:-1])
-        for row, msg in enumerate(all_relevant_messages):
+        for row, msg in enumerate(self._loaded_messages):
 
             for column, column_data in enumerate(self.column_data):
                 if column_data.attr_name == "asctime":
@@ -907,11 +991,11 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         self.table_widget.verticalScrollBar().setValue(self.table_widget.verticalScrollBar().maximum())
         self.table_widget.horizontalScrollBar().setValue(h_scroll_value)
 
-        # self.table_widget.verticalScrollBar().setRange(0, len(all_relevant_messages) * 5)
+        # self.table_widget.verticalScrollBar().setRange(0, len(self._loaded_messages) * 5)
         self.table_widget.verticalScrollBar().setSingleStep(2)
-        self.table_widget.verticalScrollBar().setPageStep(len(all_relevant_messages))
+        self.table_widget.verticalScrollBar().setPageStep(len(self._loaded_messages))
 
-        # self.table_widget.verticalScrollBar().setPageStep(len(all_relevant_messages) * 5)
+        # self.table_widget.verticalScrollBar().setPageStep(len(self._loaded_messages) * 5)
 
         # self.table_widget.horizontalScrollBar().setRange(0, len(self.column_data) * 2)
         self.table_widget.horizontalScrollBar().setSingleStep(2)
@@ -928,6 +1012,18 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
             self.table_widget.resizeRowsToContents()
 
         self.table_widget.resizeColumnsToContents()
+
+        self.table_widget.currentItemChanged.connect(self.on_item_activated)
+
+    @Slot()
+    def on_item_activated(self, item: Optional[QTableWidgetItem] = None, old_item: Optional[QTableWidgetItem] = None) -> None:
+        if item is None:
+            self.detail_widget.clear()
+
+        else:
+            self.detail_widget.show_log_message(self._loaded_messages[item.row()])
+
+        self.update()
 
     def timerEvent(self, event: QTimerEvent) -> None:
         event.accept()

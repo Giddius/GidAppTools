@@ -9,7 +9,7 @@ Soon.
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import os
 from enum import unique
-from typing import TYPE_CHECKING, Union, AnyStr, Literal, Iterable, Callable
+from typing import TYPE_CHECKING, Union, AnyStr, Literal, Iterable, Callable, TypeAlias
 from hashlib import md5, sha256, blake2b, blake2s, sha3_512
 from pathlib import Path
 from threading import RLock
@@ -46,10 +46,10 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion [Constants]
 
 
-READ_TYPE = Union[Literal["r"], Literal["rb"]]
-WRITE_TYPE = Union[Literal["w"], Literal["wb"], Literal['a'], Literal['ab']]
-ON_ERRORS_TYPE = Union[Literal['replace'], Literal['ignore'], AnyStr]
-HASH_FUNC_TYPE = Union[blake2b, md5, sha256, sha3_512, blake2s]
+READ_TYPE: TypeAlias = Union[Literal["r"], Literal["rb"]]
+WRITE_TYPE: TypeAlias = Union[Literal["w"], Literal["wb"], Literal['a'], Literal['ab']]
+ON_ERRORS_TYPE: TypeAlias = Union[Literal['replace'], Literal['ignore'], AnyStr]
+HASH_FUNC_TYPE: TypeAlias = Union[blake2b, md5, sha256, sha3_512, blake2s]
 
 
 class FileMixin(os.PathLike):

@@ -33,7 +33,7 @@ THIS_FILE_DIR = Path(__file__).parent.absolute()
 # endregion [Constants]
 
 
-class FileLocksManager:
+class SingleProcessFileLocksManager:
     __slots__ = ("_lock_type",
                  "_interaction_lock",
                  "_file_locks")
@@ -70,8 +70,8 @@ class FileLocksManager:
         return f"{self.__class__.__name__}(lock_type={self._lock_type!r})"
 
 
-GLOBAL_LOCK_MANAGER = FileLocksManager(Lock)
-GLOBAL_RLOCK_MANAGER = FileLocksManager(RLock)
+GLOBAL_LOCK_MANAGER = SingleProcessFileLocksManager(Lock)
+GLOBAL_RLOCK_MANAGER = SingleProcessFileLocksManager(RLock)
 
 
 # region [Main_Exec]
