@@ -62,9 +62,8 @@ class MetaPathsFactory(AbstractMetaFactory):
         return path_dict | path_overwrites
 
     @classmethod
-    @property
     def __default_configuration__(cls) -> dict[str, Any]:
-        return cls.default_configuration | cls.product_class.__default_configuration__
+        return cls.default_configuration | cls.product_class.__default_configuration__()
 
     def setup(self) -> None:
         self.path_dict = self.get_path_dict()

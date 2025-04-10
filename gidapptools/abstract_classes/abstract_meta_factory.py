@@ -46,13 +46,13 @@ class AbstractMetaFactory(ABC):
         self.config_kwargs = config_kwargs
 
     @classmethod
-    @property
     def __default_configuration__(cls) -> dict[str, Any]:
-
-        return cls.default_configuration | cls.product_class.__default_configuration__
-
+        try:
+            return cls.default_configuration | cls.product_class.__default_configuration__()
+        except TypeError:
+            print(f"{cls.product_class=} ",flush=True)
+            raise
     @classmethod
-    @property
     def product_name(cls) -> str:
         return cls.product_class.name
 
@@ -69,7 +69,7 @@ class AbstractMetaFactory(ABC):
         factory_instance = cls(config_kwargs=config_kwargs)
         instance = factory_instance._build()
         instance.to_storager(factory_instance.config_kwargs.get('storager'))
-        factory_instance.config_kwargs.created_meta_items[factory_instance.product_name] = instance
+        factory_instance.config_kwargs.created_meta_items[factory_instance.product_name()] = instance
         return instance
 
 

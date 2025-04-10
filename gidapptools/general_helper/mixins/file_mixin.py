@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Union, AnyStr, Literal, Iterable, Callable, Ty
 from hashlib import md5, sha256, blake2b, blake2s, sha3_512
 from pathlib import Path
 from threading import RLock
+import portalocker
 
 # * Gid Imports ----------------------------------------------------------------------------------------->
 from gidapptools.general_helper.enums import BaseGidEnum
@@ -59,7 +60,7 @@ class FileMixin(os.PathLike):
     hash_func: HASH_FUNC_TYPE = md5
     file_hash_size_threshold: int = human2bytes("100 mb")
 
-    @ unique
+    @unique
     class ChangeParameter(BaseGidEnum):
         SIZE = "size"
         FILE_HASH = "file_hash"
@@ -118,17 +119,17 @@ class FileMixin(os.PathLike):
             else:
                 raise FileNotFoundError(f"file for {self.__class__.__name__!r} -> {self.file_path.as_posix()!r} does exist.")
 
-    @ property
+    @property
     def file_name(self) -> str:
         return self.file_path.name
 
-    @ property
+    @property
     def size(self) -> int:
         self._check_handle_not_existing()
         size = self.file_path.stat().st_size
         return size
 
-    @ property
+    @property
     def file_hash(self) -> str:
         self._check_handle_not_existing()
         with self.file_path.open('rb') as f:
@@ -140,7 +141,7 @@ class FileMixin(os.PathLike):
                 _file_hash.update(chunk)
             return _file_hash.hexdigest()
 
-    @ property
+    @property
     def mtime(self) -> int:
         self._check_handle_not_existing()
         return self.file_path.stat().st_mtime
@@ -163,7 +164,7 @@ class FileMixin(os.PathLike):
     def _on_never_changed_check(self) -> bool:
         return False
 
-    @ property
+    @property
     def has_changed(self) -> bool:
         with self.lock:
             result = self.changed_check_func()
@@ -194,7 +195,7 @@ class FileMixin(os.PathLike):
                         self.ChangeParameter.ALL: _update_all}
         update_table[self.changed_parameter]()
 
-    @ property
+    @property
     def _read_kwargs(self) -> dict[str, str]:
         kwargs = {"mode": self.read_mode}
         if 'b' not in self.read_mode:
@@ -202,7 +203,7 @@ class FileMixin(os.PathLike):
             kwargs['errors'] = self._on_errors
         return kwargs
 
-    @ property
+    @property
     def _write_kwargs(self) -> dict[str, str]:
         kwargs = {"mode": self.write_mode}
         if 'b' not in self.write_mode:
@@ -215,13 +216,15 @@ class FileMixin(os.PathLike):
         with self.lock:
             self._update_changed_data()
             # pylint: disable=unspecified-encoding
-            with self.file_path.open(**self._read_kwargs) as f:
+            with portalocker.Lock(str(self.file_path), flags=portalocker.constants.LOCK_EX, fail_when_locked=False, **self._read_kwargs) as f:
                 return f.read()
 
     def write(self, data) -> None:
         with self.lock:
             # pylint: disable=unspecified-encoding
-            with atomic_write(self.file_path, overwrite=True, **self._write_kwargs) as f:
+            with portalocker.Lock(str(self.file_path), flags=portalocker.constants.LOCK_EX, fail_when_locked=False, **self._write_kwargs) as f:
+
+                # with atomic_write(self.file_path, overwrite=True, **self._write_kwargs) as f:
                 f.write(data)
 
     def __fspath__(self) -> str:

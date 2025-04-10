@@ -272,13 +272,13 @@ class FileSizeConfigValueConverter(ConfigValueConverter):
     def to_config_value(self, value: int) -> str:
         if value is None:
             return ""
-        return bytes2human(value)
+        return bytes2human(int(value))
 
     def to_python_value(self, value: str) -> Union[int, None]:
         if value is None:
             return None
 
-        return human2bytes(value)
+        return int(human2bytes(value))
 
 
 SUB_TYPUS_TYPE = TypeVar("SUB_TYPUS_TYPE")

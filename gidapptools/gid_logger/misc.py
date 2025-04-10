@@ -81,7 +81,13 @@ class QtMessageHandler(metaclass=ProhibitiveSingletonMeta):
             in_mode = "ERROR"
         elif in_mode == "SYSTEM":
             in_mode = "INFO"
-        return logging.getLevelName(in_mode)
+
+        elif in_mode.isnumeric():
+            _in_mode = int(in_mode)
+            if _in_mode < 10:
+                _in_mode = _in_mode * 10
+            return _in_mode
+        return logging.getLevelNamesMapping()[in_mode]
 
     def get_context(self, in_context: None):
         _logger = None

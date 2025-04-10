@@ -83,7 +83,7 @@ class FileSizeUnit:
         if isinstance(o, self.__class__):
             return self.factor == o.factor
 
-        if isinstance(o, int):
+        if isinstance(o, (int, float)):
             return self.factor == o
 
         if isinstance(o, str):
@@ -94,7 +94,7 @@ class FileSizeUnit:
     def __lt__(self, o: object) -> bool:
         if isinstance(o, self.__class__):
             return self.factor < o.factor
-        if isinstance(o, int):
+        if isinstance(o, (int, float)):
             return self.factor < o
 
         return NotImplemented
@@ -102,7 +102,7 @@ class FileSizeUnit:
     def __truediv__(self, o: object) -> float:
         if isinstance(o, self.__class__):
             return self.factor / o.factor
-        if isinstance(o, int):
+        if isinstance(o, (int, float)):
             return self.factor / o
 
         if isinstance(o, float):
@@ -112,7 +112,7 @@ class FileSizeUnit:
     def __rtruediv__(self, o: object) -> float:
         if isinstance(o, self.__class__):
             return o.factor / self.factor
-        if isinstance(o, int):
+        if isinstance(o, (int, float)):
             return o / self.factor
 
         if isinstance(o, float):

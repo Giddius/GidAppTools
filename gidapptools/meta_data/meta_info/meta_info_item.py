@@ -112,7 +112,6 @@ class MetaInfo(AbstractMetaItem):
         return self.app_name.replace(" ", "-").replace("_", '-')
 
     @classmethod
-    @property
     def __default_configuration__(cls) -> dict[str, Any]:
         default_configuration = {}
         return default_configuration

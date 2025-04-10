@@ -8,7 +8,7 @@ Soon.
 
 # * Standard Library Imports ---------------------------------------------------------------------------->
 import os
-from typing import TYPE_CHECKING, Any, Union, Literal, Iterable
+from typing import TYPE_CHECKING, Any, Union, Literal, Iterable, TypeAlias, TypeVar
 from pathlib import Path
 from threading import RLock
 
@@ -200,6 +200,10 @@ class GidIniConfig:
     def section_names(self) -> tuple[str]:
         return tuple(self.spec.sections)
 
+    @property
+    def auto_write(self) -> bool:
+        return self.config.auto_write
+
     def clear_cache(self) -> None:
         self._resolve_entry_cache = {}
 
@@ -295,6 +299,9 @@ def preload_config(in_config: "GidIniConfig") -> None:
     in_config.config.save()
 
 
+T_ConfigClass = TypeVar("T_ConfigClass", bound=GidIniConfig)
+
+
 def get_config(spec_path: "PATH_TYPE",
                config_path: "PATH_TYPE",
                spec_loader: SpecLoader = None,
@@ -303,12 +310,13 @@ def get_config(spec_path: "PATH_TYPE",
                changed_parameter: Union[Literal['size'], Literal['file_hash'], Literal["mtime"], Literal["never"], Literal["always"], Literal["all"]] = 'mtime',
                extra_converter: Iterable[ConfigValueConverter] = None,
                empty_is_missing: bool = True,
-               preload_ini_file: bool = False) -> GidIniConfig:
+               preload_ini_file: bool = False,
+               config_class: type[T_ConfigClass] = GidIniConfig) -> T_ConfigClass:
 
     conversion_table = ConversionTable(extra_converter=extra_converter)
     spec = SpecFile(spec_path, loader=spec_loader or SpecLoader(), changed_parameter=changed_parameter)
     config = ConfigFile(config_path, parser=config_parser or BaseIniParser(), changed_parameter=changed_parameter, auto_write=config_auto_write)
-    config_item = GidIniConfig(spec, config, conversion_table=conversion_table, empty_is_missing=empty_is_missing)
+    config_item = config_class(spec, config, conversion_table=conversion_table, empty_is_missing=empty_is_missing)
 
     if preload_ini_file is True:
         preload_config(config_item)

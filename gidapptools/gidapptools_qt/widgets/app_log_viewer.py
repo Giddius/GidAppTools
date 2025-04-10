@@ -26,7 +26,7 @@ from pyparsing.exceptions import ParseBaseException
 import PySide6
 from PySide6 import QtGui, QtWidgets, QtCore
 from PySide6.QtGui import QFont, QColor, QPalette, QTextOption, QBrush, QMouseEvent, QTextCharFormat, QSyntaxHighlighter, QPainter
-from PySide6.QtCore import Qt, Slot, Signal, QTimerEvent, QSize, QAbstractTableModel
+from PySide6.QtCore import Qt, Slot, Signal, QTimerEvent, QSize, QAbstractTableModel, QItemSelection
 from PySide6.QtWidgets import (QLabel, QWidget, QFormLayout, QStyle, QScrollBar, QLineEdit, QScrollArea, QApplication, QTableView, QFrame, QVBoxLayout, QStyleOption, QStyleOptionViewItem, QComboBox, QSizePolicy, QGroupBox,
                                QTextEdit, QFormLayout, QStyledItemDelegate, QGridLayout, QRadioButton, QCheckBox, QHBoxLayout, QPushButton, QSpacerItem, QTableView,
                                QTableWidget, QTableWidgetItem, QAbstractItemView)
@@ -696,6 +696,7 @@ class MessageTableWidgetItem(QTableWidgetItem):
 class LogMessageDetailWidget(QScrollArea):
 
     def __init__(self,
+
                  parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setWidgetResizable(True)
@@ -703,6 +704,15 @@ class LogMessageDetailWidget(QScrollArea):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.clear()
+        self.pygment_style = get_style_by_name("github-dark")
+        self.pygment_lexer = PythonLexer()
+        self.pygment_formatter_kwargs = {"noclasses": True,
+                                         "style": self.pygment_style,
+                                         "lineseparator": "<br>",
+                                         "prestyles": 'font-family: FiraCode Nerd Font Mono, monospace; font-weight: bold'}
+        self.pygment_formatter = HtmlFormatter(**self.pygment_formatter_kwargs)
+
+        self.setStyleSheet("QTextEdit#ExceptionTextField {background-color:" + self.pygment_style.background_color + "; color: " + _get_style_foreground_color(self.pygment_style) + ";}")
 
     def show_log_message(self,
                          log_message: Optional["LOG_RECORD_TYPES"] = None) -> None:
@@ -729,11 +739,29 @@ class LogMessageDetailWidget(QScrollArea):
                 continue
 
             if attr_name.casefold() == "message":
-                _value_widget = QTextEdit(str(_value))
-                _value_widget.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
+                if log_message.levelno == logging.ERROR:
 
-                _value_widget.setWordWrapMode(QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
-                _value_widget.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+                    _value_widget = QTextEdit()
+                    _value_widget.setObjectName("ExceptionTextField")
+                    _value_widget.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
+
+                    _value_widget.setWordWrapMode(QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
+                    _value_widget.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+                    _value_widget.setAcceptRichText(True)
+
+                    _html_text = highlight(str(_value), self.pygment_lexer, self.pygment_formatter)
+
+                    _html_text = _html_text.replace("</span><br></pre>", "</span></pre>")
+                    _value_widget.setHtml(_html_text)
+                    # _value_widget.setText(str(_value))
+
+                else:
+                    _value_widget = QTextEdit(str(_value))
+                    _value_widget.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
+
+                    _value_widget.setWordWrapMode(QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
+                    _value_widget.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
+
             else:
                 _value_widget = QLineEdit(str(_value))
 
@@ -769,6 +797,18 @@ class LogMessageDetailWidget(QScrollArea):
         self.resize(self.size().width(), 0)
 
 
+class LogMessagesTableWidget(QTableWidget):
+
+    def mousePressEvent(self, event: QMouseEvent):
+
+        _index = self.indexAt(event.position().toPoint())
+
+        if _index.isValid() is False:
+            self.selectionModel().clearSelection()
+
+        super().mousePressEvent(event)
+
+
 class StoredAppLogTableViewer(StoredAppLogViewer):
 
     def __init__(self,
@@ -776,6 +816,10 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
                  parent=None,
                  storage_handler: GidStoringHandler = None) -> None:
         super().__init__(parent=parent, logger=logger, storage_handler=storage_handler)
+        self.setLayout(QVBoxLayout())
+
+        self._inner_layout = QGridLayout()
+        self.layout.addLayout(self._inner_layout, 1)
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.MinimumExpanding)
 
         self.error_background_color = QColor(Qt.GlobalColor.red)
@@ -804,6 +848,17 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
 
         self._loaded_messages: list["LOG_RECORD_TYPES"] = []
 
+    @ property
+    def layout(self) -> QVBoxLayout:
+        _layout = super().layout
+        if callable(_layout):
+            _layout = _layout()
+        return _layout
+
+    @ property
+    def inner_layout(self) -> QGridLayout:
+        return self._inner_layout
+
     def _get_color_map(self):
         return {"background": {"error": ...,
                                "critical": ...,
@@ -820,8 +875,8 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
 
     def setup_widgets(self):
         self.level_select_widget = self._setup_level_select_widget()
-        self.layout.addWidget(self.level_select_widget, 0, 0, 2, 1)
-        self.table_widget = QTableWidget(self)
+        self.inner_layout.addWidget(self.level_select_widget, 0, 0, 2, 1)
+        self.table_widget = LogMessagesTableWidget(self)
         self.table_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
         self.column_data = (ColumnDataItem(attr_name="asctime"),
@@ -866,20 +921,20 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         font.setPointSizeF(font.pointSizeF() * 1.25)
         self.table_widget.setFont(font)
 
-        self.layout.addWidget(self.table_widget, 0, 1, 4, 9)
+        self.inner_layout.addWidget(self.table_widget, 0, 1, 4, 9)
 
         self.clear_button = QPushButton("Clear Current Logs")
         self.clear_button.pressed.connect(self.on_clear_pressed)
-        self.layout.addWidget(self.clear_button, 3, 0, 1, 1)
-        self.layout.setColumnStretch(0, 0)
-        self.layout.setColumnStretch(1, 10)
+        self.inner_layout.addWidget(self.clear_button, 3, 0, 1, 1)
+        self.inner_layout.setColumnStretch(0, 0)
+        self.inner_layout.setColumnStretch(1, 10)
 
         self.detail_widget = LogMessageDetailWidget()
 
-        self.layout.addWidget(self.detail_widget, 4, 1, 2, 9)
+        self.layout.addWidget(self.detail_widget, 1)
 
     def setup(self, initial_level: Literal["DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"] | None = None) -> Self:
-        self.setLayout(QGridLayout())
+        # self.setLayout(QGridLayout())
         self.setWindowTitle("Application Log")
 
         self.setup_widgets()
@@ -908,7 +963,10 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
         for _level_name in current_selected_level_names:
             self.storage_handler.clear(_level_name.casefold())
         self.gather_content()
-        self.detail_widget.show_log_message()
+        try:
+            self.detail_widget.show_log_message()
+        except Exception as e:
+            self.logger.error(e, exc_info=True)
 
     @ Slot()
     def on_level_selection_changed(self, active_level_names: Iterable[Literal["DEBUG", "INFO", "WARNING", "CRITICAL", "ERROR"]]):
@@ -1013,7 +1071,18 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
 
         self.table_widget.resizeColumnsToContents()
 
-        self.table_widget.currentItemChanged.connect(self.on_item_activated)
+        # self.table_widget.clicked.connect(self.on_item_activated)
+        self.table_widget.selectionModel().selectionChanged.connect(self._clear_detail_if_not_item)
+
+    @Slot()
+    def _clear_detail_if_not_item(self, new_selection: QItemSelection, old_selection: QItemSelection):
+        _indexes = [i for i in new_selection.indexes() if i is not None]
+
+        if len(_indexes) <= 0:
+            self.detail_widget.clear()
+
+        else:
+            self.on_item_activated(self.table_widget.itemFromIndex(_indexes[-1]))
 
     @Slot()
     def on_item_activated(self, item: Optional[QTableWidgetItem] = None, old_item: Optional[QTableWidgetItem] = None) -> None:
@@ -1021,8 +1090,11 @@ class StoredAppLogTableViewer(StoredAppLogViewer):
             self.detail_widget.clear()
 
         else:
-            self.detail_widget.show_log_message(self._loaded_messages[item.row()])
+            try:
 
+                self.detail_widget.show_log_message(self._loaded_messages[item.row()])
+            except Exception as e:
+                self.logger.error(e, exc_info=True)
         self.update()
 
     def timerEvent(self, event: QTimerEvent) -> None:

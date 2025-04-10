@@ -55,9 +55,9 @@ class AppMeta:
                                             # MetaConfigFactory
                                             ]
     plugin_data: list[dict[str, Any]] = []
-    default_to_initialize = [factory.product_name for factory in factories]
+    default_to_initialize = [factory.product_name() for factory in factories]
     default_base_configuration: dict[str, Any] = SafeMergeDict(raise_on_overwrite=True)
-    default_base_configuration: dict[str, Any] = reduce(or_, [default_base_configuration] + [factory.__default_configuration__ for factory in factories])
+    default_base_configuration: dict[str, Any] = reduce(or_, [default_base_configuration] + [factory.__default_configuration__() for factory in factories])
 
     def __init__(self) -> None:
         self.is_setup = False
@@ -89,7 +89,7 @@ class AppMeta:
                 warn(f'plugin could not be loaded because of {e}.', stacklevel=4)
 
     def add_plugin_data(self, factory: AbstractMetaFactory) -> None:
-        plugin_dict = {"product_name": factory.product_name,
+        plugin_dict = {"product_name": factory.product_name(),
                        "file": Path(inspect.getfile(factory)).resolve().as_posix(),
                        "module": inspect.getmodule(factory).__name__}
         self.plugin_data.append(plugin_dict)
@@ -104,7 +104,7 @@ class AppMeta:
 
         default_configuration = {} if default_configuration is None else default_configuration
 
-        self.default_base_configuration |= factory.__default_configuration__
+        self.default_base_configuration |= factory.__default_configuration__()
         self.default_base_configuration |= default_configuration
         self.add_plugin_data(factory=factory)
 
@@ -133,14 +133,14 @@ class AppMeta:
         return NotImplemented
 
     def _initialize_data(self, config_kwargs: ConfigKwargs) -> None:
-        factory_map = {factory.product_name: factory for factory in self.factories}
+        factory_map = {factory.product_name(): factory for factory in self.factories}
         for name in config_kwargs.get('items_to_initialize'):
             factory = factory_map.get(name, MiscEnum.NOTHING)
             if factory is MiscEnum.NOTHING:
                 raise NoFactoryFoundError(name)
             meta_item = factory.build(config_kwargs)
-            self.meta_items[factory.product_name] = meta_item
-            config_kwargs.created_meta_items[factory.product_name] = meta_item
+            self.meta_items[factory.product_name()] = meta_item
+            config_kwargs.created_meta_items[factory.product_name()] = meta_item
 
     def setup(self, init_path: PATH_TYPE, items_to_initialize: Iterable[str] = None, **kwargs) -> None:
         if self.is_setup is True:

@@ -10,6 +10,7 @@ Soon.
 import os
 import string
 import subprocess
+import re
 from glob import iglob
 from ctypes import windll
 from typing import TYPE_CHECKING, Union, Optional, Generator
@@ -44,6 +45,10 @@ if TYPE_CHECKING:
 THIS_FILE_DIR = Path(__file__).parent.absolute()
 
 # endregion [Constants]
+
+
+# def text_to_file_stem_slug(text: str) -> str:
+#     ...
 
 
 def get_all_drives(also_non_physical: bool = False) -> tuple[Path]:
@@ -136,6 +141,10 @@ def open_folder_in_explorer(in_folder: Union[str, os.PathLike]) -> None:
 ILLEGAL_FILE_NAME_CHARS: set[str] = set("\"|%:/,.\\[]<>*?")
 
 EXTENDED_ILLEGAL_FILE_NAME_CHARS: set[str] = ILLEGAL_FILE_NAME_CHARS.union("'&§;#=" + r"{}")
+
+EXTENDED_ILLEGAL_FILE_NAME_CHARS_REGEX: re.Pattern = re.compile(r"[" + re.escape("".join(EXTENDED_ILLEGAL_FILE_NAME_CHARS)) + r"]")
+
+EXTENDED_ILLEGAL_FILE_NAME_CHARS_NO_SQUARE_BRACKETS_REGEX: re.Pattern = re.compile(r"[" + re.escape("".join(set("\"|%:/,.\\<>*?").union("'&§;#=" + r"{}"))) + r" ]")
 
 
 def ensure_valid_file_stem(file_stem: str,
